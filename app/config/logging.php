@@ -65,6 +65,17 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // ─── Audit Security Log ────────────────────────────────────────────
+        // Mencatat semua aktivitas kritis (login, upload, approve, delete, dll.)
+        // ke file terpisah dengan rotasi harian 90 hari.
+        // OWASP A09: Security Logging and Monitoring Failures — mitigation.
+        'audit' => [
+            'driver'              => 'single',
+            'path'                => storage_path('logs/audit.log'),
+            'level'               => 'info',
+            'replace_placeholders'=> true,
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),

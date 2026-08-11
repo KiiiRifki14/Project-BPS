@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 
 class ItemController extends Controller
@@ -24,12 +25,14 @@ class ItemController extends Controller
 
     /**
      * Bendahara / Admin: Approve or Reject item.
+     * OWASP A09: Audit log on every verification decision.
      */
     public function verify(Request $request, Item $item)
     {
         $user = $request->user();
 
         if (!$user->canVerify()) {
+            AuditLogger::denied("items/{$item->id}/verify", 'Role tidak memiliki hak verifikasi');
             abort(403, 'Hanya Bendahara atau Admin yang dapat melakukan verifikasi pencairan.');
         }
 
@@ -51,6 +54,11 @@ class ItemController extends Controller
             'verification_status' => $validated['action'],
             'rejection_note'      => $validated['action'] === 'REJECTED' ? $validated['rejection_note'] : null,
         ]);
+
+        // ─── Audit Log: Verification Decision ────────────────────────────
+        $auditAction = $validated['action'] === 'APPROVED' ? 'ITEM_APPROVE' : 'ITEM_REJECT';
+        $note        = $validated['action'] === 'REJECTED' ? " | Catatan: {$validated['rejection_note']}" : '';
+        AuditLogger::log($auditAction, "Item [{$item->code}] diubah statusnya menjadi {$validated['action']} oleh [{$user->nip_username}].{$note}");
 
         $statusLabel = $validated['action'] === 'APPROVED' ? 'Disetujui (Siap Cair)' : 'Ditolak';
         return back()->with('success', "Status item [{$item->code}] berhasil diubah menjadi: {$statusLabel}.");
