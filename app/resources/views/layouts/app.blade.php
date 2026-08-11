@@ -7,6 +7,9 @@
     <title>{{ config('app.name') }} | @yield('title', 'Dashboard')</title>
     <meta name="description" content="Sistem Data Digital Arsip Keuangan BPS Kabupaten Subang - Pengelolaan dokumen pertanggungjawaban keuangan secara digital dan terstruktur.">
 
+    <!-- View Transitions API support for zero-flicker SPA navigation -->
+    <meta name="view-transition" content="same-origin">
+
     <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +18,19 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        /* ── BPS Subang Corporate Design System (No Neon Colors) ── */
+        /* ── View Transitions & Smooth Navigation ── */
+        @view-transition {
+            navigation: auto;
+        }
+
+        /* ── Turbo Progress Bar Styling ── */
+        .turbo-progress-bar {
+            height: 3px;
+            background: linear-gradient(90deg, #003087 0%, #3b82f6 50%, #001F54 100%);
+            box-shadow: 0 1px 4px rgba(0, 48, 135, 0.5);
+        }
+
+        /* ── BPS Subang Corporate Design System ── */
         :root {
             --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
@@ -54,13 +69,26 @@
             position: sticky;
             top: 0;
             z-index: 30;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
-        /* ── Page Body ── */
+        /* ── Page Body Entrance Animation (Silky Smooth) ── */
+        @keyframes pageFadeIn {
+            from {
+                opacity: 0.2;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .page-body {
             padding: 32px;
             flex: 1;
+            animation: pageFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            will-change: opacity, transform;
         }
 
         /* ── Corporate Cards ── */
@@ -69,6 +97,7 @@
             border-radius: 16px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         /* ── Tables ── */
@@ -241,7 +270,7 @@
                     <div class="text-xs font-extrabold text-slate-900 leading-snug">{{ auth()->user()->name }}</div>
                     <div class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">{{ auth()->user()->role }}</div>
                 </div>
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" data-turbo="false">
                     @csrf
                     <button type="submit" class="btn-bps btn-bps-secondary btn-bps-sm hover:border-red-300 hover:bg-red-50 hover:text-red-700" title="Keluar dari Sistem">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
@@ -252,8 +281,8 @@
         </div>
     </header>
 
-    {{-- Page Body --}}
-    <main class="page-body">
+    {{-- Page Body with Smooth Entrance Animation --}}
+    <main class="page-body" id="page-body-container">
         @if(session('success'))
             <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm font-semibold mb-6 flex items-center gap-3">
                 <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>

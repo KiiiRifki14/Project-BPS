@@ -4,24 +4,32 @@
 @section('content')
 <div class="space-y-8">
 
-    {{-- ── BREADCRUMB TRAIL ── --}}
-    <nav class="flex items-center gap-2 flex-wrap text-xs font-semibold text-slate-500 bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-xs">
-        <a href="{{ route('dashboard') }}" class="hover:text-blue-800 transition-colors">🏠 Dashboard</a>
-        <span class="text-slate-300">/</span>
-        <span class="font-mono text-slate-700">[{{ $breadcrumb['program']->code }}]</span>
-        <span class="text-slate-300">/</span>
-        <span class="font-mono text-slate-700">[{{ $breadcrumb['output']->code }}]</span>
-        <span class="text-slate-300">/</span>
-        <span class="font-mono text-slate-700">[{{ $breadcrumb['sub_output']->code }}]</span>
-        <span class="text-slate-300">/</span>
-        <span class="font-mono text-slate-700">[{{ $breadcrumb['component']->code }}]</span>
-        <span class="text-slate-300">/</span>
-        <span class="font-mono text-slate-700">[{{ $breadcrumb['sub_component']->code }}]</span>
-        <span class="text-slate-300">/</span>
-        <span class="font-mono text-slate-700">[{{ $breadcrumb['account']->code }}]</span>
-        <span class="text-slate-300">/</span>
-        <span class="font-mono font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Item {{ $item->code }}</span>
-    </nav>
+    {{-- ── BREADCRUMB TRAIL & BACK TO VERIFICATION ── --}}
+    <div class="flex items-center justify-between flex-wrap gap-4">
+        <nav class="flex items-center gap-2 flex-wrap text-xs font-semibold text-slate-500 bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-xs flex-1">
+            <a href="{{ route('dashboard') }}" class="hover:text-blue-800 transition-colors">🏠 Dashboard</a>
+            <span class="text-slate-300">/</span>
+            <span class="font-mono text-slate-700">[{{ $breadcrumb['program']->code }}]</span>
+            <span class="text-slate-300">/</span>
+            <span class="font-mono text-slate-700">[{{ $breadcrumb['output']->code }}]</span>
+            <span class="text-slate-300">/</span>
+            <span class="font-mono text-slate-700">[{{ $breadcrumb['sub_output']->code }}]</span>
+            <span class="text-slate-300">/</span>
+            <span class="font-mono text-slate-700">[{{ $breadcrumb['component']->code }}]</span>
+            <span class="text-slate-300">/</span>
+            <span class="font-mono text-slate-700">[{{ $breadcrumb['sub_component']->code }}]</span>
+            <span class="text-slate-300">/</span>
+            <span class="font-mono text-slate-700">[{{ $breadcrumb['account']->code }}]</span>
+            <span class="text-slate-300">/</span>
+            <span class="font-mono font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Item {{ $item->code }}</span>
+        </nav>
+
+        @if(request()->query('from') === 'verification' || auth()->user()->isBendahara())
+            <a href="{{ route('verification.index') }}" class="btn-bps btn-bps-secondary btn-bps-sm font-extrabold text-blue-900 bg-blue-50 border-blue-200 hover:bg-blue-100 shadow-xs">
+                ← Kembali ke Inbox Verifikasi
+            </a>
+        @endif
+    </div>
 
     {{-- ── ITEM HEADER CARD ── --}}
     <div class="card-corporate p-8 relative overflow-hidden">

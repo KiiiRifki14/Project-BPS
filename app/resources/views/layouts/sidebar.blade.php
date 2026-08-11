@@ -37,8 +37,15 @@
         </a>
 
         {{-- 2. Arsip Keuangan POK --}}
+        @php
+            $isVerificationActive = request()->routeIs('verification.*') ||
+                (request()->routeIs('items.show') && (request()->query('from') === 'verification' || auth()->user()->isBendahara()));
+
+            $isArsipActive = (request()->routeIs('items.index') || request()->routeIs('arsip.*')) ||
+                (request()->routeIs('items.show') && request()->query('from') !== 'verification' && !auth()->user()->isBendahara());
+        @endphp
         <a href="{{ route('items.index') }}"
-           class="nav-link-v4 {{ request()->routeIs('items.*') || request()->routeIs('arsip.*') ? 'active' : '' }}">
+           class="nav-link-v4 {{ $isArsipActive ? 'active' : '' }}">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
             <span class="font-bold">Arsip Keuangan POK</span>
         </a>
@@ -49,7 +56,7 @@
             $pendingCount = \App\Models\Item::where('verification_status', 'PENDING')->count();
         @endphp
         <a href="{{ route('verification.index') }}"
-           class="nav-link-v4 {{ request()->routeIs('verification.*') ? 'active' : '' }}">
+           class="nav-link-v4 {{ $isVerificationActive ? 'active' : '' }}">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="font-bold flex-1">Verifikasi Pencairan</span>
             @if($pendingCount > 0)

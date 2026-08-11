@@ -99,7 +99,7 @@
                             @endif
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            <a href="{{ route('items.show', $item) }}" class="btn-bps btn-bps-primary btn-bps-sm">
+                            <a href="{{ route('items.show', [$item, 'from' => 'verification']) }}" class="btn-bps btn-bps-primary btn-bps-sm">
                                 <span>🔍 Tinjau & Verifikasi</span>
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </a>
