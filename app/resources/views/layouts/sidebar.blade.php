@@ -1,185 +1,236 @@
-{{-- Sidebar POK Treeview Navigation --}}
-<div class="sidebar" :class="{ 'open': sidebarOpen }" x-data="pokSidebar()">
+{{-- ════════════════════════════════════════════
+    SIDEBAR — Main Navigation Only (Slim Design)
+    Treeview POK dipindah ke halaman /arsip
+═════════════════════════════════════════════ --}}
+<div class="sidebar" :class="{ 'open': sidebarOpen }">
 
-    {{-- Logo & Branding --}}
+    {{-- ── LOGO ── --}}
     <div class="sidebar-logo">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-            <div style="width:36px;height:36px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;">
-                <span style="font-size:20px;">📊</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.2);">
+                <span style="font-size:22px;">📊</span>
             </div>
-            <div>
+            <div style="min-width:0;">
                 <div class="app-name">Arsip Keuangan BPS</div>
                 <div class="app-sub">Kabupaten Subang</div>
             </div>
         </div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">
-            Tahun Anggaran: <strong style="color:rgba(255,255,255,.8);">2026</strong>
+        {{-- Fiscal Year Badge --}}
+        <div style="margin-top:12px;padding:6px 10px;background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.3);border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:10.5px;color:rgba(255,255,255,.6);">Tahun Anggaran</span>
+            <span style="font-size:13px;font-weight:700;color:#f5a623;">2026</span>
         </div>
     </div>
 
-    {{-- Search --}}
-    <div class="sidebar-search">
-        <input type="text" x-model="search" placeholder="🔍 Cari kode / nama item..." @input="filterTree()">
-    </div>
+    {{-- ── MAIN NAV ── --}}
+    <nav class="sidebar-nav" style="padding:12px 10px;">
 
-    {{-- Navigation --}}
-    <div class="sidebar-nav">
+        {{-- Section: Utama --}}
+        <div class="nav-section-label">UTAMA</div>
 
-        {{-- Dashboard Link --}}
         <a href="{{ route('dashboard') }}"
-           class="tree-leaf {{ request()->routeIs('dashboard') ? 'active' : '' }}"
-           style="margin-bottom:4px;">
-            🏠 <span>Dashboard</span>
+           class="nav-item {{ request()->routeIs('dashboard') ? 'nav-item-active' : '' }}"
+           id="nav-dashboard">
+            <div class="nav-icon" style="background:{{ request()->routeIs('dashboard') ? 'rgba(245,166,35,.2)' : 'rgba(255,255,255,.08)' }};">
+                <span>🏠</span>
+            </div>
+            <div class="nav-label">
+                <span class="nav-text">Dashboard</span>
+                <span class="nav-desc">Ringkasan & statistik</span>
+            </div>
         </a>
 
-        {{-- Dynamic POK Treeview --}}
-        @php
-            $programs = \App\Models\Program::with([
-                'outputs.subOutputs.components.subComponents.accounts.items'
-            ])->get();
-        @endphp
-
-        @foreach($programs as $program)
-        <div class="tree-item" x-show="shouldShow('{{ strtolower($program->code) }}', '{{ strtolower($program->name) }}')">
-            <div class="tree-toggle" :class="{ 'open': isOpen('prog_{{ $program->id }}') }"
-                 @click="toggle('prog_{{ $program->id }}')">
-                <span class="caret">▶</span>
-                <span style="font-size:10px;color:rgba(255,255,255,.4);">[{{ $program->code }}]</span>
-                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ Str::limit($program->name, 28) }}</span>
+        <a href="{{ route('arsip.index') }}"
+           class="nav-item {{ request()->routeIs('arsip.*') || request()->routeIs('items.*') ? 'nav-item-active' : '' }}"
+           id="nav-arsip">
+            <div class="nav-icon" style="background:{{ request()->routeIs('arsip.*') || request()->routeIs('items.*') ? 'rgba(245,166,35,.2)' : 'rgba(255,255,255,.08)' }};">
+                <span>📂</span>
             </div>
-            <div class="tree-children" x-show="isOpen('prog_{{ $program->id }}')" x-transition>
-                @foreach($program->outputs as $output)
-                <div class="tree-item" x-show="shouldShow('{{ strtolower($output->code) }}', '{{ strtolower($output->name) }}')">
-                    <div class="tree-toggle" :class="{ 'open': isOpen('out_{{ $output->id }}') }"
-                         @click="toggle('out_{{ $output->id }}')">
-                        <span class="caret">▶</span>
-                        <span style="font-size:10px;color:rgba(255,255,255,.4);">[{{ $output->code }}]</span>
-                        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ Str::limit($output->name, 25) }}</span>
-                    </div>
-                    <div class="tree-children" x-show="isOpen('out_{{ $output->id }}')" x-transition>
-                        @foreach($output->subOutputs as $subOutput)
-                        <div class="tree-item" x-show="shouldShow('{{ strtolower($subOutput->code) }}', '{{ strtolower($subOutput->name) }}')">
-                            <div class="tree-toggle" :class="{ 'open': isOpen('so_{{ $subOutput->id }}') }"
-                                 @click="toggle('so_{{ $subOutput->id }}')">
-                                <span class="caret">▶</span>
-                                <span style="font-size:10px;color:rgba(255,255,255,.4);">[{{ $subOutput->code }}]</span>
-                                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ Str::limit($subOutput->name, 22) }}</span>
-                            </div>
-                            <div class="tree-children" x-show="isOpen('so_{{ $subOutput->id }}')" x-transition>
-                                @foreach($subOutput->components as $component)
-                                <div class="tree-item" x-show="shouldShow('{{ strtolower($component->code) }}', '{{ strtolower($component->name) }}')">
-                                    <div class="tree-toggle" :class="{ 'open': isOpen('comp_{{ $component->id }}') }"
-                                         @click="toggle('comp_{{ $component->id }}')">
-                                        <span class="caret">▶</span>
-                                        <span style="font-size:10px;color:rgba(255,255,255,.35);">[{{ $component->code }}]</span>
-                                        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ Str::limit($component->name, 20) }}</span>
-                                    </div>
-                                    <div class="tree-children" x-show="isOpen('comp_{{ $component->id }}')" x-transition>
-                                        @foreach($component->subComponents as $subComp)
-                                        <div class="tree-item">
-                                            <div class="tree-toggle" :class="{ 'open': isOpen('sc_{{ $subComp->id }}') }"
-                                                 @click="toggle('sc_{{ $subComp->id }}')">
-                                                <span class="caret">▶</span>
-                                                <span style="font-size:9.5px;color:rgba(255,255,255,.3);">[{{ $subComp->code }}]</span>
-                                                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10.5px;">{{ Str::limit($subComp->name, 18) }}</span>
-                                            </div>
-                                            <div class="tree-children" x-show="isOpen('sc_{{ $subComp->id }}')" x-transition>
-                                                @foreach($subComp->accounts as $account)
-                                                <div class="tree-item">
-                                                    <div class="tree-toggle" :class="{ 'open': isOpen('acc_{{ $account->id }}') }"
-                                                         @click="toggle('acc_{{ $account->id }}')">
-                                                        <span class="caret">▶</span>
-                                                        <span style="font-size:9px;color:rgba(255,255,255,.3);">[{{ $account->code }}]</span>
-                                                        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;">{{ Str::limit($account->name, 16) }}</span>
-                                                    </div>
-                                                    <div class="tree-children" x-show="isOpen('acc_{{ $account->id }}')" x-transition>
-                                                        @foreach($account->items as $item)
-                                                        <a href="{{ route('items.show', $item) }}"
-                                                           class="tree-leaf {{ request()->route('item') && request()->route('item')->id === $item->id ? 'active' : '' }}"
-                                                           x-show="shouldShow('{{ strtolower($item->code) }}', '{{ addslashes(strtolower($item->name)) }}')">
-                                                            <span class="badge {{ $item->status_badge_class }}" style="padding:1px 5px;font-size:9px;">
-                                                                @if($item->verification_status === 'APPROVED') ✓
-                                                                @elseif($item->verification_status === 'REJECTED') ✕
-                                                                @else ●
-                                                                @endif
-                                                            </span>
-                                                            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                                                                ({{ $item->code }})
-                                                            </span>
-                                                        </a>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-                @endforeach
+            <div class="nav-label">
+                <span class="nav-text">Arsip Dokumen</span>
+                <span class="nav-desc">Browser hirarki POK</span>
             </div>
-        </div>
-        @endforeach
+            {{-- Item count badge --}}
+            @php $totalItems = \App\Models\Item::count(); @endphp
+            @if($totalItems > 0)
+            <span class="nav-badge">{{ $totalItems }}</span>
+            @endif
+        </a>
 
-        {{-- Master Data Link --}}
+        {{-- Section: Pengelolaan --}}
+        @if(auth()->user()->canManageMaster() || auth()->user()->isAdmin())
+        <div class="nav-section-label" style="margin-top:12px;">PENGELOLAAN</div>
+        @endif
+
         @if(auth()->user()->canManageMaster())
-        <div style="border-top:1px solid rgba(255,255,255,.1);margin:8px 6px;"></div>
         <a href="{{ route('master.index') }}"
-           class="tree-leaf {{ request()->routeIs('master.*') ? 'active' : '' }}">
-            ⚙️ <span>Kelola Master POK</span>
+           class="nav-item {{ request()->routeIs('master.*') ? 'nav-item-active' : '' }}"
+           id="nav-master">
+            <div class="nav-icon" style="background:{{ request()->routeIs('master.*') ? 'rgba(245,166,35,.2)' : 'rgba(255,255,255,.08)' }};">
+                <span>⚙️</span>
+            </div>
+            <div class="nav-label">
+                <span class="nav-text">Master Data</span>
+                <span class="nav-desc">Kelola hirarki POK</span>
+            </div>
         </a>
         @endif
 
-        {{-- User Management --}}
         @if(auth()->user()->isAdmin())
         <a href="{{ route('users.index') }}"
-           class="tree-leaf {{ request()->routeIs('users.*') ? 'active' : '' }}">
-            👥 <span>Manajemen Pengguna</span>
+           class="nav-item {{ request()->routeIs('users.*') ? 'nav-item-active' : '' }}"
+           id="nav-users">
+            <div class="nav-icon" style="background:{{ request()->routeIs('users.*') ? 'rgba(245,166,35,.2)' : 'rgba(255,255,255,.08)' }};">
+                <span>👥</span>
+            </div>
+            <div class="nav-label">
+                <span class="nav-text">Pengguna</span>
+                <span class="nav-desc">Manajemen akun & role</span>
+            </div>
+            <span class="nav-badge" style="background:rgba(220,38,38,.7);">{{ \App\Models\User::count() }}</span>
         </a>
         @endif
-    </div>
 
-    {{-- User Info --}}
+        {{-- Section: Status Cepat (hanya Bendahara/Admin) --}}
+        @if(auth()->user()->canVerify())
+        <div class="nav-section-label" style="margin-top:12px;">STATUS CEPAT</div>
+
+        @php
+            $pendingCount = \App\Models\Item::where('verification_status','PENDING')->count();
+            $rejectedCount = \App\Models\Item::where('verification_status','REJECTED')->count();
+        @endphp
+
+        <a href="{{ route('arsip.index', ['filter' => 'pending']) }}"
+           class="nav-item" id="nav-pending">
+            <div class="nav-icon" style="background:rgba(217,119,6,.15);">
+                <span>⏳</span>
+            </div>
+            <div class="nav-label">
+                <span class="nav-text">Menunggu Verifikasi</span>
+                <span class="nav-desc">Perlu tindakan Bendahara</span>
+            </div>
+            @if($pendingCount > 0)
+            <span class="nav-badge" style="background:rgba(217,119,6,.8);">{{ $pendingCount }}</span>
+            @endif
+        </a>
+
+        @if($rejectedCount > 0)
+        <a href="{{ route('arsip.index', ['filter' => 'rejected']) }}"
+           class="nav-item" id="nav-rejected">
+            <div class="nav-icon" style="background:rgba(220,38,38,.1);">
+                <span>❌</span>
+            </div>
+            <div class="nav-label">
+                <span class="nav-text">Ditolak</span>
+                <span class="nav-desc">Butuh revisi dokumen</span>
+            </div>
+            <span class="nav-badge" style="background:rgba(220,38,38,.7);">{{ $rejectedCount }}</span>
+        </a>
+        @endif
+        @endif
+
+    </nav>
+
+    {{-- ── USER INFO ── --}}
     <div class="sidebar-user">
         <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
-        <div class="user-info" style="min-width:0;">
-            <div class="user-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ auth()->user()->name }}</div>
+        <div class="user-info" style="min-width:0;flex:1;">
+            <div class="user-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                {{ auth()->user()->name }}
+            </div>
             <span class="user-role">{{ auth()->user()->role }}</span>
         </div>
+        {{-- Logout icon --}}
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" title="Keluar"
+                    style="background:rgba(255,255,255,.1);border:none;border-radius:8px;padding:7px;cursor:pointer;color:rgba(255,255,255,.7);font-size:14px;transition:all .15s;"
+                    onmouseover="this.style.background='rgba(220,38,38,.4)';this.style.color='#fff';"
+                    onmouseout="this.style.background='rgba(255,255,255,.1)';this.style.color='rgba(255,255,255,.7)';">
+                🚪
+            </button>
+        </form>
     </div>
 </div>
 
-@push('scripts')
-<script>
-function pokSidebar() {
-    return {
-        search: '',
-        openNodes: {},
-
-        toggle(key) {
-            this.openNodes[key] = !this.openNodes[key];
-        },
-        isOpen(key) {
-            return this.openNodes[key] || false;
-        },
-        shouldShow(code, name) {
-            if (!this.search) return true;
-            const q = this.search.toLowerCase();
-            return code.includes(q) || name.includes(q);
-        },
-        filterTree() {
-            // Auto-expand all when searching
-            if (this.search) {
-                document.querySelectorAll('.tree-children').forEach(el => el.style.display = '');
-            }
-        }
-    };
+<style>
+/* ── Slim Sidebar Nav Styles ── */
+.nav-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,.3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 6px 6px;
+    margin-bottom: 2px;
 }
-</script>
-@endpush
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all .15s;
+    margin-bottom: 3px;
+    cursor: pointer;
+}
+
+.nav-item:hover {
+    background: rgba(255,255,255,.08);
+}
+
+.nav-item-active {
+    background: rgba(255,255,255,.1) !important;
+    border-left: 3px solid #f5a623;
+    padding-left: 7px;
+}
+
+.nav-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+    transition: all .15s;
+}
+
+.nav-label {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.nav-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nav-desc {
+    font-size: 10.5px;
+    color: rgba(255,255,255,.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
+.nav-badge {
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(255,255,255,.2);
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 20px;
+    flex-shrink: 0;
+}
+</style>

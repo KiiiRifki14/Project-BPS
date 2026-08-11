@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArsipController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ItemController;
@@ -14,9 +15,10 @@ require __DIR__.'/auth.php';
 // ── AUTHENTICATED ROUTES ──────────────────────────────
 Route::middleware(['auth'])->group(function () {
 
-    // Dashboard
+    // Dashboard & Arsip
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/arsip', [ArsipController::class, 'index'])->name('arsip.index');
 
     // Profile (Breeze default)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
