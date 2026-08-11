@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Document extends Model
 {
@@ -19,6 +20,20 @@ class Document extends Model
         'uploaded_by_user_id',
         'label',
     ];
+
+    /**
+     * 🧹 GUARD 3: Physical Storage Garbage Collection
+     * Automatically deletes the file from private disk whenever
+     * a Document record is removed from the database.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (Document $document) {
+            if ($document->file_path && Storage::disk('private')->exists($document->file_path)) {
+                Storage::disk('private')->delete($document->file_path);
+            }
+        });
+    }
 
     public function item()
     {

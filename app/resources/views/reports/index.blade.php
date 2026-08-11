@@ -2,60 +2,62 @@
 @section('title', 'Laporan & Rekapitulasi Digital')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-8">
 
     {{-- Page Header --}}
-    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center justify-between flex-wrap gap-4">
+    <div class="card-corporate p-8 flex items-center justify-between flex-wrap gap-6">
         <div>
-            <h1 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                <span>📈 Laporan & Rekapitulasi Digital SPJ BPS</span>
-            </h1>
-            <p class="text-xs text-slate-500 mt-1">
-                Pemantauan status kelengkapan berkas pertanggungjawaban per unit dan kegiatan POK.
+            <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-900 font-extrabold text-xs px-3.5 py-1.5 rounded-lg mb-2">
+                <span>📈 LAPORAN DIGITAL SPJ BPS</span>
+            </div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Rekapitulasi Kelengkapan Berkas POK</h1>
+            <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                Pemantauan status pertanggungjawaban digital per unit kerja & sub-output DIPA BPS Kabupaten Subang.
             </p>
         </div>
 
-        <div class="flex items-center gap-2">
-            <button onclick="window.print()" class="btn btn-secondary text-xs">
-                🖨️ Cetak Laporan
+        <div>
+            <button onclick="window.print()" class="btn-bps btn-bps-secondary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                <span>Cetak Laporan</span>
             </button>
         </div>
     </div>
 
-    {{-- KPI Cards Summary --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-            <div class="text-xs font-semibold text-slate-500">Total Item Kegiatan</div>
-            <div class="text-2xl font-extrabold text-slate-900 mt-2">{{ $summary['total_items'] }} Item</div>
-            <div class="text-xs text-slate-500 mt-1">Pagu: Rp {{ number_format($summary['total_pagu'], 0, ',', '.') }}</div>
+    {{-- KPI Cards --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="card-corporate p-6">
+            <div class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">TOTAL KEGIATAN POK</div>
+            <div class="text-2xl font-black text-slate-900 mt-2">{{ $summary['total_items'] }} Item</div>
+            <div class="text-xs font-mono font-bold text-slate-500 mt-1">Pagu: Rp {{ number_format($summary['total_pagu'], 0, ',', '.') }}</div>
         </div>
 
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm border-l-4 border-l-emerald-600">
-            <div class="text-xs font-semibold text-emerald-700">Disetujui / Siap Cair</div>
-            <div class="text-2xl font-extrabold text-emerald-800 mt-2">{{ $summary['approved_items'] }} Item</div>
-            <div class="text-xs text-emerald-600 mt-1">Pagu Cair: Rp {{ number_format($summary['approved_pagu'], 0, ',', '.') }}</div>
+        <div class="card-corporate p-6 border-l-4 border-l-emerald-600">
+            <div class="text-[11px] font-extrabold text-emerald-800 uppercase tracking-wider">✅ APPROVED (SIAP CAIR)</div>
+            <div class="text-2xl font-black text-emerald-900 mt-2">{{ $summary['approved_items'] }} Item</div>
+            <div class="text-xs font-mono font-bold text-emerald-700 mt-1">Rp {{ number_format($summary['approved_pagu'], 0, ',', '.') }}</div>
         </div>
 
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
-            <div class="text-xs font-semibold text-amber-700">Menunggu Verifikasi</div>
-            <div class="text-2xl font-extrabold text-amber-800 mt-2">{{ $summary['pending_items'] }} Item</div>
-            <div class="text-xs text-amber-600 mt-1">Butuh pemeriksaan Bendahara</div>
+        <div class="card-corporate p-6 border-l-4 border-l-amber-500">
+            <div class="text-[11px] font-extrabold text-amber-800 uppercase tracking-wider">⏳ PENDING VERIFIKASI</div>
+            <div class="text-2xl font-black text-amber-900 mt-2">{{ $summary['pending_items'] }} Item</div>
+            <div class="text-xs font-semibold text-amber-700 mt-1">Butuh pemeriksaan Bendahara</div>
         </div>
 
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm border-l-4 border-l-red-600">
-            <div class="text-xs font-semibold text-red-700">Ditolak / Revisi</div>
-            <div class="text-2xl font-extrabold text-red-800 mt-2">{{ $summary['rejected_items'] }} Item</div>
-            <div class="text-xs text-red-600 mt-1">Perlu perbaikan berkas Operator</div>
+        <div class="card-corporate p-6 border-l-4 border-l-red-600">
+            <div class="text-[11px] font-extrabold text-red-800 uppercase tracking-wider">❌ REJECTED (REVISI)</div>
+            <div class="text-2xl font-black text-red-900 mt-2">{{ $summary['rejected_items'] }} Item</div>
+            <div class="text-xs font-semibold text-red-700 mt-1">Perlu perbaikan berkas Operator</div>
         </div>
     </div>
 
-    {{-- Detailed Sub-Output Breakdown --}}
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div class="px-5 py-4 bg-slate-50 border-b border-slate-200">
-            <h2 class="text-sm font-bold text-slate-800">Rekapitulasi Kelengkapan Berkas per Sub-Output</h2>
+    {{-- Detailed Sub-Output Breakdown List --}}
+    <div class="card-corporate overflow-hidden">
+        <div class="px-6 py-5 bg-slate-50 border-b border-slate-200">
+            <h2 class="text-sm font-extrabold text-slate-900">Rekapitulasi Berkas per Sub-Output (Total {{ $subOutputs->total() }} Sub-Output)</h2>
         </div>
 
-        <div class="divide-y divide-slate-200">
+        <div class="divide-y divide-slate-100">
             @foreach($subOutputs as $so)
             @php
                 $allItems = collect();
@@ -73,36 +75,43 @@
                 $rejected = $allItems->where('verification_status', 'REJECTED')->count();
                 $totalPagu = $allItems->sum('pagu');
             @endphp
-            <div class="p-5 hover:bg-slate-50/80 transition-colors">
-                <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="p-6 hover:bg-slate-50 transition-colors">
+                <div class="flex items-center justify-between flex-wrap gap-4">
                     <div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-xs font-bold text-blue-900 bg-blue-50 border border-blue-200 px-3 py-1 rounded-lg">
                                 {{ $so->code }}
                             </span>
-                            <span class="text-sm font-bold text-slate-900">{{ $so->name }}</span>
+                            <span class="text-base font-extrabold text-slate-900">{{ $so->name }}</span>
                         </div>
-                        <div class="text-xs text-slate-500 mt-1">
-                            Total {{ $allItems->count() }} item kegiatan • Total Pagu: <strong>Rp {{ number_format($totalPagu, 0, ',', '.') }}</strong>
+                        <div class="text-xs text-slate-500 mt-2">
+                            Total {{ $allItems->count() }} item kegiatan • Total Pagu: <strong class="font-mono text-emerald-800">Rp {{ number_format($totalPagu, 0, ',', '.') }}</strong>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                            ✅ {{ $approved }} Approved
+                        <span class="badge-corp badge-corp-approved">
+                            <span>{{ $approved }} Approved</span>
                         </span>
-                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                            ⏳ {{ $pending }} Pending
+
+                        <span class="badge-corp badge-corp-pending">
+                            <span>{{ $pending }} Pending</span>
                         </span>
+
                         @if($rejected > 0)
-                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">
-                            ❌ {{ $rejected }} Rejected
+                        <span class="badge-corp badge-corp-rejected">
+                            <span>{{ $rejected }} Rejected</span>
                         </span>
                         @endif
                     </div>
                 </div>
             </div>
             @endforeach
+        </div>
+
+        {{-- Pagination Links for SubOutputs --}}
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-200">
+            {{ $subOutputs->links() }}
         </div>
     </div>
 

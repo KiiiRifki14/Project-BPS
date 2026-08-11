@@ -35,7 +35,6 @@ Route::middleware(['auth'])->group(function () {
 
     // ── ITEM DETAIL WORKSPACE ─────────────────────────
     Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');
-    Route::patch('/items/{item}/verify', [ItemController::class, 'verify'])->name('items.verify');
 
     // ── DOCUMENTS ─────────────────────────────────────
     Route::post('/items/{item}/documents', [DocumentController::class, 'store'])->name('documents.store');
@@ -46,6 +45,8 @@ Route::middleware(['auth'])->group(function () {
     // 3. Verifikasi Pencairan (Bendahara & Admin)
     Route::middleware('role:BENDAHARA,ADMIN')->group(function () {
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
+        // PATCH verify dikunci pada level middleware (sesuai Diagram 12 ERD)
+        Route::patch('/items/{item}/verify', [ItemController::class, 'verify'])->name('items.verify');
     });
 
     // 4. Kelola Master POK (Supervisor & Admin)

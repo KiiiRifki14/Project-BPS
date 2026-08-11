@@ -10,7 +10,7 @@ class ReportController extends Controller
 {
     public function index(Request $request)
     {
-        $subOutputs = SubOutput::with(['components.subComponents.accounts.items.documents'])->get();
+        $subOutputs = SubOutput::with(['components.subComponents.accounts.items.documents'])->paginate(5);
 
         $summary = [
             'total_items' => Item::count(),

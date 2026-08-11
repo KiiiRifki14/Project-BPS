@@ -2,127 +2,155 @@
 @section('title', 'Dashboard Utama')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-8">
 
-    {{-- ── MVP HIGHLIGHT BANNER FOR BMA.006 SENSUS EKONOMI ── --}}
+    {{-- ── HERO MVP BANNER (BMA.006 SENSUS EKONOMI 2026) ── --}}
     @php
         $bma006 = \App\Models\SubOutput::where('code', 'BMA.006')->first();
     @endphp
     @if($bma006)
-    <div class="bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 rounded-2xl p-6 text-slate-950 shadow-lg flex items-center justify-between flex-wrap gap-4">
-        <div>
-            <div class="inline-flex items-center gap-2 bg-slate-950/20 text-slate-950 font-black text-xs px-3 py-1 rounded-full mb-2">
-                ⭐ MODUL PRIORITAS MVP CORE FOCUS
+    <div class="relative overflow-hidden rounded-2xl bg-[#001F54] p-8 text-white shadow-lg">
+        <div class="relative z-10 flex items-center justify-between flex-wrap gap-6">
+            <div class="max-w-2xl">
+                <div class="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 text-amber-300 font-extrabold text-xs px-3.5 py-1.5 rounded-lg mb-3">
+                    <span>⭐ MODUL UTAMA MVP CORE FOCUS</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                    BMA.006 PUBLIKASI/LAPORAN SENSUS EKONOMI
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-200 font-medium mt-2 leading-relaxed opacity-90">
+                    Modul prioritas verifikasi & pencairan honor petugas pendataan sensus (001366, 001211) serta pengarsipan berkas pertanggungjawaban BAPP & Kuitansi BPS.
+                </p>
             </div>
-            <h1 class="text-xl font-black text-slate-950">BMA.006 PUBLIKASI/LAPORAN SENSUS EKONOMI</h1>
-            <p class="text-xs text-slate-900 font-semibold mt-1">
-                Pencairan honor petugas pendataan sensus (001366, 001211) & dokumen BAPP pertanggungjawaban.
-            </p>
-        </div>
 
-        <a href="{{ route('items.index', ['sub_output_id' => $bma006->id]) }}"
-           class="px-6 py-3 bg-slate-950 hover:bg-slate-900 text-white font-extrabold rounded-xl shadow-md transition-all text-sm flex items-center gap-2">
-            <span>Buka Kegiatan Sensus Ekonomi</span>
-            <span>→</span>
-        </a>
+            <a href="{{ route('items.index', ['sub_output_id' => $bma006->id]) }}"
+               class="btn-bps bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-sm px-6 py-3.5 shadow-md">
+                <span>Buka Kegiatan Sensus Ekonomi</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+        </div>
     </div>
     @endif
 
-    {{-- ── STAT CARDS KPI SUMMARY ── --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-            <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Pagu Anggaran</div>
-            <div class="text-base font-extrabold text-slate-900 mt-2">Rp {{ number_format($stats['total_pagu'], 0, ',', '.') }}</div>
-            <div class="text-[11px] text-slate-500 mt-1">Seluruh POK GG.2902</div>
+    {{-- ── STATS KPI SUMMARY CARDS ── --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        {{-- Card 1: Total Pagu --}}
+        <div class="card-corporate p-6">
+            <div class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">TOTAL PAGU ANGGARAN</div>
+            <div class="text-lg font-black text-slate-900 font-mono mt-2 truncate">Rp {{ number_format($stats['total_pagu'], 0, ',', '.') }}</div>
+            <div class="text-[11px] font-semibold text-slate-500 mt-1">Seluruh POK GG.2902</div>
         </div>
 
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-            <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Item Kegiatan</div>
-            <div class="text-2xl font-extrabold text-slate-900 mt-2">{{ number_format($stats['total_items']) }} Item</div>
-            <div class="text-[11px] text-slate-500 mt-1">Struktur 8-level POK</div>
+        {{-- Card 2: Total Items --}}
+        <div class="card-corporate p-6">
+            <div class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">TOTAL ITEM KEGIATAN</div>
+            <div class="text-2xl font-black text-slate-900 mt-2">{{ number_format($stats['total_items']) }} <span class="text-sm font-bold text-slate-500">Item</span></div>
+            <div class="text-[11px] font-semibold text-slate-500 mt-1">Struktur 8-level POK</div>
         </div>
 
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm border-l-4 border-l-emerald-600">
-            <div class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">✅ Siap Cair</div>
-            <div class="text-2xl font-extrabold text-emerald-800 mt-2">{{ $stats['approved'] }} Item</div>
-            <div class="text-[11px] text-emerald-600 mt-1">Rp {{ number_format($stats['pagu_approved'], 0, ',', '.') }}</div>
+        {{-- Card 3: Approved --}}
+        <div class="card-corporate p-6 border-l-4 border-l-emerald-600">
+            <div class="text-[11px] font-extrabold text-emerald-800 uppercase tracking-wider">✅ SIAP CAIR (APPROVED)</div>
+            <div class="text-2xl font-black text-emerald-900 mt-2">{{ $stats['approved'] }} <span class="text-sm font-bold text-emerald-700">Item</span></div>
+            <div class="text-[11px] font-extrabold text-emerald-700 font-mono mt-1">Rp {{ number_format($stats['pagu_approved'], 0, ',', '.') }}</div>
         </div>
 
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
-            <div class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">⏳ Pending</div>
-            <div class="text-2xl font-extrabold text-amber-800 mt-2">{{ $stats['pending'] }} Item</div>
-            <div class="text-[11px] text-amber-600 mt-1">Menunggu verifikasi</div>
+        {{-- Card 4: Pending --}}
+        <div class="card-corporate p-6 border-l-4 border-l-amber-500">
+            <div class="text-[11px] font-extrabold text-amber-800 uppercase tracking-wider">⏳ PENDING VERIFIKASI</div>
+            <div class="text-2xl font-black text-amber-900 mt-2">{{ $stats['pending'] }} <span class="text-sm font-bold text-amber-700">Item</span></div>
+            <div class="text-[11px] font-semibold text-amber-700 mt-1">Menunggu review Bendahara</div>
         </div>
 
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm border-l-4 border-l-red-600">
-            <div class="text-[11px] font-bold text-red-700 uppercase tracking-wider">❌ Ditolak</div>
-            <div class="text-2xl font-extrabold text-red-800 mt-2">{{ $stats['rejected'] }} Item</div>
-            <div class="text-[11px] text-red-600 mt-1">Perlu perbaikan</div>
+        {{-- Card 5: Rejected --}}
+        <div class="card-corporate p-6 border-l-4 border-l-red-600">
+            <div class="text-[11px] font-extrabold text-red-800 uppercase tracking-wider">❌ DITOLAK / REVISI</div>
+            <div class="text-2xl font-black text-red-900 mt-2">{{ $stats['rejected'] }} <span class="text-sm font-bold text-red-700">Item</span></div>
+            <div class="text-[11px] font-semibold text-red-700 mt-1">Perlu perbaikan operator</div>
         </div>
     </div>
 
-    {{-- ── RECENT DOCUMENT UPLOADS TABLE ── --}}
-    <div class="table-card-v2">
-        <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <span>📋 Item Kegiatan Terbaru (BMA.006 Sensus Ekonomi)</span>
-            </h2>
-            <a href="{{ route('items.index') }}" class="text-xs font-bold text-blue-800 hover:underline">
-                Lihat Semua Item POK →
+    {{-- ── RECENT ITEMS TABLE ── --}}
+    <div class="table-container-v4">
+        <div class="px-6 py-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <h2 class="text-sm font-extrabold text-slate-900">Item Kegiatan Terbaru</h2>
+                <span class="text-xs font-semibold text-slate-500">Sorotan modul BMA.006 Sensus Ekonomi & kegiatan POK</span>
+            </div>
+
+            <a href="{{ route('items.index') }}" class="text-xs font-extrabold text-blue-900 hover:underline flex items-center gap-1">
+                <span>Lihat Semua Directory POK</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </a>
         </div>
 
         <div class="overflow-x-auto">
-            <table>
+            <table class="table-v4">
                 <thead>
                     <tr>
-                        <th>Kode Item</th>
-                        <th>Nama Kegiatan</th>
+                        <th class="w-32 text-center">Kode Item</th>
+                        <th>Nama Kegiatan / Item POK</th>
+                        <th>Sub-Output / Akun</th>
                         <th class="text-right">Pagu Anggaran</th>
                         <th class="text-center">Dokumen</th>
                         <th class="text-center">Status</th>
-                        <th class="text-center w-36">Aksi</th>
+                        <th class="text-center w-40">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($recentItems as $item)
                     <tr>
-                        <td class="font-mono text-xs font-bold text-blue-900 bg-blue-50/60 px-3 py-2 rounded text-center">
-                            {{ $item->code }}
+                        <td class="text-center whitespace-nowrap">
+                            <span class="font-mono text-xs font-bold text-blue-900 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg">
+                                {{ $item->code }}
+                            </span>
                         </td>
                         <td>
-                            <div class="font-semibold text-slate-900 text-sm">{{ Str::limit($item->name, 55) }}</div>
-                            <div class="text-xs text-slate-500 mt-0.5">
-                                {{ $item->account->code }} — {{ Str::limit($item->account->name, 35) }}
-                            </div>
+                            <div class="font-extrabold text-slate-900 text-sm leading-snug">{{ $item->name }}</div>
+                            @if(str_contains($item->code, '001366') || str_contains($item->code, '001211'))
+                                <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded mt-1">
+                                    <span>⭐ MVP CORE FOCUS</span>
+                                </span>
+                            @endif
                         </td>
-                        <td class="text-right font-mono font-bold text-emerald-700 text-sm whitespace-nowrap">
+                        <td class="text-xs">
+                            <div class="font-bold text-slate-800">{{ $item->account->code }}</div>
+                            <div class="text-[11px] text-slate-500 truncate max-w-xs">{{ $item->account->name }}</div>
+                        </td>
+                        <td class="text-right font-mono font-bold text-emerald-800 text-sm whitespace-nowrap">
                             Rp {{ number_format($item->pagu, 0, ',', '.') }}
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            <span class="text-xs font-bold px-2.5 py-1 rounded-full {{ $item->documents->count() > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-400' }}">
+                            <span class="text-xs font-extrabold px-3 py-1 rounded-full {{ $item->documents->count() > 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-400' }}">
                                 📄 {{ $item->documents->count() }} File
                             </span>
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            <span class="badge {{ $item->status_badge_class }}">
-                                @if($item->verification_status === 'APPROVED') ✅ Siap Cair
-                                @elseif($item->verification_status === 'REJECTED') ❌ Ditolak
-                                @else ⏳ Pending
-                                @endif
-                            </span>
+                            @if($item->verification_status === 'APPROVED')
+                                <span class="badge-corp badge-corp-approved">
+                                    <span>Siap Cair</span>
+                                </span>
+                            @elseif($item->verification_status === 'REJECTED')
+                                <span class="badge-corp badge-corp-rejected">
+                                    <span>Ditolak</span>
+                                </span>
+                            @else
+                                <span class="badge-corp badge-corp-pending">
+                                    <span>Pending</span>
+                                </span>
+                            @endif
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            <a href="{{ route('items.show', $item) }}" class="btn btn-primary btn-sm">
-                                <span>Detail Workspace</span>
-                                <span>→</span>
+                            <a href="{{ route('items.show', $item) }}" class="btn-bps btn-bps-primary btn-bps-sm">
+                                <span>Workspace</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </a>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center py-12 text-slate-400">
-                            Belum ada data.
+                        <td colspan="7" class="text-center py-12 text-slate-400">
+                            Belum ada data kegiatan.
                         </td>
                     </tr>
                     @endforelse

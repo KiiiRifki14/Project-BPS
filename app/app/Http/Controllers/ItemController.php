@@ -42,6 +42,11 @@ class ItemController extends Controller
             'rejection_note.required_if'   => 'Catatan penolakan wajib diisi jika status Ditolak.',
         ]);
 
+        // 🛑 GUARD 2: Minimum 1 document required before APPROVED
+        if ($validated['action'] === 'APPROVED' && $item->documents()->count() === 0) {
+            return back()->with('error', 'Gagal menyetujui pencairan: Minimal harus ada 1 dokumen SPJ/BAPP yang terunggah sebelum dapat disetujui.');
+        }
+
         $item->update([
             'verification_status' => $validated['action'],
             'rejection_note'      => $validated['action'] === 'REJECTED' ? $validated['rejection_note'] : null,

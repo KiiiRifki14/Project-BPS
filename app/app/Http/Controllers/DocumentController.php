@@ -22,6 +22,11 @@ class DocumentController extends Controller
             abort(403, 'Hanya Operator, Supervisor, atau Admin yang dapat mengunggah dokumen.');
         }
 
+        // 🔒 GUARD 1: Block uploads to APPROVED items
+        if ($item->verification_status === 'APPROVED') {
+            return back()->with('error', 'Item ini sudah disetujui oleh Bendahara. Dokumen tidak dapat diubah lagi.');
+        }
+
         $request->validate([
             'files'          => 'required|array|min:1',
             'files.*'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:15360', // 15MB
@@ -68,7 +73,18 @@ class DocumentController extends Controller
             $uploaded++;
         }
 
-        return back()->with('success', "{$uploaded} dokumen berhasil diunggah untuk item [{$item->code}].");
+        // 🔄 STATE MACHINE: Jika item sebelumnya REJECTED, reset ke PENDING
+        // agar Bendahara dapat melakukan re-review atas dokumen perbaikan.
+        $statusNote = '';
+        if ($item->verification_status === 'REJECTED') {
+            $item->update([
+                'verification_status' => 'PENDING',
+                'rejection_note'      => null,
+            ]);
+            $statusNote = ' Status item direset ke PENDING untuk re-review Bendahara.';
+        }
+
+        return back()->with('success', "{$uploaded} dokumen berhasil diunggah untuk item [{$item->code}].{$statusNote}");
     }
 
     /**
@@ -131,20 +147,27 @@ class DocumentController extends Controller
     {
         $user = $request->user();
 
-        // Operators can only delete their own files
-        if ($user->isOperator() && $document->uploaded_by_user_id !== $user->id) {
-            abort(403, 'Anda hanya dapat menghapus dokumen yang Anda unggah sendiri.');
-        }
-
+        // 1️⃣ Cek hak akses upload/delete secara umum
         if (!$user->canUpload()) {
             abort(403, 'Anda tidak memiliki hak untuk menghapus dokumen.');
         }
 
-        // Delete from private storage
-        Storage::disk('private')->delete($document->file_path);
+        // 2️⃣ Operator hanya boleh menghapus dokumen miliknya sendiri
+        if ($user->isOperator() && $document->uploaded_by_user_id !== $user->id) {
+            abort(403, 'Anda hanya dapat menghapus dokumen yang Anda unggah sendiri.');
+        }
 
+        // 🔒 GUARD 1B: Blokir hapus jika item sudah APPROVED
+        $item = $document->item;
+        if ($item->verification_status === 'APPROVED') {
+            return back()->with('error', 'Dokumen tidak dapat dihapus karena item ini sudah disetujui oleh Bendahara.');
+        }
+
+        $fileName = $document->file_name;
+
+        // Guard 3 di Model Document::booted() akan menghapus file fisik otomatis
         $document->delete();
 
-        return back()->with('success', "Dokumen \"{$document->file_name}\" berhasil dihapus.");
+        return back()->with('success', "Dokumen \"{$fileName}\" berhasil dihapus.");
     }
 }

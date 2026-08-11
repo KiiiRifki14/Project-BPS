@@ -1,314 +1,367 @@
 @extends('layouts.app')
 @section('title', "Item {$item->code}")
-@section('page-title', "Detail Item [{$item->code}]")
 
 @section('content')
-{{-- ── BREADCRUMB ──────────────────────────────────────── --}}
-<div class="breadcrumb">
-    <a href="{{ route('dashboard') }}" style="color:#64748b;text-decoration:none;">🏠 Dashboard</a>
-    <span class="breadcrumb-sep">/</span>
-    <span>[{{ $breadcrumb['program']->code }}] {{ Str::limit($breadcrumb['program']->name, 20) }}</span>
-    <span class="breadcrumb-sep">/</span>
-    <span>[{{ $breadcrumb['output']->code }}]</span>
-    <span class="breadcrumb-sep">/</span>
-    <span>[{{ $breadcrumb['sub_output']->code }}]</span>
-    <span class="breadcrumb-sep">/</span>
-    <span>[{{ $breadcrumb['component']->code }}]</span>
-    <span class="breadcrumb-sep">/</span>
-    <span>[{{ $breadcrumb['sub_component']->code }}]</span>
-    <span class="breadcrumb-sep">/</span>
-    <span>[{{ $breadcrumb['account']->code }}]</span>
-    <span class="breadcrumb-sep">/</span>
-    <span class="current">({{ $item->code }})</span>
-</div>
+<div class="space-y-8">
 
-{{-- ── ITEM HEADER CARD ────────────────────────────────── --}}
-<div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid #e2e8f0;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.04);">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-        <div style="flex:1;min-width:260px;">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                <code style="background:#e8f0fe;color:#003087;padding:4px 10px;border-radius:6px;font-size:13px;font-weight:700;">
-                    {{ $item->code }}
-                </code>
-                <span class="badge {{ $item->status_badge_class }}" style="font-size:12px;padding:4px 12px;">
-                    @if($item->verification_status === 'APPROVED') ✅ Siap Cair
-                    @elseif($item->verification_status === 'REJECTED') ❌ Ditolak — Butuh Revisi
-                    @else ⏳ Menunggu Verifikasi
+    {{-- ── BREADCRUMB TRAIL ── --}}
+    <nav class="flex items-center gap-2 flex-wrap text-xs font-semibold text-slate-500 bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-xs">
+        <a href="{{ route('dashboard') }}" class="hover:text-blue-800 transition-colors">🏠 Dashboard</a>
+        <span class="text-slate-300">/</span>
+        <span class="font-mono text-slate-700">[{{ $breadcrumb['program']->code }}]</span>
+        <span class="text-slate-300">/</span>
+        <span class="font-mono text-slate-700">[{{ $breadcrumb['output']->code }}]</span>
+        <span class="text-slate-300">/</span>
+        <span class="font-mono text-slate-700">[{{ $breadcrumb['sub_output']->code }}]</span>
+        <span class="text-slate-300">/</span>
+        <span class="font-mono text-slate-700">[{{ $breadcrumb['component']->code }}]</span>
+        <span class="text-slate-300">/</span>
+        <span class="font-mono text-slate-700">[{{ $breadcrumb['sub_component']->code }}]</span>
+        <span class="text-slate-300">/</span>
+        <span class="font-mono text-slate-700">[{{ $breadcrumb['account']->code }}]</span>
+        <span class="text-slate-300">/</span>
+        <span class="font-mono font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Item {{ $item->code }}</span>
+    </nav>
+
+    {{-- ── ITEM HEADER CARD ── --}}
+    <div class="card-corporate p-8 relative overflow-hidden">
+        <div class="flex items-start justify-between flex-wrap gap-6">
+            <div class="flex-1 min-w-[280px]">
+                <div class="flex items-center gap-3 flex-wrap mb-3">
+                    <span class="font-mono text-xs font-extrabold text-blue-900 bg-blue-50 border border-blue-200 px-3.5 py-1 rounded-lg">
+                        KODE ITEM: {{ $item->code }}
+                    </span>
+
+                    @if($item->verification_status === 'APPROVED')
+                        <span class="badge-corp badge-corp-approved text-xs py-1 px-3">
+                            <span>Siap Cair (Approved)</span>
+                        </span>
+                    @elseif($item->verification_status === 'REJECTED')
+                        <span class="badge-corp badge-corp-rejected text-xs py-1 px-3">
+                            <span>Ditolak — Butuh Revisi</span>
+                        </span>
+                    @else
+                        <span class="badge-corp badge-corp-pending text-xs py-1 px-3">
+                            <span>Menunggu Verifikasi</span>
+                        </span>
                     @endif
-                </span>
-            </div>
-            <h1 style="font-size:17px;font-weight:700;color:#0f172a;margin:0 0 6px;">{{ $item->name }}</h1>
-            <div style="font-size:12px;color:#64748b;line-height:1.6;">
-                <span style="margin-right:12px;">📂 Akun: <strong>{{ $item->account->code }}</strong> — {{ $item->account->name }}</span><br>
-                <span>🗂 Sub-Komponen: <strong>{{ $breadcrumb['sub_component']->code }}</strong> — {{ $breadcrumb['sub_component']->name }}</span>
-            </div>
-        </div>
-        <div style="text-align:right;">
-            <div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">Pagu Anggaran</div>
-            <span class="pagu-badge" style="font-size:16px;">{{ $item->pagu_formatted }}</span>
-            <div style="font-size:11px;color:#94a3b8;margin-top:6px;">{{ $item->documents->count() }} dokumen terunggah</div>
-        </div>
-    </div>
-
-    {{-- Rejection Note --}}
-    @if($item->verification_status === 'REJECTED' && $item->rejection_note)
-    <div style="margin-top:14px;padding:12px 14px;background:#fee2e2;border-radius:8px;border-left:4px solid #dc2626;">
-        <div style="font-size:12px;font-weight:700;color:#991b1b;margin-bottom:4px;">📝 Catatan Penolakan Bendahara:</div>
-        <div style="font-size:13px;color:#7f1d1d;">{{ $item->rejection_note }}</div>
-    </div>
-    @endif
-</div>
-
-<div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
-
-{{-- ── DOKUMEN LIST ─────────────────────────────────────── --}}
-<div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <h2 style="font-size:14px;font-weight:700;color:#0f172a;">📎 Daftar Dokumen SPJ / BAPP / Kuitansi</h2>
-    </div>
-
-    {{-- Upload Form (Operator, Supervisor, Admin) --}}
-    @if(auth()->user()->canUpload())
-    <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;"
-         x-data="fileUploader()">
-
-        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:14px;">
-            ⬆️ Unggah Dokumen Baru
-        </div>
-
-        <form action="{{ route('documents.store', $item) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-
-            {{-- Dropzone Area --}}
-            <div class="dropzone" id="dropzone"
-                 @click="$refs.fileInput.click()"
-                 @dragover.prevent="isDragOver = true"
-                 @dragleave="isDragOver = false"
-                 @drop.prevent="handleDrop($event)"
-                 :class="{ 'drag-over': isDragOver }">
-                <div class="dz-icon">📂</div>
-                <div class="dz-text">Klik atau seret file ke sini</div>
-                <div class="dz-hint">PDF, JPG, PNG • Maksimal 15 MB per file • Multi-file didukung</div>
-            </div>
-
-            <input type="file" x-ref="fileInput" name="files[]" multiple
-                   accept=".pdf,.jpg,.jpeg,.png" class="hidden" style="display:none;"
-                   @change="handleFiles($event.target.files)">
-
-            {{-- File Preview List --}}
-            <div x-show="files.length > 0" style="margin-top:14px;" x-transition>
-                <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">
-                    File dipilih (<span x-text="files.length"></span>):
                 </div>
-                <template x-for="(file, index) in files" :key="index">
-                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f8fafc;border-radius:8px;margin-bottom:6px;border:1px solid #e2e8f0;">
-                        <span x-text="fileIcon(file.name)" style="font-size:18px;"></span>
-                        <div style="flex:1;min-width:0;">
-                            <div style="font-size:12.5px;font-weight:500;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" x-text="file.name"></div>
-                            <div style="font-size:11px;color:#94a3b8;" x-text="formatSize(file.size)"></div>
-                        </div>
-                        <input type="text" :name="'labels[' + index + ']'"
-                               placeholder="Label (misal: BAPP Honor)"
-                               class="form-input" style="width:180px;padding:5px 8px;font-size:12px;">
-                        <button type="button" @click="removeFile(index)"
-                                style="color:#dc2626;font-size:18px;cursor:pointer;background:none;border:none;padding:0;">×</button>
-                    </div>
-                </template>
 
-                <button type="submit" class="btn btn-primary" style="margin-top:10px;width:100%;"
-                        x-text="'⬆️ Unggah ' + files.length + ' Dokumen ke Sistem'">
-                </button>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-2">{{ $item->name }}</h1>
+
+                <div class="text-xs text-slate-600 space-y-1">
+                    <div>📂 Akun: <strong class="font-mono text-slate-800">{{ $item->account->code }}</strong> — {{ $item->account->name }}</div>
+                    <div>🗂 Sub-Komponen: <strong class="font-mono text-slate-800">{{ $breadcrumb['sub_component']->code }}</strong> — {{ $breadcrumb['sub_component']->name }}</div>
+                </div>
             </div>
-        </form>
-    </div>
-    @endif
 
-    {{-- Documents Table --}}
-    <div class="table-card">
-        <div style="padding:14px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:13px;font-weight:600;color:#374151;">Dokumen Tersimpan</span>
-            <span style="font-size:12px;color:#64748b;">{{ $item->documents->count() }} file</span>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Nama File</th>
-                    <th>Label</th>
-                    <th>Ukuran</th>
-                    <th>Diunggah oleh</th>
-                    <th>Tanggal</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($item->documents as $i => $doc)
-                <tr>
-                    <td style="color:#94a3b8;font-size:12px;">{{ $i + 1 }}</td>
-                    <td>
-                        <div style="display:flex;align-items:center;gap:7px;">
-                            <span style="font-size:18px;">
-                                @if($doc->isPdf()) 📄
-                                @else 🖼️
-                                @endif
-                            </span>
-                            <div>
-                                <div style="font-weight:500;color:#1e293b;font-size:12.5px;">{{ $doc->file_name }}</div>
-                                <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;">{{ $doc->file_type }}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        @if($doc->label)
-                            <span style="background:#e8f0fe;color:#003087;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500;">{{ $doc->label }}</span>
-                        @else
-                            <span style="color:#cbd5e1;font-size:12px;">—</span>
-                        @endif
-                    </td>
-                    <td style="font-size:12px;color:#64748b;">{{ $doc->file_size_formatted }}</td>
-                    <td style="font-size:12px;color:#64748b;">{{ $doc->uploadedBy->name }}</td>
-                    <td style="font-size:11.5px;color:#94a3b8;">{{ $doc->created_at->format('d/m/Y H:i') }}</td>
-                    <td>
-                        <div style="display:flex;gap:5px;flex-wrap:wrap;">
-                            {{-- Preview Button (opens modal) --}}
-                            <button type="button"
-                                    @click="openPreview('{{ route('documents.stream', $doc) }}', '{{ addslashes($doc->file_name) }}', '{{ $doc->file_type }}')"
-                                    class="btn btn-secondary btn-sm"
-                                    x-data>
-                                👁️ Preview
-                            </button>
-
-                            {{-- Download --}}
-                            <a href="{{ route('documents.download', $doc) }}" class="btn btn-secondary btn-sm">
-                                ⬇️
-                            </a>
-
-                            {{-- Delete --}}
-                            @if(auth()->user()->canUpload() && (auth()->user()->isAdmin() || auth()->user()->isSupervisor() || $doc->uploaded_by_user_id === auth()->id()))
-                            <form action="{{ route('documents.destroy', $doc) }}" method="POST"
-                                  onsubmit="return confirm('Hapus dokumen ini?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
-                            </form>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="7" style="text-align:center;padding:32px;color:#94a3b8;">
-                        📂 Belum ada dokumen. Unggah dokumen SPJ, BAPP, atau Kuitansi di atas.
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
-
-{{-- ── BENDAHARA VERIFICATION PANEL ──────────────────────── --}}
-<div style="position:sticky;top:76px;">
-    <div style="background:#fff;border-radius:14px;border:1px solid #e2e8f0;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.04);">
-        <div style="font-size:13.5px;font-weight:700;color:#0f172a;margin-bottom:4px;">🏦 Panel Verifikasi Pencairan</div>
-        <div style="font-size:12px;color:#64748b;margin-bottom:16px;">Khusus Bendahara & Admin</div>
-
-        {{-- Current Status Display --}}
-        <div style="padding:14px;background:#f8fafc;border-radius:10px;margin-bottom:16px;text-align:center;">
-            <div style="font-size:11px;color:#64748b;margin-bottom:6px;">Status Saat Ini</div>
-            <span class="badge {{ $item->status_badge_class }}" style="font-size:14px;padding:8px 18px;">
-                @if($item->verification_status === 'APPROVED') ✅ Siap Cair
-                @elseif($item->verification_status === 'REJECTED') ❌ Ditolak
-                @else ⏳ Menunggu Verifikasi
-                @endif
-            </span>
-        </div>
-
-        @if(auth()->user()->canVerify())
-        <div x-data="{ showRejectForm: false }">
-
-            {{-- Approve Button --}}
-            <form action="{{ route('items.verify', $item) }}" method="POST" style="margin-bottom:10px;"
-                  onsubmit="return confirm('Setujui pencairan item {{ $item->code }}?\nPastikan semua dokumen telah diperiksa.')">
-                @csrf @method('PATCH')
-                <input type="hidden" name="action" value="APPROVED">
-                <button type="submit" class="btn btn-success" style="width:100%;">
-                    ✅ Setujui Pencairan
-                </button>
-            </form>
-
-            {{-- Reject Button / Form --}}
-            <button type="button" class="btn btn-danger" style="width:100%;margin-bottom:10px;"
-                    @click="showRejectForm = !showRejectForm">
-                ❌ Tolak / Butuh Revisi
-            </button>
-
-            <div x-show="showRejectForm" x-transition style="background:#fee2e2;padding:14px;border-radius:10px;">
-                <form action="{{ route('items.verify', $item) }}" method="POST">
-                    @csrf @method('PATCH')
-                    <input type="hidden" name="action" value="REJECTED">
-                    <label class="form-label" style="color:#991b1b;">Catatan Penolakan *</label>
-                    <textarea name="rejection_note" rows="3" class="form-input" required
-                              placeholder="Contoh: BAPP belum ditandatangani PPK, Kuitansi kurang legalisir..."
-                              style="font-size:12.5px;resize:vertical;"></textarea>
-                    <button type="submit" class="btn btn-danger" style="margin-top:8px;width:100%;">
-                        Kirim Penolakan
-                    </button>
-                </form>
+            <div class="text-right">
+                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Pagu Anggaran</div>
+                <div class="text-2xl font-black text-emerald-800 font-mono tracking-tight">{{ $item->pagu_formatted }}</div>
+                <div class="text-xs font-semibold text-slate-500 mt-1">{{ $item->documents->count() }} dokumen terunggah</div>
             </div>
         </div>
-        @else
-        <div style="text-align:center;padding:16px;color:#94a3b8;font-size:12.5px;">
-            🔒 Hanya Bendahara atau Admin yang dapat melakukan verifikasi.
+
+        {{-- Rejection Note Alert --}}
+        @if($item->verification_status === 'REJECTED' && $item->rejection_note)
+        <div class="mt-6 p-4 rounded-xl bg-red-50 border-l-4 border-l-red-600 border border-red-200">
+            <div class="flex items-center gap-2 text-xs font-black text-red-900 uppercase tracking-wider mb-1">
+                <span>📝 Catatan Penolakan Bendahara:</span>
+            </div>
+            <div class="text-sm font-semibold text-red-800 leading-relaxed">{{ $item->rejection_note }}</div>
         </div>
         @endif
     </div>
 
-    {{-- Document Stats --}}
-    <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:16px;margin-top:14px;">
-        <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:10px;">📊 Ringkasan Dokumen</div>
-        @php
-            $pdfCount = $item->documents->filter(fn($d) => $d->isPdf())->count();
-            $imgCount = $item->documents->filter(fn($d) => $d->isImage())->count();
-            $totalSize = $item->documents->sum('file_size');
-        @endphp
-        <div style="display:flex;flex-direction:column;gap:8px;">
-            <div style="display:flex;justify-content:space-between;font-size:12.5px;">
-                <span style="color:#64748b;">📄 File PDF</span>
-                <strong>{{ $pdfCount }}</strong>
+    {{-- ── MAIN WORKSPACE GRID ── --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+        {{-- LEFT COLUMN: DOCUMENT LIST & DROPZONE --}}
+        <div class="lg:col-span-2 space-y-6">
+
+            {{-- Upload Dropzone Form --}}
+            @if(auth()->user()->canUpload())
+            <div class="card-corporate p-6" x-data="fileUploader()">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        <span>Unggah Dokumen SPJ Baru</span>
+                    </h2>
+                    <span class="text-xs font-semibold text-slate-500">PDF, JPG, PNG • Max 15MB</span>
+                </div>
+
+                @if($item->verification_status === 'APPROVED')
+                    <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold flex items-center gap-2">
+                        <span>🔒</span>
+                        <span>Item sudah disetujui Bendahara. Dokumen terkunci dan tidak dapat ditambahkan lagi.</span>
+                    </div>
+                @else
+                    <form action="{{ route('documents.store', $item) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+
+                        {{-- Dropzone Container --}}
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-blue-50/50 hover:border-blue-700 cursor-pointer transition-all"
+                             @click="$refs.fileInput.click()"
+                             @dragover.prevent="isDragOver = true"
+                             @dragleave="isDragOver = false"
+                             @drop.prevent="handleDrop($event)">
+                            <div class="w-12 h-12 rounded-xl bg-blue-100 border border-blue-200 text-blue-800 flex items-center justify-center mx-auto mb-3 text-xl">
+                                📂
+                            </div>
+                            <div class="text-sm font-extrabold text-slate-800">Klik atau seret file dokumen ke sini</div>
+                            <div class="text-xs font-medium text-slate-500 mt-1">PDF, JPG, PNG • Maksimal 15 MB per file • Multi-file didukung</div>
+                        </div>
+
+                        <input type="file" x-ref="fileInput" name="files[]" multiple
+                               accept=".pdf,.jpg,.jpeg,.png" class="hidden" style="display:none;"
+                               @change="handleFiles($event.target.files)">
+
+                        {{-- Selected Files Preview List --}}
+                        <div x-show="files.length > 0" class="mt-5 space-y-3" x-transition>
+                            <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                File Dipilih (<span x-text="files.length"></span>):
+                            </div>
+
+                            <template x-for="(file, index) in files" :key="index">
+                                <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                    <span x-text="fileIcon(file.name)" class="text-xl"></span>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-xs font-bold text-slate-800 truncate" x-text="file.name"></div>
+                                        <div class="text-[10px] text-slate-500 font-mono" x-text="formatSize(file.size)"></div>
+                                    </div>
+                                    <input type="text" :name="'labels[' + index + ']'"
+                                           placeholder="Label (misal: BAPP / Kuitansi)"
+                                           class="form-input-v4 text-xs py-1.5 w-44">
+                                    <button type="button" @click="removeFile(index)"
+                                            class="text-red-600 hover:text-red-800 font-bold text-lg px-2">×</button>
+                                </div>
+                            </template>
+
+                            <button type="submit" class="btn-bps btn-bps-primary w-full py-3 text-sm">
+                                <span>⬆️ Unggah</span>
+                                <span x-text="files.length"></span>
+                                <span>Dokumen ke Sistem</span>
+                            </button>
+                        </div>
+                    </form>
+                @endif
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:12.5px;">
-                <span style="color:#64748b;">🖼️ File Gambar</span>
-                <strong>{{ $imgCount }}</strong>
+            @endif
+
+            {{-- Uploaded Documents Table --}}
+            <div class="table-container-v4">
+                <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                    <h2 class="text-sm font-extrabold text-slate-900">Dokumen Tersimpan</h2>
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-200 text-slate-700 font-mono">
+                        {{ $item->documents->count() }} File
+                    </span>
+                </div>
+
+                <table class="table-v4">
+                    <thead>
+                        <tr>
+                            <th class="w-10 text-center">#</th>
+                            <th>Nama File Dokumen</th>
+                            <th>Label Kuitansi/BAPP</th>
+                            <th>Ukuran</th>
+                            <th>Diunggah Oleh</th>
+                            <th class="text-center w-36">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($item->documents as $i => $doc)
+                        <tr>
+                            <td class="text-center text-xs font-mono text-slate-400">{{ $i + 1 }}</td>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xl">
+                                        @if($doc->isPdf()) 📄 @else 🖼️ @endif
+                                    </span>
+                                    <div class="min-w-0">
+                                        <div class="font-bold text-slate-900 text-xs truncate max-w-xs">{{ $doc->file_name }}</div>
+                                        <div class="text-[10px] text-slate-500 font-mono uppercase">{{ $doc->file_type }} • {{ $doc->created_at->format('d/m/Y H:i') }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if($doc->label)
+                                    <span class="font-semibold text-xs text-blue-900 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded">
+                                        {{ $doc->label }}
+                                    </span>
+                                @else
+                                    <span class="text-slate-300 text-xs">—</span>
+                                @endif
+                            </td>
+                            <td class="text-xs font-mono text-slate-600 whitespace-nowrap">{{ $doc->file_size_formatted }}</td>
+                            <td class="text-xs text-slate-600 whitespace-nowrap">{{ $doc->uploadedBy->name }}</td>
+                            <td class="text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-1.5" x-data>
+                                    {{-- Stream Inline Preview Modal Button --}}
+                                    <button type="button"
+                                            @click="openPreview('{{ route('documents.stream', $doc) }}', '{{ addslashes($doc->file_name) }}', '{{ $doc->file_type }}')"
+                                            class="btn-bps btn-bps-secondary btn-bps-sm">
+                                        👁️ Preview
+                                    </button>
+
+                                    {{-- Download Button --}}
+                                    <a href="{{ route('documents.download', $doc) }}" class="btn-bps btn-bps-secondary btn-bps-sm">
+                                        ⬇️
+                                    </a>
+
+                                    {{-- Delete Button --}}
+                                    @if($item->verification_status !== 'APPROVED' && auth()->user()->canUpload() && (auth()->user()->isAdmin() || auth()->user()->isSupervisor() || $doc->uploaded_by_user_id === auth()->id()))
+                                    <form action="{{ route('documents.destroy', $doc) }}" method="POST"
+                                          onsubmit="return confirm('Hapus dokumen ini?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn-bps btn-bps-danger btn-bps-sm">🗑️</button>
+                                    </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-14 text-slate-400">
+                                <div class="text-3xl mb-2">📂</div>
+                                <div class="font-extrabold text-slate-700 text-sm">Belum ada dokumen yang diunggah</div>
+                                <div class="text-xs text-slate-400 mt-1">Unggah dokumen SPJ, BAPP, atau Kuitansi pada form di atas.</div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:12.5px;">
-                <span style="color:#64748b;">💾 Total Ukuran</span>
-                <strong>{{ $totalSize > 0 ? round($totalSize / 1048576, 2) . ' MB' : '0 KB' }}</strong>
-            </div>
+
         </div>
+
+        {{-- RIGHT COLUMN: BENDAHARA ACTION CONTROL PANEL --}}
+        <div class="space-y-6 lg:sticky lg:top-24">
+
+            {{-- Verification Card --}}
+            <div class="card-corporate p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-9 h-9 rounded-xl bg-amber-100 border border-amber-200 text-amber-800 flex items-center justify-center font-bold text-lg">
+                        🏦
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-extrabold text-slate-900">Panel Verifikasi Bendahara</h2>
+                        <span class="text-xs text-slate-500">Khusus Bendahara & Admin</span>
+                    </div>
+                </div>
+
+                {{-- Status Display Pill --}}
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 mb-5 text-center">
+                    <div class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">STATUS VERIFIKASI SAAT INI</div>
+                    @if($item->verification_status === 'APPROVED')
+                        <span class="badge-corp badge-corp-approved text-sm py-1.5 px-4">
+                            <span>✅ Siap Cair (Approved)</span>
+                        </span>
+                    @elseif($item->verification_status === 'REJECTED')
+                        <span class="badge-corp badge-corp-rejected text-sm py-1.5 px-4">
+                            <span>❌ Ditolak (Revisi)</span>
+                        </span>
+                    @else
+                        <span class="badge-corp badge-corp-pending text-sm py-1.5 px-4">
+                            <span>⏳ Menunggu Verifikasi</span>
+                        </span>
+                    @endif
+                </div>
+
+                @if(auth()->user()->canVerify())
+                <div x-data="{ showRejectForm: false }" class="space-y-3">
+                    {{-- Approve Action --}}
+                    <form action="{{ route('items.verify', $item) }}" method="POST"
+                          onsubmit="return confirm('Setujui pencairan item {{ $item->code }}?\nPastikan dokumen SPJ telah diperiksa.')">
+                        @csrf @method('PATCH')
+                        <input type="hidden" name="action" value="APPROVED">
+                        <button type="submit" class="btn-bps btn-bps-success w-full py-3 text-sm">
+                            <span>✅ Setujui Pencairan (Approved)</span>
+                        </button>
+                    </form>
+
+                    {{-- Reject Action Toggle --}}
+                    <button type="button" class="btn-bps btn-bps-danger w-full py-3 text-sm"
+                            @click="showRejectForm = !showRejectForm">
+                        <span>❌ Tolak / Minta Revisi</span>
+                    </button>
+
+                    {{-- Rejection Form --}}
+                    <div x-show="showRejectForm" x-transition class="p-4 rounded-xl bg-red-50 border border-red-200">
+                        <form action="{{ route('items.verify', $item) }}" method="POST" class="space-y-3">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="action" value="REJECTED">
+                            <label class="form-label-custom text-red-900">Catatan Penolakan *</label>
+                            <textarea name="rejection_note" rows="3" class="form-input-v4 text-xs" required
+                                      placeholder="Contoh: BAPP belum ditandatangani PPK, Kuitansi kurang legalisir..."></textarea>
+                            <button type="submit" class="btn-bps btn-bps-danger w-full py-2.5 text-xs">
+                                Kirim Penolakan Ke Operator
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @else
+                <div class="p-4 rounded-xl bg-slate-100 text-center text-xs font-semibold text-slate-500">
+                    🔒 Hanya Bendahara atau Admin yang dapat melakukan verifikasi pencairan.
+                </div>
+                @endif
+            </div>
+
+            {{-- Document Analytics Summary --}}
+            <div class="card-corporate p-6">
+                <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-4">RINGKASAN BERKAS</h3>
+                @php
+                    $pdfCount = $item->documents->filter(fn($d) => $d->isPdf())->count();
+                    $imgCount = $item->documents->filter(fn($d) => $d->isImage())->count();
+                    $totalSize = $item->documents->sum('file_size');
+                @endphp
+                <div class="space-y-3 text-xs">
+                    <div class="flex justify-between items-center text-slate-600">
+                        <span>📄 File Dokumen PDF</span>
+                        <span class="font-mono font-bold text-slate-900">{{ $pdfCount }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-slate-600">
+                        <span>🖼️ File Dokumen Gambar</span>
+                        <span class="font-mono font-bold text-slate-900">{{ $imgCount }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-slate-600 border-t border-slate-200 pt-2">
+                        <span>💾 Total Ukuran Berkas</span>
+                        <span class="font-mono font-bold text-blue-900">{{ $totalSize > 0 ? round($totalSize / 1048576, 2) . ' MB' : '0 KB' }}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
     </div>
+
 </div>
 
-</div>{{-- end grid --}}
-
-{{-- ── PDF PREVIEW MODAL ─────────────────────────────────── --}}
+{{-- ── INLINE STREAM PDF PREVIEW MODAL ── --}}
 <div x-data="previewModal()" x-show="open" x-transition
-     class="modal-backdrop" style="display:none;">
-    <div class="modal-box">
-        <div class="modal-header">
-            <div>
-                <div style="font-size:14px;font-weight:700;color:#0f172a;" x-text="fileName"></div>
-                <div style="font-size:11.5px;color:#64748b;margin-top:2px;">Pratinjau Dokumen — Sistem Arsip Keuangan BPS</div>
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" style="display:none;">
+
+    {{-- Backdrop --}}
+    <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm" @click="close()"></div>
+
+    {{-- Modal Box --}}
+    <div class="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden z-10 border border-slate-700 flex flex-col max-h-[90vh]">
+        <div class="px-6 py-4 bg-[#001F54] text-white flex items-center justify-between border-b border-slate-700">
+            <div class="min-w-0 pr-4">
+                <div class="text-sm font-extrabold truncate" x-text="fileName"></div>
+                <div class="text-[11px] font-semibold text-slate-300 mt-0.5">Pratinjau Dokumen Inline — BPS Kabupaten Subang</div>
             </div>
-            <button type="button" @click="close()"
-                    style="font-size:22px;color:#64748b;background:none;border:none;cursor:pointer;padding:4px 8px;">×</button>
+            <button type="button" @click="close()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-lg font-bold">
+                ×
+            </button>
         </div>
-        <div class="modal-body">
+
+        <div class="flex-1 bg-slate-950 overflow-hidden relative min-h-[70vh]">
             <template x-if="fileType === 'pdf'">
-                <iframe :src="fileUrl" class="modal-iframe" title="PDF Viewer"></iframe>
+                <iframe :src="fileUrl" class="w-full h-full min-h-[70vh] border-0" title="PDF Stream Viewer"></iframe>
             </template>
             <template x-if="fileType !== 'pdf'">
-                <div style="display:flex;align-items:center;justify-content:center;height:75vh;background:#f8fafc;">
-                    <img :src="fileUrl" style="max-width:100%;max-height:100%;object-fit:contain;" :alt="fileName">
+                <div class="flex items-center justify-center h-full min-h-[70vh] p-4 bg-slate-900">
+                    <img :src="fileUrl" class="max-w-full max-h-[70vh] object-contain rounded-lg" :alt="fileName">
                 </div>
             </template>
         </div>
@@ -318,7 +371,6 @@
 
 @push('scripts')
 <script>
-// File uploader Alpine.js component
 function fileUploader() {
     return {
         files: [],
@@ -332,7 +384,6 @@ function fileUploader() {
                     alert(`File "${f.name}" melebihi batas 15 MB.`);
                 }
             });
-            // Sync to actual input
             this.syncInput();
         },
 
@@ -364,7 +415,6 @@ function fileUploader() {
     };
 }
 
-// PDF/Image preview modal
 function previewModal() {
     return {
         open: false,
@@ -386,10 +436,8 @@ function previewModal() {
     };
 }
 
-// Global handler for preview button clicks
 document.addEventListener('alpine:init', () => {
     window.openPreview = (url, name, type) => {
-        // Dispatch to modal
         document.querySelector('[x-data="previewModal()"]')?._x_dataStack?.[0]?.openPreview(url, name, type);
     };
 });

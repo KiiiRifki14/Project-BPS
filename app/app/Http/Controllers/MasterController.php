@@ -22,8 +22,8 @@ class MasterController extends Controller
         $subOutputs  = SubOutput::with('output.program')->orderBy('code')->get();
         $components  = Component::with('subOutput')->orderBy('code')->get();
         $subComponents = SubComponent::with('component')->orderBy('code')->get();
-        $accounts    = Account::with('subComponent.component.subOutput')->orderBy('code')->get();
-        $items       = Item::with('account.subComponent.component.subOutput')->orderBy('code')->get();
+        $accounts    = Account::with('subComponent.component.subOutput')->orderBy('code')->paginate(10, ['*'], 'accounts_page');
+        $items       = Item::with('account.subComponent.component.subOutput')->orderBy('code')->paginate(10, ['*'], 'items_page');
 
         return view('master.index', compact(
             'fiscalYears', 'programs', 'outputs', 'subOutputs',

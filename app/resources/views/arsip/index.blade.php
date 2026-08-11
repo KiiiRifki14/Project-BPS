@@ -2,15 +2,24 @@
 @section('title', 'Arsip Keuangan POK')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-8">
 
-    {{-- ── TOP SECTION: PROMINENT INSTANT SEARCH (SEARCH-FIRST) ── --}}
-    <div style="background: linear-gradient(135deg, #001F54 0%, #003087 100%);" class="rounded-2xl p-6 text-white shadow-lg">
+    {{-- ── TOP HERO SECTION: INSTANT SEARCH (SEARCH-FIRST DIRECTORY) ── --}}
+    <div class="rounded-2xl bg-[#001F54] p-8 text-white shadow-lg">
         <div class="max-w-3xl">
-            <h1 class="text-xl font-extrabold tracking-tight mb-1">🔍 Browser Arsip Keuangan POK</h1>
-            <p class="text-xs text-blue-100 mb-4">Cari instan berdasarkan Kode Item (misal: 001366), Kode Akun (521213), atau Kata Kunci Kegiatan.</p>
-            
-            <form method="GET" action="{{ route('items.index') }}" class="flex gap-2">
+            <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-blue-200 font-extrabold text-xs px-3.5 py-1.5 rounded-lg mb-3">
+                <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <span>SEARCH-FIRST DIRECTORY BROWSER</span>
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                Browser Arsip Keuangan POK
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-200 font-medium mt-1 mb-6 leading-relaxed">
+                Temukan cepat dokumen SPJ & kegiatan berdasarkan Kode Item (misal: <span class="font-mono text-amber-300 font-bold">001366</span>), Kode Akun (<span class="font-mono text-amber-300 font-bold">521213</span>), atau Kata Kunci Kegiatan.
+            </p>
+
+            <form method="GET" action="{{ route('items.index') }}" class="flex flex-col sm:flex-row gap-3">
                 @if($filter) <input type="hidden" name="filter" value="{{ $filter }}"> @endif
                 @if($subOutputId) <input type="hidden" name="sub_output_id" value="{{ $subOutputId }}"> @endif
 
@@ -18,35 +27,51 @@
                     <input type="text"
                            name="search"
                            value="{{ $search }}"
-                           placeholder="Ketik Kode Item (misal: 001366), Kode Akun, atau Nama Kegiatan..."
-                           class="w-full pl-11 pr-4 py-3 bg-white text-slate-800 rounded-xl border-0 shadow-inner focus:ring-4 focus:ring-amber-400 text-sm font-medium outline-none">
-                    <span class="absolute left-3.5 top-3.5 text-slate-400 text-base">🔍</span>
+                           placeholder="Ketik Kode Item (001366), Kode Akun, atau Nama Kegiatan..."
+                           class="w-full pl-12 pr-4 py-3.5 bg-white text-slate-900 rounded-xl border border-slate-300 shadow-inner text-sm font-medium outline-none placeholder-slate-400">
+                    <span class="absolute left-4 top-3.5 text-slate-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </span>
                 </div>
-                
-                <button type="submit" class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold rounded-xl shadow-md transition-all text-sm">
-                    Cari Item
-                </button>
-                @if($search || $subOutputId || $outputId || $programId || $filter)
-                    <a href="{{ route('items.index') }}" class="px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl text-sm transition-all flex items-center">
-                        Reset
-                    </a>
-                @endif
+
+                <div class="flex gap-2">
+                    <button type="submit" class="btn-bps bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-sm px-6 py-3.5">
+                        Cari Item
+                    </button>
+                    @if($search || $subOutputId || $outputId || $programId || $filter)
+                        <a href="{{ route('items.index') }}" class="btn-bps btn-bps-secondary text-sm px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white border-white/20">
+                            Reset
+                        </a>
+                    @endif
+                </div>
             </form>
         </div>
     </div>
 
     {{-- ── MIDDLE SECTION: CASCADING FILTER DROPDOWNS ── --}}
-    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">📁 Cascading Directory Filter (Navigasi Manual)</div>
-        
+    <div class="card-corporate p-6">
+        <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-900"></span>
+                <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider">CASCADING DIRECTORY FILTER (NAVIGASI 3 TINGKAT)</h2>
+            </div>
+            @if($selectedSubOutput)
+                <div class="inline-flex items-center gap-2 text-xs font-extrabold text-blue-900 bg-blue-50 px-3.5 py-1.5 rounded-lg border border-blue-200">
+                    <span>📌 Sub-Output Aktif:</span>
+                    <span class="font-mono text-blue-800">[{{ $selectedSubOutput->code }}]</span>
+                    <span>{{ Str::limit($selectedSubOutput->name, 30) }}</span>
+                </div>
+            @endif
+        </div>
+
         <form method="GET" action="{{ route('items.index') }}" id="cascadingFilterForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             @if($search) <input type="hidden" name="search" value="{{ $search }}"> @endif
             @if($filter) <input type="hidden" name="filter" value="{{ $filter }}"> @endif
 
             {{-- Dropdown 1: Program --}}
             <div>
-                <label class="form-label text-xs">Pilih Program</label>
-                <select name="program_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input text-xs font-medium">
+                <label class="form-label-custom">Pilih Program</label>
+                <select name="program_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input-v4 text-xs font-semibold">
                     <option value="">-- Semua Program --</option>
                     @foreach($programs as $p)
                         <option value="{{ $p->id }}" {{ $programId == $p->id ? 'selected' : '' }}>
@@ -58,8 +83,8 @@
 
             {{-- Dropdown 2: Output --}}
             <div>
-                <label class="form-label text-xs">Pilih Output</label>
-                <select name="output_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input text-xs font-medium">
+                <label class="form-label-custom">Pilih Output</label>
+                <select name="output_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input-v4 text-xs font-semibold">
                     <option value="">-- Semua Output --</option>
                     @foreach($outputs as $o)
                         <option value="{{ $o->id }}" {{ $outputId == $o->id ? 'selected' : '' }}>
@@ -71,8 +96,8 @@
 
             {{-- Dropdown 3: Sub-Output --}}
             <div>
-                <label class="form-label text-xs">Pilih Sub-Output</label>
-                <select name="sub_output_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input text-xs font-medium">
+                <label class="form-label-custom">Pilih Sub-Output</label>
+                <select name="sub_output_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input-v4 text-xs font-semibold">
                     <option value="">-- Semua Sub-Output --</option>
                     @foreach($subOutputs as $so)
                         <option value="{{ $so->id }}" {{ $subOutputId == $so->id ? 'selected' : '' }}>
@@ -84,110 +109,116 @@
         </form>
 
         {{-- Quick Filter Pills --}}
-        <div class="flex items-center justify-between flex-wrap gap-3 mt-4 pt-4 border-t border-slate-100">
+        <div class="flex items-center justify-between flex-wrap gap-3 mt-6 pt-5 border-t border-slate-100">
             <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs font-semibold text-slate-500">Filter Status:</span>
+                <span class="text-xs font-bold text-slate-500 mr-1">Filter Status Verifikasi:</span>
+
                 <a href="{{ route('items.index', request()->except('filter')) }}"
-                   class="px-3 py-1 rounded-full text-xs font-semibold {{ !$filter ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                   class="btn-bps btn-bps-sm {{ !$filter ? 'btn-bps-primary' : 'btn-bps-secondary' }}">
                     Semua ({{ $stats['total'] }})
                 </a>
+
                 <a href="{{ route('items.index', array_merge(request()->query(), ['filter' => 'pending'])) }}"
-                   class="px-3 py-1 rounded-full text-xs font-semibold {{ $filter === 'pending' ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-800 hover:bg-amber-100' }}">
-                    ⏳ Menunggu ({{ $stats['pending'] }})
+                   class="btn-bps btn-bps-sm {{ $filter === 'pending' ? 'bg-amber-500 text-slate-950 font-black' : 'bg-amber-50 text-amber-900 border border-amber-200' }}">
+                    ⏳ Pending ({{ $stats['pending'] }})
                 </a>
+
                 <a href="{{ route('items.index', array_merge(request()->query(), ['filter' => 'approved'])) }}"
-                   class="px-3 py-1 rounded-full text-xs font-semibold {{ $filter === 'approved' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100' }}">
+                   class="btn-bps btn-bps-sm {{ $filter === 'approved' ? 'btn-bps-success' : 'bg-emerald-50 text-emerald-900 border border-emerald-200' }}">
                     ✅ Siap Cair ({{ $stats['approved'] }})
                 </a>
+
                 <a href="{{ route('items.index', array_merge(request()->query(), ['filter' => 'rejected'])) }}"
-                   class="px-3 py-1 rounded-full text-xs font-semibold {{ $filter === 'rejected' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-800 hover:bg-red-100' }}">
+                   class="btn-bps btn-bps-sm {{ $filter === 'rejected' ? 'btn-bps-danger' : 'bg-red-50 text-red-900 border border-red-200' }}">
                     ❌ Ditolak ({{ $stats['rejected'] }})
                 </a>
             </div>
-
-            @if($selectedSubOutput)
-                <div class="text-xs font-bold text-blue-900 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200">
-                    📌 Sub-Output Aktif: [{{ $selectedSubOutput->code }}] {{ $selectedSubOutput->name }}
-                </div>
-            @endif
         </div>
     </div>
 
-    {{-- ── MAIN SECTION: CLEAN DATA TABLE LISTING ITEMS ── --}}
-    <div class="table-card-v2">
-        <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <span>📋 Daftar Item Kegiatan POK</span>
-                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800">
+    {{-- ── MAIN SECTION: DATA TABLE ── --}}
+    <div class="table-container-v4">
+        <div class="px-6 py-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <h2 class="text-sm font-extrabold text-slate-900">Daftar Item Kegiatan POK</h2>
+                <span class="text-xs font-bold px-3 py-1 rounded-full bg-blue-100 border border-blue-200 text-blue-900 font-mono">
                     {{ $items->total() }} Item Ditemukan
                 </span>
-            </h2>
+            </div>
         </div>
 
         <div class="overflow-x-auto">
-            <table>
+            <table class="table-v4">
                 <thead>
                     <tr>
-                        <th class="w-28">Kode Item</th>
-                        <th>Nama Item Kegiatan</th>
+                        <th class="w-32 text-center">Kode Item</th>
+                        <th>Nama Kegiatan / Item POK</th>
                         <th>Akun / Sub-Output</th>
                         <th class="text-right">Pagu Anggaran</th>
-                        <th class="text-center">Berkas</th>
+                        <th class="text-center">Berkas SPJ</th>
                         <th class="text-center">Status Verifikasi</th>
-                        <th class="text-center w-36">Aksi</th>
+                        <th class="text-center w-40">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($items as $item)
                     <tr>
-                        <td class="font-mono text-xs font-bold text-blue-900 bg-blue-50/50 px-3 py-2 rounded text-center">
-                            {{ $item->code }}
+                        <td class="text-center whitespace-nowrap">
+                            <span class="font-mono text-xs font-bold text-blue-900 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg">
+                                {{ $item->code }}
+                            </span>
                         </td>
                         <td>
-                            <div class="font-semibold text-slate-900 text-sm mb-0.5">{{ $item->name }}</div>
+                            <div class="font-extrabold text-slate-900 text-sm leading-snug mb-0.5">{{ $item->name }}</div>
                             @if(str_contains($item->code, '001366') || str_contains($item->code, '001211'))
-                                <span class="inline-block bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-md">
-                                    ⭐ MVP CORE FOCUS
+                                <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded">
+                                    <span>⭐ MVP CORE FOCUS</span>
                                 </span>
                             @endif
                         </td>
-                        <td class="text-xs text-slate-600">
-                            <div class="font-semibold text-slate-800">Akun {{ $item->account->code }}</div>
+                        <td class="text-xs">
+                            <div class="font-bold text-slate-800">Akun {{ $item->account->code }}</div>
                             <div class="text-[11px] text-slate-500 truncate max-w-xs">{{ $item->account->name }}</div>
-                            <div class="text-[10px] font-mono text-blue-700 mt-0.5">
+                            <div class="text-[10px] font-mono text-blue-800 mt-0.5">
                                 {{ $item->account->subComponent->component->subOutput->code }}
                             </div>
                         </td>
-                        <td class="text-right font-mono font-bold text-emerald-700 text-sm whitespace-nowrap">
+                        <td class="text-right font-mono font-bold text-emerald-800 text-sm whitespace-nowrap">
                             Rp {{ number_format($item->pagu, 0, ',', '.') }}
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            <span class="text-xs font-bold {{ $item->documents->count() > 0 ? 'text-emerald-600 bg-emerald-50 border border-emerald-200' : 'text-slate-400 bg-slate-100' }} px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                            <span class="text-xs font-extrabold px-3 py-1 rounded-full {{ $item->documents->count() > 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-400' }}">
                                 📄 {{ $item->documents->count() }} File
                             </span>
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            <span class="badge {{ $item->status_badge_class }}">
-                                @if($item->verification_status === 'APPROVED') ✅ Siap Cair
-                                @elseif($item->verification_status === 'REJECTED') ❌ Ditolak
-                                @else ⏳ Menunggu
-                                @endif
-                            </span>
+                            @if($item->verification_status === 'APPROVED')
+                                <span class="badge-corp badge-corp-approved">
+                                    <span>Siap Cair</span>
+                                </span>
+                            @elseif($item->verification_status === 'REJECTED')
+                                <span class="badge-corp badge-corp-rejected">
+                                    <span>Ditolak</span>
+                                </span>
+                            @else
+                                <span class="badge-corp badge-corp-pending">
+                                    <span>Pending</span>
+                                </span>
+                            @endif
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            <a href="{{ route('items.show', $item) }}"
-                               class="btn btn-primary btn-sm shadow-sm hover:shadow">
+                            <a href="{{ route('items.show', $item) }}" class="btn-bps btn-bps-primary btn-bps-sm">
                                 <span>Workspace</span>
-                                <span>→</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </a>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-12 text-slate-400">
-                            <div class="text-3xl mb-2">🔍</div>
-                            <div class="font-medium text-slate-600">Tidak ada item kegiatan yang cocok dengan kriteria pencarian/filter.</div>
-                            <div class="text-xs text-slate-400 mt-1">Coba sesuaikan kata kunci atau reset filter cascading directory.</div>
+                        <td colspan="7" class="text-center py-16 text-slate-400">
+                            <div class="text-4xl mb-3">🔍</div>
+                            <div class="font-extrabold text-slate-700 text-base">Tidak ada item kegiatan yang cocok</div>
+                            <div class="text-xs text-slate-400 mt-1">Coba kata kunci lain atau reset filter cascading directory.</div>
                         </td>
                     </tr>
                     @endforelse
@@ -195,9 +226,9 @@
             </table>
         </div>
 
-        {{-- Pagination --}}
-        <div class="px-5 py-3 bg-slate-50 border-t border-slate-200">
-            {{ $items->links() }}
+        {{-- Pagination Links --}}
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-200">
+            {{ $items->appends(request()->query())->links() }}
         </div>
     </div>
 
