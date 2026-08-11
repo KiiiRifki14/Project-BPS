@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Services\AuditLogger;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,7 +30,6 @@ class LoginRequest extends FormRequest
 
     /**
      * Attempt to authenticate using nip_username field.
-     * OWASP A07: Rate limiting + failed login audit logging.
      *
      * @throws ValidationException
      */
@@ -44,9 +42,6 @@ class LoginRequest extends FormRequest
             $this->boolean('remember')
         )) {
             RateLimiter::hit($this->throttleKey());
-
-            // ─── Audit Log: Failed Login Attempt ─────────────────────────
-            AuditLogger::log('LOGIN_FAILED', "Percobaan login GAGAL untuk NIP/Username [{$this->input('nip_username')}].");
 
             throw ValidationException::withMessages([
                 'nip_username' => 'NIP/Username atau password tidak valid. Silakan coba lagi.',

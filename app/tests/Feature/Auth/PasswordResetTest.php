@@ -3,49 +3,71 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Database\Seeders\DatabaseSeeder;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
+    public function test_reset_password_link_screen_can_be_rendered(): void
     {
-        parent::setUp();
-        $this->seed(DatabaseSeeder::class);
+        $response = $this->get('/forgot-password');
+
+        $response->assertStatus(200);
     }
 
-    /**
-     * Dalam sistem BPS, reset password dilakukan oleh Admin melalui menu Manajemen Pengguna.
-     */
-    public function test_admin_can_reset_user_password(): void
+    public function test_reset_password_link_can_be_requested(): void
     {
-        $admin    = User::where('role', 'ADMIN')->first();
-        $operator = User::where('role', 'OPERATOR')->first();
+        Notification::fake();
 
-        $response = $this->actingAs($admin)->post(route('users.reset-password', $operator), [
-            'password'              => 'NewPassword2026!',
-            'password_confirmation' => 'NewPassword2026!',
-        ]);
+        $user = User::factory()->create();
 
-        $response->assertRedirect();
-        $response->assertSessionHas('success');
+        $this->post('/forgot-password', ['email' => $user->email]);
 
-        // Verifikasi password baru di DB telah di-hash dengan benar
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewPassword2026!', $operator->fresh()->password));
+        Notification::assertSentTo($user, ResetPassword::class);
     }
 
-    public function test_operator_cannot_reset_passwords(): void
+    public function test_reset_password_screen_can_be_rendered(): void
     {
-        $operator = User::where('role', 'OPERATOR')->first();
+        Notification::fake();
 
-        $response = $this->actingAs($operator)->post(route('users.reset-password', $operator), [
-            'password'              => 'NewPassword2026!',
-            'password_confirmation' => 'NewPassword2026!',
-        ]);
+        $user = User::factory()->create();
 
-        $response->assertForbidden();
+        $this->post('/forgot-password', ['email' => $user->email]);
+
+        Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
+            $response = $this->get('/reset-password/'.$notification->token);
+
+            $response->assertStatus(200);
+
+            return true;
+        });
+    }
+
+    public function test_password_can_be_reset_with_valid_token(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create();
+
+        $this->post('/forgot-password', ['email' => $user->email]);
+
+        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+            $response = $this->post('/reset-password', [
+                'token' => $notification->token,
+                'email' => $user->email,
+                'password' => 'password',
+                'password_confirmation' => 'password',
+            ]);
+
+            $response
+                ->assertSessionHasNoErrors()
+                ->assertRedirect(route('login'));
+
+            return true;
+        });
     }
 }

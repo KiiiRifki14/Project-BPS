@@ -9,26 +9,23 @@ class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * OWASP A01: Broken Access Control / Vulnerable Components
-     * Registrasi mandiri harus dinonaktifkan (404 Not Found).
-     */
-    public function test_registration_screen_is_disabled(): void
+    public function test_registration_screen_can_be_rendered(): void
     {
         $response = $this->get('/register');
-        $response->assertStatus(404);
+
+        $response->assertStatus(200);
     }
 
-    public function test_new_users_cannot_self_register(): void
+    public function test_new_users_can_register(): void
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
-            'nip_username' => 'testuser01',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
         ]);
 
-        $response->assertStatus(404);
-        $this->assertGuest();
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('dashboard', absolute: false));
     }
 }
