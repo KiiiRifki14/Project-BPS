@@ -1,236 +1,385 @@
-{{-- ════════════════════════════════════════════
-    SIDEBAR — Main Navigation Only (Slim Design)
-    Treeview POK dipindah ke halaman /arsip
-═════════════════════════════════════════════ --}}
-<div class="sidebar" :class="{ 'open': sidebarOpen }">
+{{-- ══════════════════════════════════════════════════════════
+    LAYOUT MODERN V2 — SIDEBAR NAVIGATION (Fixed w-64, Dark Navy)
+    Includes 6 Core System Menus + Quick Access Shortcuts
+══════════════════════════════════════════════════════════ --}}
+<aside class="sidebar-v2" :class="{ 'open': sidebarOpen }">
 
-    {{-- ── LOGO ── --}}
-    <div class="sidebar-logo">
-        <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:40px;height:40px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.2);">
-                <span style="font-size:22px;">📊</span>
-            </div>
-            <div style="min-width:0;">
-                <div class="app-name">Arsip Keuangan BPS</div>
-                <div class="app-sub">Kabupaten Subang</div>
-            </div>
+    {{-- ── BRANDING & HEADER ── --}}
+    <div class="sidebar-brand">
+        <div class="brand-logo-box">
+            <span class="brand-icon">📊</span>
         </div>
-        {{-- Fiscal Year Badge --}}
-        <div style="margin-top:12px;padding:6px 10px;background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.3);border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:10.5px;color:rgba(255,255,255,.6);">Tahun Anggaran</span>
-            <span style="font-size:13px;font-weight:700;color:#f5a623;">2026</span>
+        <div class="brand-title-wrap">
+            <div class="brand-title">Arsip Keuangan</div>
+            <div class="brand-sub">BPS Kabupaten Subang</div>
         </div>
     </div>
 
-    {{-- ── MAIN NAV ── --}}
-    <nav class="sidebar-nav" style="padding:12px 10px;">
+    {{-- Fiscal Year Indicator --}}
+    <div class="sidebar-fy-box">
+        <span class="fy-label">Tahun Anggaran DIPA</span>
+        <span class="fy-year">2026</span>
+    </div>
 
-        {{-- Section: Utama --}}
-        <div class="nav-section-label">UTAMA</div>
+    {{-- ── 6 CORE SYSTEM MENUS ── --}}
+    <nav class="sidebar-menu-list">
+        <div class="menu-section-header">NAVIGASI UTAMA</div>
 
+        {{-- 1. Dashboard Utama --}}
         <a href="{{ route('dashboard') }}"
-           class="nav-item {{ request()->routeIs('dashboard') ? 'nav-item-active' : '' }}"
-           id="nav-dashboard">
-            <div class="nav-icon" style="background:{{ request()->routeIs('dashboard') ? 'rgba(245,166,35,.2)' : 'rgba(255,255,255,.08)' }};">
-                <span>🏠</span>
-            </div>
-            <div class="nav-label">
-                <span class="nav-text">Dashboard</span>
-                <span class="nav-desc">Ringkasan & statistik</span>
-            </div>
+           class="sidebar-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <span class="nav-icon-box">📊</span>
+            <span class="nav-title">Dashboard Utama</span>
         </a>
 
-        <a href="{{ route('arsip.index') }}"
-           class="nav-item {{ request()->routeIs('arsip.*') || request()->routeIs('items.*') ? 'nav-item-active' : '' }}"
-           id="nav-arsip">
-            <div class="nav-icon" style="background:{{ request()->routeIs('arsip.*') || request()->routeIs('items.*') ? 'rgba(245,166,35,.2)' : 'rgba(255,255,255,.08)' }};">
-                <span>📂</span>
-            </div>
-            <div class="nav-label">
-                <span class="nav-text">Arsip Dokumen</span>
-                <span class="nav-desc">Browser hirarki POK</span>
-            </div>
-            {{-- Item count badge --}}
-            @php $totalItems = \App\Models\Item::count(); @endphp
-            @if($totalItems > 0)
-            <span class="nav-badge">{{ $totalItems }}</span>
+        {{-- 2. Arsip Keuangan POK --}}
+        <a href="{{ route('items.index') }}"
+           class="sidebar-nav-link {{ request()->routeIs('items.*') || request()->routeIs('arsip.*') ? 'active' : '' }}">
+            <span class="nav-icon-box">📁</span>
+            <span class="nav-title">Arsip Keuangan POK</span>
+        </a>
+
+        {{-- 3. Verifikasi Pencairan (BENDAHARA & ADMIN) --}}
+        @if(in_array(auth()->user()->role, ['BENDAHARA', 'ADMIN']))
+        @php
+            $pendingCount = \App\Models\Item::where('verification_status', 'PENDING')->count();
+        @endphp
+        <a href="{{ route('verification.index') }}"
+           class="sidebar-nav-link {{ request()->routeIs('verification.*') ? 'active' : '' }}">
+            <span class="nav-icon-box">✅</span>
+            <span class="nav-title flex-1">Verifikasi Pencairan</span>
+            @if($pendingCount > 0)
+                <span class="badge-counter-amber">{{ $pendingCount }} Pending</span>
             @endif
         </a>
-
-        {{-- Section: Pengelolaan --}}
-        @if(auth()->user()->canManageMaster() || auth()->user()->isAdmin())
-        <div class="nav-section-label" style="margin-top:12px;">PENGELOLAAN</div>
         @endif
 
-        @if(auth()->user()->canManageMaster())
+        {{-- 4. Kelola Master POK (SUPERVISOR & ADMIN) --}}
+        @if(in_array(auth()->user()->role, ['SUPERVISOR', 'ADMIN']))
         <a href="{{ route('master.index') }}"
-           class="nav-item {{ request()->routeIs('master.*') ? 'nav-item-active' : '' }}"
-           id="nav-master">
-            <div class="nav-icon" style="background:{{ request()->routeIs('master.*') ? 'rgba(245,166,35,.2)' : 'rgba(255,255,255,.08)' }};">
-                <span>⚙️</span>
-            </div>
-            <div class="nav-label">
-                <span class="nav-text">Master Data</span>
-                <span class="nav-desc">Kelola hirarki POK</span>
-            </div>
+           class="sidebar-nav-link {{ request()->routeIs('master.*') ? 'active' : '' }}">
+            <span class="nav-icon-box">⚙️</span>
+            <span class="nav-title">Kelola Master POK</span>
         </a>
         @endif
 
-        @if(auth()->user()->isAdmin())
+        {{-- 5. Laporan & Rekapitulasi Digital --}}
+        <a href="{{ route('reports.index') }}"
+           class="sidebar-nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+            <span class="nav-icon-box">📈</span>
+            <span class="nav-title">Laporan & Rekapitulasi</span>
+        </a>
+
+        {{-- 6. Manajemen Pengguna (ADMIN only) --}}
+        @if(auth()->user()->role === 'ADMIN')
         <a href="{{ route('users.index') }}"
-           class="nav-item {{ request()->routeIs('users.*') ? 'nav-item-active' : '' }}"
-           id="nav-users">
-            <div class="nav-icon" style="background:{{ request()->routeIs('users.*') ? 'rgba(245,166,35,.2)' : 'rgba(255,255,255,.08)' }};">
-                <span>👥</span>
-            </div>
-            <div class="nav-label">
-                <span class="nav-text">Pengguna</span>
-                <span class="nav-desc">Manajemen akun & role</span>
-            </div>
-            <span class="nav-badge" style="background:rgba(220,38,38,.7);">{{ \App\Models\User::count() }}</span>
+           class="sidebar-nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+            <span class="nav-icon-box">👥</span>
+            <span class="nav-title">Manajemen Pengguna</span>
         </a>
         @endif
 
-        {{-- Section: Status Cepat (hanya Bendahara/Admin) --}}
-        @if(auth()->user()->canVerify())
-        <div class="nav-section-label" style="margin-top:12px;">STATUS CEPAT</div>
+        {{-- ── QUICK ACCESS / SHORTCUTS ── --}}
+        <div class="menu-section-header" style="margin-top: 20px;">AKSES CEPAT / FAVORIT</div>
 
+        {{-- Shortcut 1: BMA.006 Sensus Ekonomi --}}
         @php
-            $pendingCount = \App\Models\Item::where('verification_status','PENDING')->count();
-            $rejectedCount = \App\Models\Item::where('verification_status','REJECTED')->count();
+            $bma006SubOutput = \App\Models\SubOutput::where('code', 'BMA.006')->first();
+            $item001366 = \App\Models\Item::where('code', '001366')->first();
         @endphp
 
-        <a href="{{ route('arsip.index', ['filter' => 'pending']) }}"
-           class="nav-item" id="nav-pending">
-            <div class="nav-icon" style="background:rgba(217,119,6,.15);">
-                <span>⏳</span>
+        @if($bma006SubOutput)
+        <a href="{{ route('items.index', ['sub_output_id' => $bma006SubOutput->id]) }}"
+           class="shortcut-link orange-highlight">
+            <span class="shortcut-icon">🟠</span>
+            <div class="shortcut-info">
+                <span class="shortcut-code">BMA.006</span>
+                <span class="shortcut-name">Sensus Ekonomi 2026</span>
             </div>
-            <div class="nav-label">
-                <span class="nav-text">Menunggu Verifikasi</span>
-                <span class="nav-desc">Perlu tindakan Bendahara</span>
-            </div>
-            @if($pendingCount > 0)
-            <span class="nav-badge" style="background:rgba(217,119,6,.8);">{{ $pendingCount }}</span>
-            @endif
-        </a>
-
-        @if($rejectedCount > 0)
-        <a href="{{ route('arsip.index', ['filter' => 'rejected']) }}"
-           class="nav-item" id="nav-rejected">
-            <div class="nav-icon" style="background:rgba(220,38,38,.1);">
-                <span>❌</span>
-            </div>
-            <div class="nav-label">
-                <span class="nav-text">Ditolak</span>
-                <span class="nav-desc">Butuh revisi dokumen</span>
-            </div>
-            <span class="nav-badge" style="background:rgba(220,38,38,.7);">{{ $rejectedCount }}</span>
         </a>
         @endif
+
+        {{-- Shortcut 2: Item 001366 Honor Sensus --}}
+        @if($item001366)
+        <a href="{{ route('items.show', $item001366) }}"
+           class="shortcut-link green-highlight">
+            <span class="shortcut-icon">🟢</span>
+            <div class="shortcut-info">
+                <span class="shortcut-code">Item 001366</span>
+                <span class="shortcut-name">Honor Petugas Sensus</span>
+            </div>
+        </a>
         @endif
 
     </nav>
 
-    {{-- ── USER INFO ── --}}
-    <div class="sidebar-user">
-        <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
-        <div class="user-info" style="min-width:0;flex:1;">
-            <div class="user-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                {{ auth()->user()->name }}
-            </div>
-            <span class="user-role">{{ auth()->user()->role }}</span>
+    {{-- ── USER PROFILE AT BOTTOM ── --}}
+    <div class="sidebar-user-footer">
+        <div class="user-avatar-circle">
+            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
         </div>
-        {{-- Logout icon --}}
+        <div class="user-meta flex-1 min-w-0">
+            <div class="user-fullname truncate">{{ auth()->user()->name }}</div>
+            <div class="user-role-badge">{{ auth()->user()->role }}</div>
+        </div>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" title="Keluar"
-                    style="background:rgba(255,255,255,.1);border:none;border-radius:8px;padding:7px;cursor:pointer;color:rgba(255,255,255,.7);font-size:14px;transition:all .15s;"
-                    onmouseover="this.style.background='rgba(220,38,38,.4)';this.style.color='#fff';"
-                    onmouseout="this.style.background='rgba(255,255,255,.1)';this.style.color='rgba(255,255,255,.7)';">
+            <button type="submit" title="Keluar" class="btn-logout-sidebar">
                 🚪
             </button>
         </form>
     </div>
-</div>
+
+</aside>
 
 <style>
-/* ── Slim Sidebar Nav Styles ── */
-.nav-section-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: rgba(255,255,255,.3);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 4px 6px 6px;
-    margin-bottom: 2px;
+/* ── Layout Modern V2 Sidebar Styles ── */
+.sidebar-v2 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 256px; /* w-64 */
+    background: linear-gradient(180deg, #001F54 0%, #001233 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    z-index: 40;
+    box-shadow: 4px 0 20px rgba(0, 31, 84, 0.25);
+    transition: transform 0.3s ease;
 }
 
-.nav-item {
+.sidebar-brand {
+    padding: 20px 18px 12px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 9px 10px;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-logo-box {
+    width: 38px;
+    height: 38px;
+    background: #ffffff;
     border-radius: 10px;
-    text-decoration: none;
-    transition: all .15s;
-    margin-bottom: 3px;
-    cursor: pointer;
-}
-
-.nav-item:hover {
-    background: rgba(255,255,255,.08);
-}
-
-.nav-item-active {
-    background: rgba(255,255,255,.1) !important;
-    border-left: 3px solid #f5a623;
-    padding-left: 7px;
-}
-
-.nav-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 17px;
+    font-size: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     flex-shrink: 0;
-    transition: all .15s;
 }
 
-.nav-label {
-    display: flex;
-    flex-direction: column;
+.brand-title-wrap {
     min-width: 0;
-    flex: 1;
 }
 
-.nav-text {
-    font-size: 13px;
-    font-weight: 600;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.brand-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.25;
 }
 
-.nav-desc {
-    font-size: 10.5px;
-    color: rgba(255,255,255,.45);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.brand-sub {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
     margin-top: 1px;
 }
 
-.nav-badge {
+.sidebar-fy-box {
+    margin: 12px 14px 4px;
+    padding: 7px 12px;
+    background: rgba(243, 156, 18, 0.15);
+    border: 1px solid rgba(243, 156, 18, 0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fy-label {
+    font-size: 10.5px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.fy-year {
+    font-size: 13px;
+    font-weight: 800;
+    color: #F39C12;
+}
+
+.sidebar-menu-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 12px;
+}
+
+.sidebar-menu-list::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar-menu-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.menu-section-header {
     font-size: 10px;
     font-weight: 700;
-    background: rgba(255,255,255,.2);
-    color: #fff;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 4px 6px 6px;
+}
+
+.sidebar-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    transition: all 0.15s ease;
+}
+
+.sidebar-nav-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.sidebar-nav-link.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    font-weight: 700;
+    border-left: 4px solid #F39C12;
+    padding-left: 8px;
+}
+
+.nav-icon-box {
+    font-size: 16px;
+    width: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.badge-counter-amber {
+    font-size: 10px;
+    font-weight: 700;
+    background: #F39C12;
+    color: #000000;
     padding: 2px 7px;
-    border-radius: 20px;
+    border-radius: 12px;
+}
+
+/* Shortcuts */
+.shortcut-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-bottom: 4px;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.shortcut-link.orange-highlight {
+    background: rgba(243, 156, 18, 0.1);
+    border-color: rgba(243, 156, 18, 0.25);
+}
+.shortcut-link.orange-highlight:hover {
+    background: rgba(243, 156, 18, 0.2);
+}
+
+.shortcut-link.green-highlight {
+    background: rgba(22, 163, 74, 0.1);
+    border-color: rgba(22, 163, 74, 0.25);
+}
+.shortcut-link.green-highlight:hover {
+    background: rgba(22, 163, 74, 0.2);
+}
+
+.shortcut-icon {
+    font-size: 14px;
+}
+
+.shortcut-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.shortcut-code {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.shortcut-name {
+    font-size: 10.5px;
+    color: rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* User footer */
+.sidebar-user-footer {
+    padding: 12px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.user-avatar-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #F39C12;
+    color: #000000;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+}
+
+.user-fullname {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.user-role-badge {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.12);
+    padding: 1px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 1px;
+}
+
+.btn-logout-sidebar {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 6px;
+    padding: 6px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    transition: all 0.15s ease;
+}
+.btn-logout-sidebar:hover {
+    background: rgba(220, 38, 38, 0.6);
+    color: #ffffff;
 }
 </style>

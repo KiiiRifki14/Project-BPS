@@ -1,323 +1,205 @@
 @extends('layouts.app')
-@section('title', 'Arsip Dokumen POK')
-@section('page-title', '📂 Browser Arsip Dokumen POK')
+@section('title', 'Arsip Keuangan POK')
 
 @section('content')
-{{-- ── PAGE HEADER & QUICK FILTERS ────────────────────── --}}
-<div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e2e8f0;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,.03);">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-        <div>
-            <h1 style="font-size:18px;font-weight:800;color:#0f172a;margin:0 0 4px;">Arsip Dokumen Pertanggungjawaban POK</h1>
-            <p style="font-size:12.5px;color:#64748b;margin:0;">Jelajahi hirarki POK 7-level untuk mengunggah, melihat, dan memverifikasi dokumen keuangan BPS.</p>
-        </div>
+<div class="space-y-6">
 
-        {{-- Filter Badges --}}
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <a href="{{ route('arsip.index') }}"
-               class="btn {{ !$filter && !$search ? 'btn-primary' : 'btn-secondary' }}" style="font-size:12px;padding:6px 14px;">
-                Semua ({{ $stats['total'] }})
-            </a>
-            <a href="{{ route('arsip.index', ['filter' => 'pending']) }}"
-               class="btn {{ $filter === 'pending' ? 'btn-primary' : 'btn-secondary' }}" style="font-size:12px;padding:6px 14px;">
-                ⏳ Menunggu ({{ $stats['pending'] }})
-            </a>
-            <a href="{{ route('arsip.index', ['filter' => 'approved']) }}"
-               class="btn {{ $filter === 'approved' ? 'btn-primary' : 'btn-secondary' }}" style="font-size:12px;padding:6px 14px;">
-                ✅ Siap Cair ({{ $stats['approved'] }})
-            </a>
-            <a href="{{ route('arsip.index', ['filter' => 'rejected']) }}"
-               class="btn {{ $filter === 'rejected' ? 'btn-primary' : 'btn-secondary' }}" style="font-size:12px;padding:6px 14px;">
-                ❌ Ditolak ({{ $stats['rejected'] }})
-            </a>
-        </div>
-    </div>
-
-    {{-- Search Bar --}}
-    <form method="GET" action="{{ route('arsip.index') }}" style="margin-top:16px;display:flex;gap:10px;">
-        @if($filter) <input type="hidden" name="filter" value="{{ $filter }}"> @endif
-        <div style="position:relative;flex:1;">
-            <input type="text" name="search" value="{{ $search }}"
-                   placeholder="🔍 Cari kode item (misal: 001366), nama kegiatan, atau akun..."
-                   class="form-input" style="padding-left:36px;background:#f8fafc;">
-            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:#94a3b8;">🔍</span>
-        </div>
-        <button type="submit" class="btn btn-primary" style="padding:8px 20px;">Cari</button>
-        @if($search || $filter)
-            <a href="{{ route('arsip.index') }}" class="btn btn-secondary">Reset</a>
-        @endif
-    </form>
-</div>
-
-{{-- ── FILTERED LIST MODE (WHEN SEARCHING OR FILTERING) ────── --}}
-@if($filteredItems !== null)
-    <div class="table-card">
-        <div style="padding:14px 18px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:13px;font-weight:700;color:#334155;">
-                Hasil Pencarian / Filter: <span style="color:#003087;">{{ $filteredItems->count() }} item ditemukan</span>
-            </span>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Kode</th>
-                    <th>Nama Item Kegiatan</th>
-                    <th>Hirarki Akun / Sub-Output</th>
-                    <th>Pagu</th>
-                    <th>Dokumen</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($filteredItems as $item)
-                <tr>
-                    <td><code style="background:#e8f0fe;color:#003087;padding:3px 8px;border-radius:6px;font-weight:700;">{{ $item->code }}</code></td>
-                    <td style="font-weight:500;color:#1e293b;max-width:320px;">{{ $item->name }}</td>
-                    <td style="font-size:11.5px;color:#64748b;">
-                        <div><strong>Akun:</strong> {{ $item->account->code }} - {{ Str::limit($item->account->name, 25) }}</div>
-                        <div style="color:#94a3b8;">{{ $item->account->subComponent->component->subOutput->code }}</div>
-                    </td>
-                    <td><span class="pagu-badge">Rp {{ number_format($item->pagu, 0, ',', '.') }}</span></td>
-                    <td>
-                        <span style="font-weight:600;color:{{ $item->documents->count() > 0 ? '#16a34a' : '#94a3b8' }}; font-size:12.5px;">
-                            📄 {{ $item->documents->count() }} file
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge {{ $item->status_badge_class }}">
-                            @if($item->verification_status === 'APPROVED') ✅ Siap Cair
-                            @elseif($item->verification_status === 'REJECTED') ❌ Ditolak
-                            @else ⏳ Menunggu
-                            @endif
-                        </span>
-                    </td>
-                    <td>
-                        <a href="{{ route('items.show', $item) }}" class="btn btn-primary btn-sm">
-                            Buka Detail →
-                        </a>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="7" style="text-align:center;padding:40px;color:#94a3b8;">
-                        🔍 Tidak ada item kegiatan yang sesuai dengan kriteria pencarian/filter.
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-@else
-{{-- ── FULL POK HIERARCHY TREEVIEW BROWSER ──────────────────── --}}
-<div x-data="pokBrowser()" style="display:flex;flex-direction:column;gap:16px;">
-
-    {{-- Expand / Collapse Controls --}}
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px;">
-        <span style="font-size:13px;font-weight:700;color:#334155;">Structure Hirarki POK (7-Level)</span>
-        <div style="display:flex;gap:8px;">
-            <button type="button" @click="expandAll()" class="btn btn-secondary btn-sm">➕ Buka Semua Accordion</button>
-            <button type="button" @click="collapseAll()" class="btn btn-secondary btn-sm">➖ Tutup Semua Accordion</button>
-        </div>
-    </div>
-
-    @foreach($programs as $program)
-    <div style="background:#fff;border-radius:12px;border:1px solid #cbd5e1;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.02);">
-        
-        {{-- LEVEL 1: PROGRAM --}}
-        <div @click="toggle('prog_{{ $program->id }}')"
-             style="background:linear-gradient(135deg,#003087,#0d47a1);color:#fff;padding:14px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <span class="caret-icon" :class="{ 'open': isOpen('prog_{{ $program->id }}') }">▶</span>
-                <span style="background:rgba(255,255,255,.2);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.5px;">PROGRAM</span>
-                <span style="font-size:15px;font-weight:700;">[{{ $program->code }}] {{ $program->name }}</span>
-            </div>
-            <span style="font-size:12px;opacity:.85;">{{ $program->outputs->count() }} Output</span>
-        </div>
-
-        <div x-show="isOpen('prog_{{ $program->id }}')" x-transition style="padding:16px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;">
-            @foreach($program->outputs as $output)
+    {{-- ── TOP SECTION: PROMINENT INSTANT SEARCH (SEARCH-FIRST) ── --}}
+    <div style="background: linear-gradient(135deg, #001F54 0%, #003087 100%);" class="rounded-2xl p-6 text-white shadow-lg">
+        <div class="max-w-3xl">
+            <h1 class="text-xl font-extrabold tracking-tight mb-1">🔍 Browser Arsip Keuangan POK</h1>
+            <p class="text-xs text-blue-100 mb-4">Cari instan berdasarkan Kode Item (misal: 001366), Kode Akun (521213), atau Kata Kunci Kegiatan.</p>
             
-            {{-- LEVEL 2: OUTPUT --}}
-            <div style="background:#fff;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:12px;overflow:hidden;">
-                <div @click.stop="toggle('out_{{ $output->id }}')"
-                     style="background:#f1f5f9;padding:12px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <span class="caret-icon" :class="{ 'open': isOpen('out_{{ $output->id }}') }">▶</span>
-                        <span style="background:#cbd5e1;color:#334155;padding:2px 6px;border-radius:4px;font-size:10.5px;font-weight:700;">OUTPUT</span>
-                        <span style="font-size:13.5px;font-weight:700;color:#1e293b;">[{{ $output->code }}] {{ $output->name }}</span>
-                    </div>
-                    <span style="font-size:11.5px;color:#64748b;">{{ $output->subOutputs->count() }} Sub-Output</span>
+            <form method="GET" action="{{ route('items.index') }}" class="flex gap-2">
+                @if($filter) <input type="hidden" name="filter" value="{{ $filter }}"> @endif
+                @if($subOutputId) <input type="hidden" name="sub_output_id" value="{{ $subOutputId }}"> @endif
+
+                <div class="relative flex-1">
+                    <input type="text"
+                           name="search"
+                           value="{{ $search }}"
+                           placeholder="Ketik Kode Item (misal: 001366), Kode Akun, atau Nama Kegiatan..."
+                           class="w-full pl-11 pr-4 py-3 bg-white text-slate-800 rounded-xl border-0 shadow-inner focus:ring-4 focus:ring-amber-400 text-sm font-medium outline-none">
+                    <span class="absolute left-3.5 top-3.5 text-slate-400 text-base">🔍</span>
                 </div>
-
-                <div x-show="isOpen('out_{{ $output->id }}')" x-transition style="padding:14px 16px;">
-                    @foreach($output->subOutputs as $subOutput)
-                    
-                    {{-- LEVEL 3: SUB-OUTPUT --}}
-                    <div style="border-left:3px solid #003087;padding-left:14px;margin-bottom:14px;">
-                        <div @click.stop="toggle('so_{{ $subOutput->id }}')"
-                             style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:6px 0;user-select:none;">
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <span class="caret-icon" :class="{ 'open': isOpen('so_{{ $subOutput->id }}') }">▶</span>
-                                <span style="background:#e8f0fe;color:#003087;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">
-                                    SUB-OUTPUT: {{ $subOutput->code }}
-                                </span>
-                                <span style="font-size:13px;font-weight:600;color:#0f172a;">{{ $subOutput->name }}</span>
-                                @if(str_contains($subOutput->code, 'BMA.006'))
-                                    <span style="background:#fef9c3;color:#854d0e;border:1px solid #fef08a;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700;">🎯 FOKUS MVP CORE</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div x-show="isOpen('so_{{ $subOutput->id }}')" x-transition style="margin-top:10px;display:flex;flex-direction:column;gap:10px;">
-                            @foreach($subOutput->components as $component)
-                            
-                            {{-- LEVEL 4: KOMPONEN --}}
-                            <div style="background:#fafafa;border-radius:8px;border:1px solid #e2e8f0;padding:10px 14px;">
-                                <div @click.stop="toggle('comp_{{ $component->id }}')"
-                                     style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;">
-                                    <div style="display:flex;align-items:center;gap:8px;">
-                                        <span class="caret-icon" :class="{ 'open': isOpen('comp_{{ $component->id }}') }">▶</span>
-                                        <span style="font-size:12px;font-weight:700;color:#475569;">Komponen [{{ $component->code }}]</span>
-                                        <span style="font-size:12px;color:#334155;">{{ $component->name }}</span>
-                                    </div>
-                                </div>
-
-                                <div x-show="isOpen('comp_{{ $component->id }}')" x-transition style="margin-top:8px;padding-left:12px;display:flex;flex-direction:column;gap:8px;">
-                                    @foreach($component->subComponents as $subComp)
-                                    
-                                    {{-- LEVEL 5: SUB-KOMPONEN --}}
-                                    <div style="background:#fff;border-radius:6px;border:1px dashed #cbd5e1;padding:8px 12px;">
-                                        <div @click.stop="toggle('sc_{{ $subComp->id }}')"
-                                             style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;">
-                                            <div style="display:flex;align-items:center;gap:6px;">
-                                                <span class="caret-icon" :class="{ 'open': isOpen('sc_{{ $subComp->id }}') }">▶</span>
-                                                <span style="font-size:11.5px;font-weight:600;color:#64748b;">Sub-Komponen [{{ $subComp->code }}]: {{ $subComp->name }}</span>
-                                            </div>
-                                        </div>
-
-                                        <div x-show="isOpen('sc_{{ $subComp->id }}')" x-transition style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
-                                            @foreach($subComp->accounts as $account)
-                                            
-                                            {{-- LEVEL 6: AKUN --}}
-                                            <div style="background:#f8fafc;border-radius:6px;padding:8px 10px;border-left:3px solid #f5a623;">
-                                                <div @click.stop="toggle('acc_{{ $account->id }}')"
-                                                     style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;">
-                                                    <div style="display:flex;align-items:center;gap:8px;">
-                                                        <span class="caret-icon" :class="{ 'open': isOpen('acc_{{ $account->id }}') }">▶</span>
-                                                        <span style="font-size:12px;font-weight:700;color:#003087;">Akun {{ $account->code }}</span>
-                                                        <span style="font-size:12px;color:#334155;">{{ $account->name }}</span>
-                                                    </div>
-                                                    <span style="font-size:11px;color:#94a3b8;">{{ $account->items->count() }} Item</span>
-                                                </div>
-
-                                                <div x-show="isOpen('acc_{{ $account->id }}')" x-transition style="margin-top:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;">
-                                                    @foreach($account->items as $item)
-                                                    
-                                                    {{-- LEVEL 7: ITEM KEGIATAN --}}
-                                                    <a href="{{ route('items.show', $item) }}"
-                                                       style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;text-decoration:none;transition:all .15s;"
-                                                       onmouseover="this.style.borderColor='#003087';this.style.boxShadow='0 2px 8px rgba(0,48,135,.1)';"
-                                                       onmouseout="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';">
-                                                        <div style="min-width:0;flex:1;margin-right:8px;">
-                                                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-                                                                <code style="font-size:11px;font-weight:700;color:#003087;background:#e8f0fe;padding:1px 5px;border-radius:4px;">{{ $item->code }}</code>
-                                                                <span class="badge {{ $item->status_badge_class }}" style="font-size:9.5px;padding:1px 6px;">
-                                                                    @if($item->verification_status === 'APPROVED') ✅
-                                                                    @elseif($item->verification_status === 'REJECTED') ❌
-                                                                    @else ⏳
-                                                                    @endif
-                                                                </span>
-                                                            </div>
-                                                            <div style="font-size:12px;font-weight:500;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                                                                {{ $item->name }}
-                                                            </div>
-                                                        </div>
-                                                        <div style="text-align:right;flex-shrink:0;">
-                                                            <div style="font-size:11px;font-weight:700;color:#0f172a;">Rp {{ number_format($item->pagu, 0, ',', '.') }}</div>
-                                                            <div style="font-size:10px;color:#94a3b8;">{{ $item->documents->count() }} file</div>
-                                                        </div>
-                                                    </a>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endforeach
+                
+                <button type="submit" class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold rounded-xl shadow-md transition-all text-sm">
+                    Cari Item
+                </button>
+                @if($search || $subOutputId || $outputId || $programId || $filter)
+                    <a href="{{ route('items.index') }}" class="px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl text-sm transition-all flex items-center">
+                        Reset
+                    </a>
+                @endif
+            </form>
         </div>
     </div>
-    @endforeach
+
+    {{-- ── MIDDLE SECTION: CASCADING FILTER DROPDOWNS ── --}}
+    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">📁 Cascading Directory Filter (Navigasi Manual)</div>
+        
+        <form method="GET" action="{{ route('items.index') }}" id="cascadingFilterForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            @if($search) <input type="hidden" name="search" value="{{ $search }}"> @endif
+            @if($filter) <input type="hidden" name="filter" value="{{ $filter }}"> @endif
+
+            {{-- Dropdown 1: Program --}}
+            <div>
+                <label class="form-label text-xs">Pilih Program</label>
+                <select name="program_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input text-xs font-medium">
+                    <option value="">-- Semua Program --</option>
+                    @foreach($programs as $p)
+                        <option value="{{ $p->id }}" {{ $programId == $p->id ? 'selected' : '' }}>
+                            [{{ $p->code }}] {{ Str::limit($p->name, 35) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Dropdown 2: Output --}}
+            <div>
+                <label class="form-label text-xs">Pilih Output</label>
+                <select name="output_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input text-xs font-medium">
+                    <option value="">-- Semua Output --</option>
+                    @foreach($outputs as $o)
+                        <option value="{{ $o->id }}" {{ $outputId == $o->id ? 'selected' : '' }}>
+                            [{{ $o->code }}] {{ Str::limit($o->name, 35) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Dropdown 3: Sub-Output --}}
+            <div>
+                <label class="form-label text-xs">Pilih Sub-Output</label>
+                <select name="sub_output_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input text-xs font-medium">
+                    <option value="">-- Semua Sub-Output --</option>
+                    @foreach($subOutputs as $so)
+                        <option value="{{ $so->id }}" {{ $subOutputId == $so->id ? 'selected' : '' }}>
+                            [{{ $so->code }}] {{ Str::limit($so->name, 35) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </form>
+
+        {{-- Quick Filter Pills --}}
+        <div class="flex items-center justify-between flex-wrap gap-3 mt-4 pt-4 border-t border-slate-100">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-semibold text-slate-500">Filter Status:</span>
+                <a href="{{ route('items.index', request()->except('filter')) }}"
+                   class="px-3 py-1 rounded-full text-xs font-semibold {{ !$filter ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                    Semua ({{ $stats['total'] }})
+                </a>
+                <a href="{{ route('items.index', array_merge(request()->query(), ['filter' => 'pending'])) }}"
+                   class="px-3 py-1 rounded-full text-xs font-semibold {{ $filter === 'pending' ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-800 hover:bg-amber-100' }}">
+                    ⏳ Menunggu ({{ $stats['pending'] }})
+                </a>
+                <a href="{{ route('items.index', array_merge(request()->query(), ['filter' => 'approved'])) }}"
+                   class="px-3 py-1 rounded-full text-xs font-semibold {{ $filter === 'approved' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100' }}">
+                    ✅ Siap Cair ({{ $stats['approved'] }})
+                </a>
+                <a href="{{ route('items.index', array_merge(request()->query(), ['filter' => 'rejected'])) }}"
+                   class="px-3 py-1 rounded-full text-xs font-semibold {{ $filter === 'rejected' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-800 hover:bg-red-100' }}">
+                    ❌ Ditolak ({{ $stats['rejected'] }})
+                </a>
+            </div>
+
+            @if($selectedSubOutput)
+                <div class="text-xs font-bold text-blue-900 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200">
+                    📌 Sub-Output Aktif: [{{ $selectedSubOutput->code }}] {{ $selectedSubOutput->name }}
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- ── MAIN SECTION: CLEAN DATA TABLE LISTING ITEMS ── --}}
+    <div class="table-card-v2">
+        <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <span>📋 Daftar Item Kegiatan POK</span>
+                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                    {{ $items->total() }} Item Ditemukan
+                </span>
+            </h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="w-28">Kode Item</th>
+                        <th>Nama Item Kegiatan</th>
+                        <th>Akun / Sub-Output</th>
+                        <th class="text-right">Pagu Anggaran</th>
+                        <th class="text-center">Berkas</th>
+                        <th class="text-center">Status Verifikasi</th>
+                        <th class="text-center w-36">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($items as $item)
+                    <tr>
+                        <td class="font-mono text-xs font-bold text-blue-900 bg-blue-50/50 px-3 py-2 rounded text-center">
+                            {{ $item->code }}
+                        </td>
+                        <td>
+                            <div class="font-semibold text-slate-900 text-sm mb-0.5">{{ $item->name }}</div>
+                            @if(str_contains($item->code, '001366') || str_contains($item->code, '001211'))
+                                <span class="inline-block bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-md">
+                                    ⭐ MVP CORE FOCUS
+                                </span>
+                            @endif
+                        </td>
+                        <td class="text-xs text-slate-600">
+                            <div class="font-semibold text-slate-800">Akun {{ $item->account->code }}</div>
+                            <div class="text-[11px] text-slate-500 truncate max-w-xs">{{ $item->account->name }}</div>
+                            <div class="text-[10px] font-mono text-blue-700 mt-0.5">
+                                {{ $item->account->subComponent->component->subOutput->code }}
+                            </div>
+                        </td>
+                        <td class="text-right font-mono font-bold text-emerald-700 text-sm whitespace-nowrap">
+                            Rp {{ number_format($item->pagu, 0, ',', '.') }}
+                        </td>
+                        <td class="text-center whitespace-nowrap">
+                            <span class="text-xs font-bold {{ $item->documents->count() > 0 ? 'text-emerald-600 bg-emerald-50 border border-emerald-200' : 'text-slate-400 bg-slate-100' }} px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                                📄 {{ $item->documents->count() }} File
+                            </span>
+                        </td>
+                        <td class="text-center whitespace-nowrap">
+                            <span class="badge {{ $item->status_badge_class }}">
+                                @if($item->verification_status === 'APPROVED') ✅ Siap Cair
+                                @elseif($item->verification_status === 'REJECTED') ❌ Ditolak
+                                @else ⏳ Menunggu
+                                @endif
+                            </span>
+                        </td>
+                        <td class="text-center whitespace-nowrap">
+                            <a href="{{ route('items.show', $item) }}"
+                               class="btn btn-primary btn-sm shadow-sm hover:shadow">
+                                <span>Workspace</span>
+                                <span>→</span>
+                            </a>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" class="text-center py-12 text-slate-400">
+                            <div class="text-3xl mb-2">🔍</div>
+                            <div class="font-medium text-slate-600">Tidak ada item kegiatan yang cocok dengan kriteria pencarian/filter.</div>
+                            <div class="text-xs text-slate-400 mt-1">Coba sesuaikan kata kunci atau reset filter cascading directory.</div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Pagination --}}
+        <div class="px-5 py-3 bg-slate-50 border-t border-slate-200">
+            {{ $items->links() }}
+        </div>
+    </div>
 
 </div>
-@endif
-
-<style>
-.caret-icon {
-    display: inline-block;
-    font-size: 10px;
-    transition: transform .2s ease;
-}
-.caret-icon.open {
-    transform: rotate(90deg);
-}
-</style>
-
-@push('scripts')
-<script>
-function pokBrowser() {
-    return {
-        openNodes: {
-            'prog_1': true,
-            'out_1': true,
-            'so_1': true,
-            'comp_1': true,
-            'sc_1': true,
-            'acc_1': true
-        },
-
-        toggle(key) {
-            this.openNodes[key] = !this.openNodes[key];
-        },
-        isOpen(key) {
-            return this.openNodes[key] || false;
-        },
-        expandAll() {
-            document.querySelectorAll('[x-show]').forEach(el => el.style.display = '');
-            // Set state to true for all keys dynamically
-            @foreach($programs as $p)
-                this.openNodes['prog_{{ $p->id }}'] = true;
-                @foreach($p->outputs as $o)
-                    this.openNodes['out_{{ $o->id }}'] = true;
-                    @foreach($o->subOutputs as $so)
-                        this.openNodes['so_{{ $so->id }}'] = true;
-                        @foreach($so->components as $c)
-                            this.openNodes['comp_{{ $c->id }}'] = true;
-                            @foreach($c->subComponents as $sc)
-                                this.openNodes['sc_{{ $sc->id }}'] = true;
-                                @foreach($sc->accounts as $a)
-                                    this.openNodes['acc_{{ $a->id }}'] = true;
-                                @endforeach
-                            @endforeach
-                        @endforeach
-                    @endforeach
-                @endforeach
-            @endforeach
-        },
-        collapseAll() {
-            this.openNodes = {};
-        }
-    };
-}
-</script>
-@endpush
 @endsection
