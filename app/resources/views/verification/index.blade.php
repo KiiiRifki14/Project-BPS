@@ -18,19 +18,19 @@
 
         {{-- Status Filter Buttons --}}
         <div class="flex items-center gap-2 flex-wrap">
-            <a href="{{ route('verification.index', ['status' => 'PENDING']) }}"
+            <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'PENDING'])) }}"
                class="btn-bps btn-bps-sm {{ $status === 'PENDING' ? 'bg-amber-500 text-slate-950 font-black' : 'btn-bps-secondary' }}">
                 ⏳ Antrean Pending ({{ $pendingCount }})
             </a>
-            <a href="{{ route('verification.index', ['status' => 'APPROVED']) }}"
+            <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'APPROVED'])) }}"
                class="btn-bps btn-bps-sm {{ $status === 'APPROVED' ? 'btn-bps-success' : 'btn-bps-secondary' }}">
                 ✅ Siap Cair ({{ $approvedCount }})
             </a>
-            <a href="{{ route('verification.index', ['status' => 'REJECTED']) }}"
+            <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'REJECTED'])) }}"
                class="btn-bps btn-bps-sm {{ $status === 'REJECTED' ? 'btn-bps-danger' : 'btn-bps-secondary' }}">
                 ❌ Ditolak ({{ $rejectedCount }})
             </a>
-            <a href="{{ route('verification.index', ['status' => 'ALL']) }}"
+            <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'ALL'])) }}"
                class="btn-bps btn-bps-sm {{ $status === 'ALL' ? 'btn-bps-primary' : 'btn-bps-secondary' }}">
                 Semua Status
             </a>
@@ -39,10 +39,34 @@
 
     {{-- Items Verification Table --}}
     <div class="table-container-v4">
-        <div class="px-6 py-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div class="px-6 py-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-wrap gap-4">
             <h2 class="text-sm font-extrabold text-slate-900">
                 Daftar Antrean Verifikasi — Filter: <span class="text-blue-900 font-mono">{{ $status }}</span>
             </h2>
+        </div>
+
+        {{-- Input Search Box Kode Item / Nama Kegiatan --}}
+        <div class="p-6 border-b border-slate-200 bg-white">
+            <form method="GET" action="{{ route('verification.index') }}" class="flex gap-3">
+                <input type="hidden" name="status" value="{{ $status }}">
+                <div class="relative flex-1">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="{{ request('search') }}" 
+                        placeholder="🔍 Ketik Kode Item (misal: 001366) atau Kata Kunci Kegiatan..." 
+                        class="w-full rounded-xl border-slate-300 pl-10 pr-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    >
+                </div>
+                <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors shrink-0">
+                    Cari Item
+                </button>
+                @if(request('search'))
+                    <a href="{{ route('verification.index', ['status' => $status]) }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl border border-slate-300 transition-colors shrink-0 flex items-center justify-center">
+                        Reset
+                    </a>
+                @endif
+            </form>
         </div>
 
         <div class="overflow-x-auto">

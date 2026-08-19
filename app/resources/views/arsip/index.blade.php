@@ -21,6 +21,8 @@
 
             <form method="GET" action="{{ route('items.index') }}" class="flex flex-col sm:flex-row gap-3">
                 @if($filter) <input type="hidden" name="filter" value="{{ $filter }}"> @endif
+                @if($programId) <input type="hidden" name="program_id" value="{{ $programId }}"> @endif
+                @if($outputId) <input type="hidden" name="output_id" value="{{ $outputId }}"> @endif
                 @if($subOutputId) <input type="hidden" name="sub_output_id" value="{{ $subOutputId }}"> @endif
 
                 <div class="relative flex-1">
@@ -71,7 +73,7 @@
             {{-- Dropdown 1: Program --}}
             <div>
                 <label class="form-label-custom">Pilih Program</label>
-                <select name="program_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input-v4 text-xs font-semibold">
+                <select name="program_id" onchange="onProgramChange(this)" class="form-input-v4 text-xs font-semibold">
                     <option value="">-- Semua Program --</option>
                     @foreach($programs as $p)
                         <option value="{{ $p->id }}" {{ $programId == $p->id ? 'selected' : '' }}>
@@ -84,7 +86,7 @@
             {{-- Dropdown 2: Output --}}
             <div>
                 <label class="form-label-custom">Pilih Output</label>
-                <select name="output_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input-v4 text-xs font-semibold">
+                <select name="output_id" onchange="onOutputChange(this)" class="form-input-v4 text-xs font-semibold">
                     <option value="">-- Semua Output --</option>
                     @foreach($outputs as $o)
                         <option value="{{ $o->id }}" {{ $outputId == $o->id ? 'selected' : '' }}>
@@ -97,7 +99,7 @@
             {{-- Dropdown 3: Sub-Output --}}
             <div>
                 <label class="form-label-custom">Pilih Sub-Output</label>
-                <select name="sub_output_id" onchange="document.getElementById('cascadingFilterForm').submit()" class="form-input-v4 text-xs font-semibold">
+                <select name="sub_output_id" onchange="this.form.submit()" class="form-input-v4 text-xs font-semibold">
                     <option value="">-- Semua Sub-Output --</option>
                     @foreach($subOutputs as $so)
                         <option value="{{ $so->id }}" {{ $subOutputId == $so->id ? 'selected' : '' }}>
@@ -107,6 +109,24 @@
                 </select>
             </div>
         </form>
+
+        <script>
+        function onProgramChange(select) {
+            const form = select.form;
+            const outputSelect = form.querySelector('[name="output_id"]');
+            const subOutputSelect = form.querySelector('[name="sub_output_id"]');
+            if (outputSelect) outputSelect.value = '';
+            if (subOutputSelect) subOutputSelect.value = '';
+            form.submit();
+        }
+
+        function onOutputChange(select) {
+            const form = select.form;
+            const subOutputSelect = form.querySelector('[name="sub_output_id"]');
+            if (subOutputSelect) subOutputSelect.value = '';
+            form.submit();
+        }
+        </script>
 
         {{-- Quick Filter Pills --}}
         <div class="flex items-center justify-between flex-wrap gap-3 mt-6 pt-5 border-t border-slate-100">

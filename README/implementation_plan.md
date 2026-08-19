@@ -1,263 +1,162 @@
-# Sistem Data Digital Arsip Keuangan BPS — Implementation Plan
+# Implementation Plan — Sistem Data Digital Arsip Keuangan BPS Subang (v2.1 Execution)
 
-Membangun MVP web-app arsip keuangan BPS Kabupaten Subang: pengelolaan hirarki POK 7-level, multi-file upload SPJ/BAPP/Kuitansi, pratinjau inline PDF, dan verifikasi pencairan oleh Bendahara.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Execute backend logic guards, refactor UI to a Search-First Directory, and implement the Interactive Bendahara Checklist according to PRD v2.1 for BPS Subang's financial archive system.
+
+**Architecture:** Laravel 11 backend with Eloquent models, Blade templates styled with corporate Tailwind CSS aesthetic, and Alpine.js for dynamic frontend interactions (Search-First Explorer, Interactive Verification Checklist, PDF Modal Stream Viewer).
+
+**Tech Stack:** Laravel 11 (PHP 8.2), MySQL / SQLite, Tailwind CSS, Alpine.js, PHPUnit.
 
 ---
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Tech Stack Decision**: Berdasarkan PRD, disarankan menggunakan **Next.js (App Router) + Prisma + SQLite** sebagai stack utama MVP karena:
-> - Next.js App Router mendukung API Routes bawaan (tidak perlu backend terpisah)
-> - Prisma ORM mempercepat migrasi dan seeding database
-> - SQLite cukup untuk MVP lokal BPS Subang (mudah migrate ke PostgreSQL/MySQL nanti)
->
-> Apakah stack ini sudah sesuai, atau Anda menginginkan **Laravel + Inertia.js + MySQL/PostgreSQL**?
-
-> [!IMPORTANT]
-> **File Storage**: File upload akan disimpan di `/public/uploads/{year}/{sub_output_code}/{item_code}/` (lokal server). Untuk production, bisa diganti ke S3/MinIO. Apakah ini sudah sesuai?
-
-> [!WARNING]
-> **Folder Target**: Semua file proyek akan dibuat di `d:\Project BPS\` (workspace utama). Direktori `README\` sudah ada. Proyek Next.js akan diinisialisasi langsung di root `d:\Project BPS\`.
-
----
-
-## Open Questions
-
-1. **Database Engine**: SQLite (simpel, lokal) vs PostgreSQL/MySQL (production-grade)?  
-   → *Default rencana: SQLite untuk MVP, mudah migrate nanti.*
-2. **Port development server**: Default Next.js `localhost:3000` — apakah ada konflik port?
-3. **Node.js version**: Apakah sudah terinstall Node.js ≥ 18?
+> - **Strict Interactive Bendahara Checklist:** Bendahara MUST physically check off EVERY single uploaded document checklist item before the **Setujui Pencairan (APPROVED)** button activates. Condition: `checkedCount === totalDocuments && totalDocuments > 0`.
+> - **Auto Re-review Reset:** When an item has status `REJECTED` and an Operator uploads a new document, the system automatically resets status to `PENDING` and clears the rejection note so it reappears in Bendahara's verification queue.
+> - **URL State Preservation:** Cascading dropdown filter changes preserve active search queries (`search` parameter) seamlessly.
 
 ---
 
 ## Proposed Changes
 
-### Phase 1: Project Bootstrap & Database
+### Component 1: Backend Logic Guards & Models
 
-#### [NEW] `d:\Project BPS\` — Next.js App Router Project
-Init dengan `npx create-next-app@latest` di `d:\Project BPS\`.
+#### [MODIFY] [DocumentController.php](file:///d:/Project%20BPS/app/app/Http/Controllers/DocumentController.php)
+- Verify and refine Guard 1 (lock uploads & deletes for `APPROVED` items).
+- Verify Re-review Auto Reset logic (resets `verification_status` to `PENDING` and `rejection_note` to `null` when a document is uploaded to a `REJECTED` item).
 
-#### [NEW] `prisma/schema.prisma`
-Schema lengkap:
-- `fiscal_years`, `users`, `programs`, `outputs`, `sub_outputs`
-- `components`, `sub_components`, `accounts`, `items`, `documents`
+#### [MODIFY] [ItemController.php](file:///d:/Project%20BPS/app/app/Http/Controllers/ItemController.php)
+- Verify and refine Guard 2 (check `$item->documents()->count() > 0` before allowing `APPROVED` status).
+- Ensure approving an item resets `rejection_note` to `null`.
 
-#### [NEW] `prisma/seed.ts`
-Full seeder dengan:
-- 4 default users (Admin, Supervisor, Operator, Bendahara)
-- Hirarki POK lengkap: GG.2902 → BMA.004, BMA.006 (focus MVP), FAN.ZZ1
-- Semua item dari 000698 s/d 001512
+#### [MODIFY] [Document.php](file:///d:/Project%20BPS/app/app/Models/Document.php)
+- Verify Guard 3 Eloquent `booted()` deleting listener for storage garbage collection explicitly calling `Storage::disk('private')->delete($document->file_path)`.
 
 ---
 
-### Phase 2: Authentication & Layout
+### Component 2: Directory Browser View (`/items` / `/arsip`)
 
-#### [NEW] `app/api/auth/[...nextauth]/route.ts`
-NextAuth.js dengan CredentialsProvider — login via NIP/password (bcrypt).
-
-#### [NEW] `app/(auth)/login/page.tsx`
-Halaman login dengan form NIP + Password, branding BPS.
-
-#### [NEW] `components/layout/Sidebar.tsx`
-POK Treeview Sidebar dinamis — fetch dari DB, render hirarki collapsible.
-
-#### [NEW] `components/layout/AppLayout.tsx`
-Layout utama dengan sidebar + header + konten area, responsive.
+#### [MODIFY] [arsip/index.blade.php](file:///d:/Project%20BPS/app/resources/views/arsip/index.blade.php)
+- Enhance real-time Search-First Explorer header and cascading filter dropdowns (Program ➔ Output ➔ SubOutput).
+- Add JavaScript/Form logic to preserve the `search` query string parameter when resetting lower-level cascading dropdowns upon parent dropdown changes.
+- Ensure item table displays: Item Code (`font-mono`), Item Name, Akun/Sub-Output info, Pagu Anggaran (`font-mono text-emerald-800`), Document Count Badge, Verification Status Badge, and "Workspace →" button.
 
 ---
 
-### Phase 3: Multi-File Upload
+### Component 3: Item Workspace & Bendahara Verification View (`/items/{id}`)
 
-#### [NEW] `app/api/items/[itemId]/documents/route.ts`
-API endpoint POST upload (multipart/form-data), GET list dokumen per item.
-
-#### [NEW] `app/api/documents/[docId]/route.ts`
-DELETE endpoint, dan GET (stream file dengan auth check).
-
-#### [NEW] `app/(dashboard)/items/[itemId]/page.tsx`
-Item Detail page:
-- Info breadcrumb: Program → Output → Sub-Output → Komponen → Sub-Komponen → Akun → Item
-- Status badge (PENDING/APPROVED/REJECTED) dengan warna
-- Drag-and-drop zone multi-file (react-dropzone)
-- Tabel daftar dokumen dengan preview, download, delete
-
----
-
-### Phase 4: PDF Previewer & Bendahara Approval
-
-#### [NEW] `components/DocumentViewer.tsx`
-Modal inline PDF/Image viewer menggunakan native `<iframe>` embed + PDF.js fallback.
-
-#### [NEW] `app/api/items/[itemId]/verify/route.ts`
-PATCH endpoint: APPROVED / REJECTED (dengan rejection_note).
-
-#### Modifikasi `app/(dashboard)/items/[itemId]/page.tsx`
-Tambah panel Bendahara:
-- Tombol "✅ Setujui Pencairan" → status APPROVED (hijau)
-- Tombol "❌ Tolak / Butuh Revisi" → modal input catatan → status REJECTED (merah)
+#### [MODIFY] [items/show.blade.php](file:///d:/Project%20BPS/app/resources/views/items/show.blade.php)
+- Implement Alpine.js state for the **Interactive Bendahara Verification Checklist Box**:
+  - List all uploaded documents with checkboxes.
+  - Dynamically count checked items vs total documents.
+  - Strictly bind `disabled` attribute of **"Setujui Pencairan (APPROVED)"** button to `checkedCount === totalDocuments && totalDocuments > 0` (strictly requires 100% of uploaded documents to be checked).
+- Implement Rejection Modal for **"Tolak / Minta Revisi (REJECTED)"** button:
+  - Requires `rejection_note` text input before submitting.
+- Maintain and enhance:
+  - Full 7-level POK Breadcrumb Trail (`GG.2902 > BMA > BMA.006 > 005 > 521213 > 001366`).
+  - Multi-file Drag & Drop Upload Zone with Label selector.
+  - Uploaded Documents Table with Stream Inline PDF Previewer and Delete actions.
+  - Rejection Alert Banner at top when item status is `REJECTED`.
 
 ---
 
-### Phase 5: Dynamic Master Data CRUD
+### Component 4: Database & Seeder Audit
 
-#### [NEW] `app/(dashboard)/master/page.tsx`
-Halaman manajemen POK untuk Supervisor/Admin:
-- Tabel navigasi per-level
-- Form tambah/edit Program, Output, Sub-Output, Komponen, Sub-Komponen, Akun, Item
-
-#### [NEW] `app/(dashboard)/users/page.tsx`
-Halaman manajemen user untuk Admin: tambah, edit role, reset password.
+#### [MODIFY] [DatabaseSeeder.php](file:///d:/Project%20BPS/app/database/seeders/DatabaseSeeder.php)
+- Audit default users (`admin`, `supervisor`, `operator`, `bendahara`).
+- Confirm seeding of MVP focus tree: Program `GG.2902`, Output `BMA`, SubOutput `BMA.006` (items `001366`, `001211`, `001510`), and Bounding Account `524114` (items `001351`, `001352`).
 
 ---
 
-## Database Schema (Prisma)
+## Detailed Bite-Sized Implementation Plan
 
-```prisma
-model FiscalYear {
-  id        Int       @id @default(autoincrement())
-  year      Int       @unique
-  isActive  Boolean   @default(true)
-  programs  Program[]
-}
+### Task 1: Audit & Refine Backend Logic Guards (Phase 1)
 
-model User {
-  id           Int        @id @default(autoincrement())
-  nipUsername  String     @unique
-  passwordHash String
-  name         String
-  role         Role       @default(OPERATOR)
-  createdAt    DateTime   @default(now())
-  documents    Document[]
-}
+**Files:**
+- Modify: [app/Http/Controllers/DocumentController.php](file:///d:/Project%20BPS/app/app/Http/Controllers/DocumentController.php)
+- Modify: [app/Http/Controllers/ItemController.php](file:///d:/Project%20BPS/app/app/Http/Controllers/ItemController.php)
+- Modify: [app/Models/Document.php](file:///d:/Project%20BPS/app/app/Models/Document.php)
+- Test: [tests/Feature/BpsSystemTest.php](file:///d:/Project%20BPS/app/tests/Feature/BpsSystemTest.php)
 
-enum Role { ADMIN SUPERVISOR OPERATOR BENDAHARA }
+- [ ] **Step 1: Inspect and verify DocumentController.php logic guards**
+  Check `store()` and `destroy()` methods in `DocumentController.php` to ensure Guard 1 (`APPROVED` item lock) and Re-review Auto Reset (`REJECTED` -> `PENDING`) return expected error toast and status resets.
 
-model Program {
-  id           Int        @id @default(autoincrement())
-  fiscalYearId Int
-  fiscalYear   FiscalYear @relation(fields: [fiscalYearId], references: [id])
-  code         String     // e.g. GG.2902
-  name         String
-  outputs      Output[]
-}
+- [ ] **Step 2: Inspect and verify ItemController.php logic guard**
+  Check `verify()` in `ItemController.php` to ensure Guard 2 (`documents()->count() === 0` check) blocks approval and clears `rejection_note` when approved.
 
-model Output {
-  id         Int        @id @default(autoincrement())
-  programId  Int
-  program    Program    @relation(fields: [programId], references: [id])
-  code       String     // e.g. BMA, FAN
-  name       String
-  subOutputs SubOutput[]
-}
+- [ ] **Step 3: Verify Document.php model garbage collection listener**
+  Ensure `Document::booted()` listener explicitly calls `Storage::disk('private')->delete($document->file_path)` inside `deleting` event callback.
 
-model SubOutput {
-  id         Int         @id @default(autoincrement())
-  outputId   Int
-  output     Output      @relation(fields: [outputId], references: [id])
-  code       String      // e.g. BMA.004, BMA.006, FAN.ZZ1
-  name       String
-  components Component[]
-}
-
-model Component {
-  id           Int           @id @default(autoincrement())
-  subOutputId  Int
-  subOutput    SubOutput     @relation(fields: [subOutputId], references: [id])
-  code         String        // e.g. 005, 051, 530
-  name         String
-  subComponents SubComponent[]
-}
-
-model SubComponent {
-  id          Int       @id @default(autoincrement())
-  componentId Int
-  component   Component @relation(fields: [componentId], references: [id])
-  code        String    // e.g. 005.0A, 005.0B, 530.0B
-  name        String
-  accounts    Account[]
-}
-
-model Account {
-  id             Int          @id @default(autoincrement())
-  subComponentId Int
-  subComponent   SubComponent @relation(fields: [subComponentId], references: [id])
-  code           String       // e.g. 521213, 524113, 524114
-  name           String
-  items          Item[]
-}
-
-model Item {
-  id                 Int              @id @default(autoincrement())
-  accountId          Int
-  account            Account          @relation(fields: [accountId], references: [id])
-  code               String           // e.g. 001366, 001211
-  name               String
-  verificationStatus VerificationStatus @default(PENDING)
-  rejectionNote      String?
-  documents          Document[]
-}
-
-enum VerificationStatus { PENDING APPROVED REJECTED }
-
-model Document {
-  id               Int      @id @default(autoincrement())
-  itemId           Int
-  item             Item     @relation(fields: [itemId], references: [id])
-  fileName         String
-  filePath         String
-  fileSize         Int
-  fileType         String
-  uploadedByUserId Int
-  uploadedBy       User     @relation(fields: [uploadedByUserId], references: [id])
-  label            String?  // e.g. "BAPP Honor", "Daftar Penerima"
-  createdAt        DateTime @default(now())
-}
-```
+- [ ] **Step 4: Run automated test suite for backend guards**
+  Run `php artisan test --filter BpsSystemTest` and verify all tests pass.
 
 ---
 
-## UI/UX Design Decisions
+### Task 2: Refactor Search-First Directory View (`/items`) (Phase 2)
 
-- **Design System**: Tailwind CSS + shadcn/ui components
-- **Color Palette**: Biru BPS (`#003087`) sebagai primary, aksen emas/amber untuk highlight
-- **Dark Mode**: Opsional, default light mode
-- **Treeview**: Collapsible sidebar dengan ikon per level, badge status di level item
-- **Responsive**: Mobile-friendly (sidbar collapse ke hamburger menu)
-- **Bahasa**: Full Bahasa Indonesia sesuai terminologi BPS
+**Files:**
+- Modify: [resources/views/arsip/index.blade.php](file:///d:/Project%20BPS/app/resources/views/arsip/index.blade.php)
 
----
+- [ ] **Step 1: Update Cascading Filter JavaScript in index.blade.php to preserve search query**
+  Add cascading filter change handler that updates `program_id`, resets child options, preserves hidden `<input type="hidden" name="search" value="...">`, and submits the form without dropping search keywords.
 
-## Verification Plan
+- [ ] **Step 2: Ensure table columns and status badges strictly follow PRD v2.1 spec**
+  Verify Item Code font (`font-mono`), Pagu styling, File Count badge, Status Badges (`APPROVED`, `PENDING`, `REJECTED`), and Workspace link button.
 
-### Automated
-```bash
-npx prisma db push       # validasi schema
-npx prisma db seed       # validasi seeder
-npm run build            # TypeScript compile check
-```
-
-### Manual
-1. Login sebagai setiap role → verifikasi akses menu
-2. Upload 3+ file PDF pada item 001366 → verifikasi tersimpan di `/uploads/`
-3. Preview PDF inline tanpa download
-4. Bendahara setujui → badge berubah hijau (APPROVED)
-5. Bendahara tolak + isi catatan → badge merah (REJECTED), catatan tampil
-6. Supervisor tambah item baru → langsung muncul di treeview
+- [ ] **Step 3: Run automated test suite**
+  Run `php artisan test --filter BpsSystemTest` to verify system integrity.
 
 ---
 
-## Execution Order
+### Task 3: Implement Interactive Bendahara Checklist & Verification Panel in Workspace (`/items/{id}`) (Phase 3)
 
-| Step | Task | Estimasi |
-|------|------|----------|
-| 1 | `npx create-next-app` + konfigurasi | 5 mnt |
-| 2 | Prisma schema + `db push` | 10 mnt |
-| 3 | Full seeder POK + users | 20 mnt |
-| 4 | NextAuth login + RBAC middleware | 15 mnt |
-| 5 | Sidebar treeview dinamis | 20 mnt |
-| 6 | Item Detail + multi-file upload API | 25 mnt |
-| 7 | PDF previewer + Bendahara approval | 20 mnt |
-| 8 | Master data CRUD pages | 20 mnt |
-| 9 | User management (Admin) | 10 mnt |
-| 10 | Polish UI + testing | 15 mnt |
+**Files:**
+- Modify: [resources/views/items/show.blade.php](file:///d:/Project%20BPS/app/resources/views/items/show.blade.php)
+
+- [ ] **Step 1: Add Alpine.js checklist state to Bendahara Panel**
+  In `show.blade.php`, initialize Alpine state:
+  ```javascript
+  x-data="{
+      checkedDocs: {},
+      totalDocs: {{ $item->documents->count() }},
+      get checkedCount() {
+          return Object.values(this.checkedDocs).filter(Boolean).length;
+      },
+      get canApprove() {
+          return this.totalDocs > 0 && this.checkedCount === this.totalDocs;
+      },
+      showRejectModal: false
+  }"
+  ```
+
+- [ ] **Step 2: Render document checklist box inside Panel Verifikasi**
+  For each uploaded document in `$item->documents`, render a checkbox bound to `checkedDocs['{{ $doc->id }}']` with document name, label, and inline preview action button.
+  If `$item->documents` is empty, render notice: "Belum ada dokumen terunggah yang dapat diverifikasi."
+
+- [ ] **Step 3: Bind approval button state strictly to checklist completion**
+  Bind `:disabled="!canApprove"` on **Setujui Pencairan (APPROVED)** button so it is ONLY active when `checkedCount === totalDocs && totalDocs > 0`.
+
+- [ ] **Step 4: Refactor Rejection Form into an interactive modal/panel**
+  Ensure **Tolak / Minta Revisi (REJECTED)** triggers a clean modal with required textarea input for `rejection_note`.
+
+- [ ] **Step 5: Verify Rejection Alert Banner**
+  Ensure banner displays prominently when `$item->verification_status === 'REJECTED'`.
+
+---
+
+### Task 4: Database Seeder Audit & Full Verification (Phase 4)
+
+**Files:**
+- Modify: [database/seeders/DatabaseSeeder.php](file:///d:/Project%20BPS/app/database/seeders/DatabaseSeeder.php)
+- Test: [tests/Feature/BpsSystemTest.php](file:///d:/Project%20BPS/app/tests/Feature/BpsSystemTest.php)
+
+- [ ] **Step 1: Audit DatabaseSeeder.php for default users and POK hierarchy**
+  Verify NIP/Usernames: `admin`, `supervisor`, `operator`, `bendahara`, and items `001366`, `001211`, `001510`, `001351`, `001352`.
+
+- [ ] **Step 2: Execute db:seed command**
+  Run `php artisan db:seed` to verify clean execution.
+
+- [ ] **Step 3: Run full automated feature test suite**
+  Run `php artisan test --filter BpsSystemTest` to verify all end-to-end user workflows pass.

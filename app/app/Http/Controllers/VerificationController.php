@@ -10,6 +10,7 @@ class VerificationController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status', 'PENDING');
+        $search = $request->query('search');
 
         $query = Item::with(['account.subComponent.component.subOutput.output.program', 'documents']);
 
@@ -17,7 +18,18 @@ class VerificationController extends Controller
             $query->where('verification_status', $status);
         }
 
-        $items = $query->orderBy('updated_at', 'desc')->paginate(15);
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%")
+                  ->orWhereHas('account', function ($qAcc) use ($search) {
+                      $qAcc->where('code', 'like', "%{$search}%")
+                           ->orWhere('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $items = $query->orderBy('updated_at', 'desc')->paginate(15)->withQueryString();
 
         $pendingCount = Item::where('verification_status', 'PENDING')->count();
         $approvedCount = Item::where('verification_status', 'APPROVED')->count();

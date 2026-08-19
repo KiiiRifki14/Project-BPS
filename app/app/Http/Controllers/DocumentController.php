@@ -30,12 +30,14 @@ class DocumentController extends Controller
         $request->validate([
             'files'          => 'required|array|min:1',
             'files.*'        => 'required|file|mimes:pdf,jpg,jpeg,png|max:15360', // 15MB
-            'labels'         => 'nullable|array',
-            'labels.*'       => 'nullable|string|max:100',
+            'labels'         => 'required|array',
+            'labels.*'       => 'required|string|max:100',
         ], [
             'files.required'    => 'Minimal 1 file harus diunggah.',
             'files.*.mimes'     => 'Format file harus PDF, JPG, atau PNG.',
             'files.*.max'       => 'Ukuran file maksimal 15 MB per file.',
+            'labels.required'   => 'Setiap berkas yang diunggah wajib dipilihkan label kategorinya.',
+            'labels.*.required' => 'Setiap berkas yang diunggah wajib dipilihkan label kategorinya.',
         ]);
 
         // Determine storage path

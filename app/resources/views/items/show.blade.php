@@ -131,17 +131,36 @@
                             </div>
 
                             <template x-for="(file, index) in files" :key="index">
-                                <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
-                                    <span x-text="fileIcon(file.name)" class="text-xl"></span>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-xs font-bold text-slate-800 truncate" x-text="file.name"></div>
-                                        <div class="text-[10px] text-slate-500 font-mono" x-text="formatSize(file.size)"></div>
+                                <div class="flex items-center justify-between gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                                    <!-- Icon & File Info -->
+                                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                                        <div class="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                                            <span x-text="fileIcon(file.name)" class="text-xl"></span>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-xs font-bold text-slate-800 truncate" x-text="file.name"></p>
+                                            <p class="text-[10px] text-slate-500 font-mono" x-text="formatSize(file.size)"></p>
+                                        </div>
                                     </div>
-                                    <input type="text" :name="'labels[' + index + ']'"
-                                           placeholder="Label (misal: BAPP / Kuitansi)"
-                                           class="form-input-v4 text-xs py-1.5 w-44">
-                                    <button type="button" @click="removeFile(index)"
-                                            class="text-red-600 hover:text-red-800 font-bold text-lg px-2">×</button>
+
+                                    <!-- Dropdown Label Kategori -->
+                                    <div class="shrink-0">
+                                        <select :name="'labels[' + index + ']'" required class="text-xs rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500 bg-slate-50 py-1.5 px-2.5 text-slate-700">
+                                            <option value="" disabled selected>-- Pilih Label Dokumen (Wajib) --</option>
+                                            <option value="BAPP Honor">BAPP Honor</option>
+                                            <option value="Kuitansi">Kuitansi</option>
+                                            <option value="KAK">KAK (Kerangka Acuan Kerja)</option>
+                                            <option value="SK Petugas">SK Petugas</option>
+                                            <option value="Daftar Hadir">Daftar Hadir / Penerima</option>
+                                            <option value="SPJ Perjalanan Dinas">SPJ Perjalanan Dinas</option>
+                                            <option value="Lainnya">Dokumen Pendukung Lainnya</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Tombol Hapus Pilihan -->
+                                    <button type="button" @click="removeFile(index)" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
                                 </div>
                             </template>
 
@@ -206,7 +225,7 @@
                                 <div class="flex items-center justify-center gap-1.5" x-data>
                                     {{-- Stream Inline Preview Modal Button --}}
                                     <button type="button"
-                                            @click="openPreview('{{ route('documents.stream', $doc) }}', '{{ addslashes($doc->file_name) }}', '{{ $doc->file_type }}')"
+                                            @click="$dispatch('open-preview-modal', { url: '{{ route('documents.stream', $doc) }}', title: '{{ addslashes($doc->file_name) }}', type: '{{ $doc->file_type }}' })"
                                             class="btn-bps btn-bps-secondary btn-bps-sm">
                                         👁️ Preview
                                     </button>
@@ -245,74 +264,125 @@
         {{-- RIGHT COLUMN: BENDAHARA ACTION CONTROL PANEL --}}
         <div class="space-y-6 lg:sticky lg:top-24">
 
-            {{-- Verification Card --}}
-            <div class="card-corporate p-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-9 h-9 rounded-xl bg-amber-100 border border-amber-200 text-amber-800 flex items-center justify-center font-bold text-lg">
-                        🏦
-                    </div>
-                    <div>
-                        <h2 class="text-sm font-extrabold text-slate-900">Panel Verifikasi Bendahara</h2>
-                        <span class="text-xs text-slate-500">Khusus Bendahara & Admin</span>
-                    </div>
-                </div>
+            {{-- Container Panel Verifikasi Bendahara --}}
+            @if(in_array(auth()->user()->role, ['BENDAHARA', 'ADMIN']))
+                <div x-data="{
+                    checkedDocs: {{ $item->verification_status === 'APPROVED' ? json_encode($item->documents->pluck('id')->mapWithKeys(fn($id) => [(string)$id => true])) : '{}' }},
+                    totalDocs: {{ $item->documents->count() }},
+                    get checkedCount() {
+                        return Object.values(this.checkedDocs).filter(Boolean).length;
+                    },
+                    get canApprove() {
+                        return this.totalDocs > 0 && this.checkedCount === this.totalDocs;
+                    },
+                    showRejectModal: false
+                }" class="card-corporate p-6 bg-white border border-slate-200 shadow-sm space-y-4">
 
-                {{-- Status Display Pill --}}
-                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 mb-5 text-center">
-                    <div class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">STATUS VERIFIKASI SAAT INI</div>
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <span>Panel Verifikasi Bendahara</span>
+                    </h3>
+
+                    <!-- Status Item Saat Ini -->
                     @if($item->verification_status === 'APPROVED')
-                        <span class="badge-corp badge-corp-approved text-sm py-1.5 px-4">
-                            <span>✅ Siap Cair (Approved)</span>
-                        </span>
-                    @elseif($item->verification_status === 'REJECTED')
-                        <span class="badge-corp badge-corp-rejected text-sm py-1.5 px-4">
-                            <span>❌ Ditolak (Revisi)</span>
-                        </span>
+                        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Item ini telah disetujui oleh Bendahara. Status terkunci.</span>
+                        </div>
                     @else
-                        <span class="badge-corp badge-corp-pending text-sm py-1.5 px-4">
-                            <span>⏳ Menunggu Verifikasi</span>
-                        </span>
-                    @endif
-                </div>
+                        <!-- Box Ceklis Dokumen -->
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
+                            <div class="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+                                <span>📋 CEKLIS VERIFIKASI BERKAS</span>
+                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md font-mono text-[11px]" x-text="checkedCount + ' / ' + totalDocs + ' Terverifikasi'"></span>
+                            </div>
 
-                @if(auth()->user()->canVerify())
-                <div x-data="{ showRejectForm: false }" class="space-y-3">
-                    {{-- Approve Action --}}
-                    <form action="{{ route('items.verify', $item) }}" method="POST"
-                          onsubmit="return confirm('Setujui pencairan item {{ $item->code }}?\nPastikan dokumen SPJ telah diperiksa.')">
-                        @csrf @method('PATCH')
-                        <input type="hidden" name="action" value="APPROVED">
-                        <button type="submit" class="btn-bps btn-bps-success w-full py-3 text-sm">
-                            <span>✅ Setujui Pencairan (Approved)</span>
-                        </button>
-                    </form>
+                            <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                                @forelse($item->documents as $doc)
+                                    <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs">
+                                        <input 
+                                            type="checkbox" 
+                                            x-model="checkedDocs['{{ $doc->id }}']" 
+                                            @if($item->verification_status === 'APPROVED') checked disabled @endif
+                                            class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 disabled:opacity-75 disabled:cursor-not-allowed"
+                                        >
+                                        <span class="font-medium text-slate-800 truncate flex-1">{{ $doc->file_name }}</span>
+                                        <span class="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded mr-1">{{ $doc->label ?? 'Dokumen' }}</span>
+                                        <button type="button"
+                                                @click.stop="$dispatch('open-preview-modal', { url: '{{ route('documents.stream', $doc) }}', title: '{{ addslashes($doc->file_name) }}', type: '{{ $doc->file_type }}' })"
+                                                class="text-slate-400 hover:text-blue-800 p-1">
+                                            👁️
+                                        </button>
+                                    </label>
+                                @empty
+                                    <p class="text-xs text-slate-400 italic p-2 text-center">Belum ada dokumen terunggah.</p>
+                                @endforelse
+                            </div>
+                        </div>
 
-                    {{-- Reject Action Toggle --}}
-                    <button type="button" class="btn-bps btn-bps-danger w-full py-3 text-sm"
-                            @click="showRejectForm = !showRejectForm">
-                        <span>❌ Tolak / Minta Revisi</span>
-                    </button>
+                        <!-- Form Setujui Pencairan (Harus SELALU Muncul) -->
+                        <form action="{{ route('items.verify', $item) }}" method="POST" class="space-y-2 mt-4">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="action" value="APPROVED">
 
-                    {{-- Rejection Form --}}
-                    <div x-show="showRejectForm" x-transition class="p-4 rounded-xl bg-red-50 border border-red-200">
-                        <form action="{{ route('items.verify', $item) }}" method="POST" class="space-y-3">
-                            @csrf @method('PATCH')
-                            <input type="hidden" name="action" value="REJECTED">
-                            <label class="form-label-custom text-red-900">Catatan Penolakan *</label>
-                            <textarea name="rejection_note" rows="3" class="form-input-v4 text-xs" required
-                                      placeholder="Contoh: BAPP belum ditandatangani PPK, Kuitansi kurang legalisir..."></textarea>
-                            <button type="submit" class="btn-bps btn-bps-danger w-full py-2.5 text-xs">
-                                Kirim Penolakan Ke Operator
+                            <button 
+                                type="submit" 
+                                :disabled="!canApprove"
+                                :class="canApprove ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-70'"
+                                class="w-full py-3 px-4 font-semibold text-sm rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span>Setujui Pencairan (Approved)</span>
                             </button>
                         </form>
-                    </div>
+
+                        <!-- Tombol Tolak / Minta Revisi -->
+                        <button 
+                            type="button" 
+                            @click="showRejectModal = true" 
+                            class="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Tolak / Minta Revisi</span>
+                        </button>
+
+                        {{-- Rejection Modal --}}
+                        <div x-show="showRejectModal"
+                             class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+                             style="display:none;"
+                             x-transition>
+                            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" @click="showRejectModal = false"></div>
+                            <div class="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden z-10 border border-slate-200 p-6">
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                                    <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                                        <span>❌ Tolak & Minta Revisi</span>
+                                    </h3>
+                                    <button type="button" @click="showRejectModal = false" class="text-slate-400 hover:text-slate-600 text-lg font-bold">×</button>
+                                </div>
+                                <form action="{{ route('items.verify', $item) }}" method="POST" class="space-y-4">
+                                    @csrf @method('PATCH')
+                                    <input type="hidden" name="action" value="REJECTED">
+                                    <div>
+                                        <label class="form-label-custom text-slate-700 font-bold mb-1.5 block">Catatan Penolakan *</label>
+                                        <textarea name="rejection_note" rows="4" class="form-input-v4 text-xs w-full resize-none" required
+                                                  placeholder="Contoh: BAPP belum ditandatangani PPK, Kuitansi kurang legalisir..."></textarea>
+                                    </div>
+                                    <div class="flex justify-end gap-2.5">
+                                        <button type="button" @click="showRejectModal = false" class="btn-bps btn-bps-secondary text-xs">
+                                            Batal
+                                        </button>
+                                        <button type="submit" class="btn-bps btn-bps-danger text-xs font-black">
+                                            Kirim Penolakan
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
+
                 </div>
-                @else
-                <div class="p-4 rounded-xl bg-slate-100 text-center text-xs font-semibold text-slate-500">
-                    🔒 Hanya Bendahara atau Admin yang dapat melakukan verifikasi pencairan.
-                </div>
-                @endif
-            </div>
+            @endif
 
             {{-- Document Analytics Summary --}}
             <div class="card-corporate p-6">
@@ -346,6 +416,7 @@
 
 {{-- ── INLINE STREAM PDF PREVIEW MODAL ── --}}
 <div x-data="previewModal()" x-show="open" x-transition
+     @open-preview-modal.window="openPreview($event.detail.url, $event.detail.title, $event.detail.type || 'pdf')"
      class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" style="display:none;">
 
     {{-- Backdrop --}}
@@ -433,13 +504,27 @@ function previewModal() {
         openPreview(url, name, type) {
             this.fileUrl = url;
             this.fileName = name;
-            this.fileType = type.toLowerCase();
+            this.fileType = type ? type.toLowerCase() : (name.split('.').pop().toLowerCase() === 'pdf' ? 'pdf' : 'image');
             this.open = true;
         },
 
         close() {
             this.open = false;
             this.fileUrl = '';
+        }
+    };
+}
+
+function bendaharaChecklist(totalDocs, initialCheckedDocs) {
+    return {
+        checkedDocs: initialCheckedDocs || {},
+        totalDocs: totalDocs,
+        showRejectModal: false,
+        get checkedCount() {
+            return Object.values(this.checkedDocs).filter(Boolean).length;
+        },
+        get canApprove() {
+            return this.totalDocs > 0 && this.checkedCount === this.totalDocs;
         }
     };
 }
