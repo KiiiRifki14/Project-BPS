@@ -27,10 +27,8 @@ class ItemController extends Controller
      */
     public function verify(Request $request, Item $item)
     {
-        $user = $request->user();
-
-        if (!$user->canVerify()) {
-            abort(403, 'Hanya Bendahara atau Admin yang dapat melakukan verifikasi pencairan.');
+        if (auth()->user()->role !== 'BENDAHARA') {
+            abort(403, 'Akses ditolak: Hanya Bendahara Pengeluaran yang berwenang melakukan verifikasi pencairan.');
         }
 
         $validated = $request->validate([

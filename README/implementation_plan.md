@@ -1,162 +1,343 @@
-# Implementation Plan — Sistem Data Digital Arsip Keuangan BPS Subang (v2.1 Execution)
+# Implementasi SAKDI BPS Design System v2.0.0 — FINAL PLAN
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
-**Goal:** Execute backend logic guards, refactor UI to a Search-First Directory, and implement the Interactive Bendahara Checklist according to PRD v2.1 for BPS Subang's financial archive system.
-
-**Architecture:** Laravel 11 backend with Eloquent models, Blade templates styled with corporate Tailwind CSS aesthetic, and Alpine.js for dynamic frontend interactions (Search-First Explorer, Interactive Verification Checklist, PDF Modal Stream Viewer).
-
-**Tech Stack:** Laravel 11 (PHP 8.2), MySQL / SQLite, Tailwind CSS, Alpine.js, PHPUnit.
+Menerapkan design system resmi SAKDI v2.0.0 ke seluruh tampilan SAKDI BPS Kabupaten Subang, berdasarkan [`DESIGN.md`](file:///d:/Project%20BPS/app/DESIGN.md).
 
 ---
 
-## User Review Required
+## Status Konfirmasi User
 
-> [!IMPORTANT]
-> - **Strict Interactive Bendahara Checklist:** Bendahara MUST physically check off EVERY single uploaded document checklist item before the **Setujui Pencairan (APPROVED)** button activates. Condition: `checkedCount === totalDocuments && totalDocuments > 0`.
-> - **Auto Re-review Reset:** When an item has status `REJECTED` and an Operator uploads a new document, the system automatically resets status to `PENDING` and clears the rejection note so it reappears in Bendahara's verification queue.
-> - **URL State Preservation:** Cascading dropdown filter changes preserve active search queries (`search` parameter) seamlessly.
+| Poin | Jawaban |
+|---|---|
+| Warna brand | ✅ Ganti semua ke `#0057A8` |
+| Dark mode | ✅ Aktifkan via class `.dark` pada `<html>` + media query |
+| Print CSS | ✅ Implementasi penuh Section 14 DESIGN.md |
+| Font loading | ✅ Verifikasi + pastikan preload `Plus Jakarta Sans` & `JetBrains Mono` |
+| Skeleton loader & tooltip | ✅ Tambahkan ke dashboard & tabel arsip |
+| Hapus CSS lama | ✅ Purge semua hardcode hex lama setelah token baru diterapkan |
+| Verification plan | ✅ Diperluas: form error state, tablet responsive, print |
+
+---
+
+## Audit Warna Lama — Hasil Temuan
+
+> [!WARNING]
+> **14 instance** warna hardcode lama ditemukan di **6 file**. Semua akan diganti token.
+
+| File | Baris | Warna Lama | Token Baru |
+|---|---|---|---|
+| `app.blade.php` | L29 | `#003087`, `#001F54` (progress bar gradient) | `#0057A8`, `#002D5C` |
+| `app.blade.php` | L174, L178 | `#003087`, `#001F54` (btn-bps-primary) | `#0057A8`, `#004A9E` |
+| `app.blade.php` | L222 | `#003087` (form-input focus border) | `#0057A8` |
+| `app.blade.php` | L251 | `bg-[#001F54]` (topbar BPS icon) | `bg-[#002D5C]` |
+| `sidebar.blade.php` | L146 | `#001F54` (sidebar bg) | `#002D5C` |
+| `sidebar.blade.php` | L196 | `#003087` (nav active bg) | `#0057A8` |
+| `items/show.blade.php` | L427 | `bg-[#001F54]` (modal header) | `bg-[#002D5C]` |
+| `dashboard.blade.php` | L12 | `bg-[#001F54]` (hero banner) | `bg-[#002D5C]` |
+| `arsip/index.blade.php` | L8 | `bg-[#001F54]` (page header) | `bg-[#002D5C]` |
+| `auth/login.blade.php` | L14 | `#001a5c`, `#003087`, `#0d47a1` (bg gradient) | `#002D5C`, `#0057A8`, `#004A9E` |
+| `auth/login.blade.php` | L52 | `#003087` (focus border) | `#0057A8` |
+| `auth/login.blade.php` | L54 | `#003087`, `#0d47a1` (btn gradient) | `#0057A8`, `#004A9E` |
+| `auth/login.blade.php` | L127 | `accent-color:#003087` (checkbox) | `#0057A8` |
+| `auth/login.blade.php` | L47, L137 | `#374151` (label color) | `var(--color-neutral-700)` |
+
+> [!NOTE]
+> **JS files**: `app.js` dan `bootstrap.js` — **tidak ada hardcode warna** (clean ✓). Welcome page — tidak ada legacy hex (clean ✓). Reports & users views — tidak ada legacy hex (clean ✓).
 
 ---
 
 ## Proposed Changes
 
-### Component 1: Backend Logic Guards & Models
+---
 
-#### [MODIFY] [DocumentController.php](file:///d:/Project%20BPS/app/app/Http/Controllers/DocumentController.php)
-- Verify and refine Guard 1 (lock uploads & deletes for `APPROVED` items).
-- Verify Re-review Auto Reset logic (resets `verification_status` to `PENDING` and `rejection_note` to `null` when a document is uploaded to a `REJECTED` item).
+### 1. Font Loading Verification + `app.css` — Design Tokens
 
-#### [MODIFY] [ItemController.php](file:///d:/Project%20BPS/app/app/Http/Controllers/ItemController.php)
-- Verify and refine Guard 2 (check `$item->documents()->count() > 0` before allowing `APPROVED` status).
-- Ensure approving an item resets `rejection_note` to `null`.
+#### [MODIFY] [app.blade.php](file:///d:/Project%20BPS/app/resources/views/layouts/app.blade.php) — Font preload
+Tambah `<link rel="preload">` untuk font files di `<head>` untuk mencegah FOUT:
+```html
+<!-- Preconnect sudah ada, tambah display=swap dan font-display -->
+<link href="...Plus+Jakarta+Sans...display=swap" rel="stylesheet">
+<link href="...JetBrains+Mono...display=swap" rel="stylesheet">
+```
+Tambah CSS `font-display: swap` di `@font-face` override jika diperlukan.
 
-#### [MODIFY] [Document.php](file:///d:/Project%20BPS/app/app/Models/Document.php)
-- Verify Guard 3 Eloquent `booted()` deleting listener for storage garbage collection explicitly calling `Storage::disk('private')->delete($document->file_path)`.
+#### [MODIFY] [app.css](file:///d:/Project%PS/app/resources/css/app.css)
+Ganti isi sepenuhnya dengan:
+
+**A. CSS Custom Properties (Design Tokens v2.0.0)**
+```css
+:root {
+  /* Brand Colors */
+  --color-bps-blue:    #0057A8;
+  --color-bps-orange:  #E8601C;
+  --color-bps-green:   #00873E;
+
+  /* Primary scale */
+  --color-primary-900: #002D5C;
+  --color-primary-700: #004A9E;
+  --color-primary:     #0057A8;
+  --color-primary-400: #3D87CC;
+  --color-primary-100: #D6E8F7;
+  --color-primary-50:  #EEF5FB;
+
+  /* Accent scale */
+  --color-accent-700:  #B84A12;
+  --color-accent:      #E8601C;
+  --color-accent-200:  #F9C9A8;
+  --color-accent-50:   #FEF3EC;
+
+  /* Positive scale */
+  --color-positive-700: #006030;
+  --color-positive:     #00873E;
+  --color-positive-200: #A8DFC0;
+  --color-positive-50:  #E6F5EC;
+
+  /* Semantic */
+  --color-error:        #C62828;
+  --color-error-light:  #FDECEA;
+  --color-warning:      #E65100;
+  --color-warning-light:#FFF3E0;
+
+  /* Neutral */
+  --color-neutral-900: #0F1923;
+  --color-neutral-700: #1E293B;
+  --color-neutral-500: #475569;
+  --color-neutral-300: #CBD5E1;
+  --color-neutral-100: #F1F5F9;
+  --color-neutral-50:  #F8FAFC;
+  --color-white:       #FFFFFF;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Spacing (Fibonacci 8-point) */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+  --sp-12: 48px; --sp-16: 64px; --sp-20: 80px; --sp-24: 96px;
+
+  /* Elevation */
+  --shadow-1: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-2: 0 4px 12px rgba(0,0,0,0.10);
+  --shadow-3: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-4: 0 16px 40px rgba(0,0,0,0.14);
+
+  /* Z-index */
+  --z-raised:   10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-header:   300;
+  --z-sidebar:  400;
+  --z-overlay:  500;
+  --z-modal:    600;
+  --z-toast:    700;
+  --z-tooltip:  800;
+
+  /* Border radius */
+  --r-xs: 2px; --r-sm: 4px; --r-md: 8px;
+  --r-lg: 12px; --r-xl: 16px; --r-full: 9999px;
+
+  /* Layout */
+  --sidebar-w: 256px;
+}
+```
+
+**B. Dark Mode Tokens**
+```css
+@media (prefers-color-scheme: dark), .dark {
+  --color-bg-base:      #0D1117;
+  --color-bg-surface:   #161B22;
+  --color-bg-elevated:  #1C2128;
+  --color-primary:      #4D9EE0;
+  --color-accent:       #F09060;
+  --color-positive:     #3DB86B;
+  --color-error:        #F77171;
+  --color-neutral-900:  #E6EDF3;
+  --color-neutral-700:  #8D96A0;
+  --color-neutral-300:  #30363D;
+  --color-neutral-100:  #1C2128;
+  --color-white:        #161B22;
+}
+```
+
+**C. Component Classes (pengganti hardcode inline)**
+- `.sakdi-btn-primary`, `.sakdi-btn-secondary`, `.sakdi-btn-danger`, `.sakdi-btn-ghost`
+- `.sakdi-badge-success`, `.sakdi-badge-warning`, `.sakdi-badge-error`, `.sakdi-badge-primary`
+- `.sakdi-card`, `.sakdi-card-stat`, `.sakdi-card-stat-positive`, `.sakdi-card-stat-error`
+- `.sakdi-input`, `.sakdi-label`, `.sakdi-textarea`
+- `.sakdi-table`, `.sakdi-th`, `.sakdi-td`
+- `.sakdi-skeleton`, `.sakdi-skeleton-text`, `.sakdi-skeleton-avatar`
+- `.sakdi-tooltip`, `[data-tooltip]::after`
+- `.sakdi-alert-success`, `.sakdi-alert-error`, `.sakdi-alert-warning`, `.sakdi-alert-info`
+
+**D. Animations**
+```css
+@keyframes shimmer { ... } /* skeleton loader */
+@keyframes pageFadeIn { ... } /* page entrance */
+@keyframes toastSlideIn { ... } /* toast notification */
+```
+
+**E. Print CSS (@media print) — Section 14 DESIGN.md**
+```css
+@media print {
+  /* A4, margins 20mm 25mm 20mm 25mm */
+  /* Font: Plus Jakarta Sans, Arial */
+  /* font-size: 10pt, line-height: 1.5 */
+  /* Hide: sidebar, topbar, buttons, file-upload */
+  /* Table: headerBg #E8F0FA, striped #F5F8FC */
+  /* Watermark: "DOKUMEN RESMI BPS" 48pt -45deg rgba(0,87,168,0.08) */
+  /* Page break: avoid table-row, figure, h3/h4; before h2 */
+  /* Footer: page number + tanggal cetak */
+}
+```
+
+**F. Reduced Motion**
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; }
+}
+```
 
 ---
 
-### Component 2: Directory Browser View (`/items` / `/arsip`)
+### 2. Layout — `layouts/app.blade.php`
 
-#### [MODIFY] [arsip/index.blade.php](file:///d:/Project%20BPS/app/resources/views/arsip/index.blade.php)
-- Enhance real-time Search-First Explorer header and cascading filter dropdowns (Program ➔ Output ➔ SubOutput).
-- Add JavaScript/Form logic to preserve the `search` query string parameter when resetting lower-level cascading dropdowns upon parent dropdown changes.
-- Ensure item table displays: Item Code (`font-mono`), Item Name, Akun/Sub-Output info, Pagu Anggaran (`font-mono text-emerald-800`), Document Count Badge, Verification Status Badge, and "Workspace →" button.
-
----
-
-### Component 3: Item Workspace & Bendahara Verification View (`/items/{id}`)
-
-#### [MODIFY] [items/show.blade.php](file:///d:/Project%20BPS/app/resources/views/items/show.blade.php)
-- Implement Alpine.js state for the **Interactive Bendahara Verification Checklist Box**:
-  - List all uploaded documents with checkboxes.
-  - Dynamically count checked items vs total documents.
-  - Strictly bind `disabled` attribute of **"Setujui Pencairan (APPROVED)"** button to `checkedCount === totalDocuments && totalDocuments > 0` (strictly requires 100% of uploaded documents to be checked).
-- Implement Rejection Modal for **"Tolak / Minta Revisi (REJECTED)"** button:
-  - Requires `rejection_note` text input before submitting.
-- Maintain and enhance:
-  - Full 7-level POK Breadcrumb Trail (`GG.2902 > BMA > BMA.006 > 005 > 521213 > 001366`).
-  - Multi-file Drag & Drop Upload Zone with Label selector.
-  - Uploaded Documents Table with Stream Inline PDF Previewer and Delete actions.
-  - Rejection Alert Banner at top when item status is `REJECTED`.
+#### [MODIFY] [app.blade.php](file:///d:/Project%20BPS/app/resources/views/layouts/app.blade.php)
+- **Hapus** semua `<style>` inline hardcode hex (`.btn-bps-primary`, `.form-input-v4`, dll.) — ganti referensi ke class `.sakdi-*` dari `app.css`
+- Update `--sidebar-w: 270px` → `256px`
+- Topbar progress bar: `#003087 → #0057A8`, `#001F54 → #002D5C`
+- Topbar BPS icon: `bg-[#001F54]` → `bg-[#002D5C]`
+- Button `.btn-bps-primary`: `#003087 → #0057A8`, hover `#001F54 → #004A9E`
+- Input focus: `#003087 → #0057A8`
+- Session flash: gunakan class `.sakdi-alert-success` / `.sakdi-alert-error`
+- Z-index topbar: `z-index: 30` → `var(--z-header)` (300)
 
 ---
 
-### Component 4: Database & Seeder Audit
+### 3. Sidebar — `layouts/sidebar.blade.php`
 
-#### [MODIFY] [DatabaseSeeder.php](file:///d:/Project%20BPS/app/database/seeders/DatabaseSeeder.php)
-- Audit default users (`admin`, `supervisor`, `operator`, `bendahara`).
-- Confirm seeding of MVP focus tree: Program `GG.2902`, Output `BMA`, SubOutput `BMA.006` (items `001366`, `001211`, `001510`), and Bounding Account `524114` (items `001351`, `001352`).
-
----
-
-## Detailed Bite-Sized Implementation Plan
-
-### Task 1: Audit & Refine Backend Logic Guards (Phase 1)
-
-**Files:**
-- Modify: [app/Http/Controllers/DocumentController.php](file:///d:/Project%20BPS/app/app/Http/Controllers/DocumentController.php)
-- Modify: [app/Http/Controllers/ItemController.php](file:///d:/Project%20BPS/app/app/Http/Controllers/ItemController.php)
-- Modify: [app/Models/Document.php](file:///d:/Project%20BPS/app/app/Models/Document.php)
-- Test: [tests/Feature/BpsSystemTest.php](file:///d:/Project%20BPS/app/tests/Feature/BpsSystemTest.php)
-
-- [ ] **Step 1: Inspect and verify DocumentController.php logic guards**
-  Check `store()` and `destroy()` methods in `DocumentController.php` to ensure Guard 1 (`APPROVED` item lock) and Re-review Auto Reset (`REJECTED` -> `PENDING`) return expected error toast and status resets.
-
-- [ ] **Step 2: Inspect and verify ItemController.php logic guard**
-  Check `verify()` in `ItemController.php` to ensure Guard 2 (`documents()->count() === 0` check) blocks approval and clears `rejection_note` when approved.
-
-- [ ] **Step 3: Verify Document.php model garbage collection listener**
-  Ensure `Document::booted()` listener explicitly calls `Storage::disk('private')->delete($document->file_path)` inside `deleting` event callback.
-
-- [ ] **Step 4: Run automated test suite for backend guards**
-  Run `php artisan test --filter BpsSystemTest` and verify all tests pass.
+#### [MODIFY] [sidebar.blade.php](file:///d:/Project%20BPS/app/resources/views/layouts/sidebar.blade.php)
+- Sidebar bg: `#001F54` → `#002D5C` (primary-900)
+- Sidebar width: `270px` → `256px`
+- Nav active bg: `#003087` → `#0057A8` (primary)
+- Nav hover: `rgba(255,255,255,0.1)` → `rgba(255,255,255,0.08)` (spec)
+- Z-index: `z-index: 40` → `var(--z-sidebar)` (400)
+- Tambah **collapsed behavior** md: `@media (min-width: 768px) and (max-width: 1023px)` → width 64px, text hidden
 
 ---
 
-### Task 2: Refactor Search-First Directory View (`/items`) (Phase 2)
+### 4. Dashboard — `dashboard.blade.php`
 
-**Files:**
-- Modify: [resources/views/arsip/index.blade.php](file:///d:/Project%20BPS/app/resources/views/arsip/index.blade.php)
-
-- [ ] **Step 1: Update Cascading Filter JavaScript in index.blade.php to preserve search query**
-  Add cascading filter change handler that updates `program_id`, resets child options, preserves hidden `<input type="hidden" name="search" value="...">`, and submits the form without dropping search keywords.
-
-- [ ] **Step 2: Ensure table columns and status badges strictly follow PRD v2.1 spec**
-  Verify Item Code font (`font-mono`), Pagu styling, File Count badge, Status Badges (`APPROVED`, `PENDING`, `REJECTED`), and Workspace link button.
-
-- [ ] **Step 3: Run automated test suite**
-  Run `php artisan test --filter BpsSystemTest` to verify system integrity.
+#### [MODIFY] [dashboard.blade.php](file:///d:/Project%20BPS/app/resources/views/dashboard.blade.php)
+- Hero banner: `bg-[#001F54]` → `bg-[#002D5C]`
+- Stat cards: ganti class ke `.sakdi-card-stat`, `.sakdi-card-stat-positive`, `.sakdi-card-stat-error`
+- Tombol CTA: gunakan `.sakdi-btn-primary`
+- Badges status tabel: `.badge-corp-approved` → `.sakdi-badge-success`, dst.
+- **Tambah Skeleton Loader** pada initial page load untuk stat cards (5 cards) — gunakan `.sakdi-skeleton` dengan x-show conditional
+- **Tambah Tooltip** pada kolom "Pagu Anggaran" tabel — hover menampilkan format lengkap
 
 ---
 
-### Task 3: Implement Interactive Bendahara Checklist & Verification Panel in Workspace (`/items/{id}`) (Phase 3)
+### 5. Item Detail — `items/show.blade.php`
 
-**Files:**
-- Modify: [resources/views/items/show.blade.php](file:///d:/Project%20BPS/app/resources/views/items/show.blade.php)
-
-- [ ] **Step 1: Add Alpine.js checklist state to Bendahara Panel**
-  In `show.blade.php`, initialize Alpine state:
-  ```javascript
-  x-data="{
-      checkedDocs: {},
-      totalDocs: {{ $item->documents->count() }},
-      get checkedCount() {
-          return Object.values(this.checkedDocs).filter(Boolean).length;
-      },
-      get canApprove() {
-          return this.totalDocs > 0 && this.checkedCount === this.totalDocs;
-      },
-      showRejectModal: false
-  }"
-  ```
-
-- [ ] **Step 2: Render document checklist box inside Panel Verifikasi**
-  For each uploaded document in `$item->documents`, render a checkbox bound to `checkedDocs['{{ $doc->id }}']` with document name, label, and inline preview action button.
-  If `$item->documents` is empty, render notice: "Belum ada dokumen terunggah yang dapat diverifikasi."
-
-- [ ] **Step 3: Bind approval button state strictly to checklist completion**
-  Bind `:disabled="!canApprove"` on **Setujui Pencairan (APPROVED)** button so it is ONLY active when `checkedCount === totalDocs && totalDocs > 0`.
-
-- [ ] **Step 4: Refactor Rejection Form into an interactive modal/panel**
-  Ensure **Tolak / Minta Revisi (REJECTED)** triggers a clean modal with required textarea input for `rejection_note`.
-
-- [ ] **Step 5: Verify Rejection Alert Banner**
-  Ensure banner displays prominently when `$item->verification_status === 'REJECTED'`.
+#### [MODIFY] [show.blade.php](file:///d:/Project%20BPS/app/resources/views/items/show.blade.php)
+- Modal header: `bg-[#001F54]` → `bg-[#002D5C]`
+- Tombol approval: gunakan `.sakdi-btn-primary` (#0057A8)
+- Tombol reject: gunakan `.sakdi-btn-danger` (#C62828)
+- Tambah stepper verifikasi (Pending → Verifikasi → Approved/Rejected) di bagian atas item card
+- Modal z-index: selaraskan ke `var(--z-modal)` (600) dan overlay `var(--z-overlay)` (500)
 
 ---
 
-### Task 4: Database Seeder Audit & Full Verification (Phase 4)
+### 6. Arsip — `arsip/index.blade.php`
 
-**Files:**
-- Modify: [database/seeders/DatabaseSeeder.php](file:///d:/Project%20BPS/app/database/seeders/DatabaseSeeder.php)
-- Test: [tests/Feature/BpsSystemTest.php](file:///d:/Project%20BPS/app/tests/Feature/BpsSystemTest.php)
+#### [MODIFY] [index.blade.php](file:///d:/Project%20BPS/app/resources/views/arsip/index.blade.php)
+- Page header: `bg-[#001F54]` → `bg-[#002D5C]`
+- Gunakan `.sakdi-card`, `.sakdi-table`, `.sakdi-badge-*`, `.sakdi-btn-*`
+- **Tambah Skeleton Loader** untuk tabel saat filter berubah
+- **Tambah Tooltip** pada kolom kode item dan badge status
 
-- [ ] **Step 1: Audit DatabaseSeeder.php for default users and POK hierarchy**
-  Verify NIP/Usernames: `admin`, `supervisor`, `operator`, `bendahara`, and items `001366`, `001211`, `001510`, `001351`, `001352`.
+---
 
-- [ ] **Step 2: Execute db:seed command**
-  Run `php artisan db:seed` to verify clean execution.
+### 7. Verifikasi — `verification/index.blade.php`
 
-- [ ] **Step 3: Run full automated feature test suite**
-  Run `php artisan test --filter BpsSystemTest` to verify all end-to-end user workflows pass.
+#### [MODIFY] [index.blade.php](file:///d:/Project%20BPS/app/resources/views/verification/index.blade.php)
+- Update token warna, card, table, badge, button
+- Tab filter: gunakan styling `.sakdi-tabs`/`.sakdi-tab-item`
+
+---
+
+### 8. Auth / Login — `auth/login.blade.php`
+
+#### [MODIFY] [login.blade.php](file:///d:/Project%20BPS/app/resources/views/auth/login.blade.php)
+- Login bg gradient: `#001a5c, #003087, #0d47a1` → `#002D5C, #0057A8, #004A9E`
+- Input focus: `#003087` → `#0057A8`
+- Button gradient: `#003087, #0d47a1` → `#0057A8, #004A9E`
+- Checkbox `accent-color`: `#003087` → `#0057A8`
+- Label color `#374151` → `var(--color-neutral-700)`
+- Tambah **error state** styling untuk input dengan class `.sakdi-input--error`
+
+---
+
+## Verification Plan (Expanded)
+
+### Automated Tests
+```
+php artisan test --filter BpsSystemTest
+```
+
+### Manual Verification Checklist
+
+#### A. Warna & Token
+- [ ] Sidebar background: `#002D5C` (primary-900)
+- [ ] Sidebar nav active: `#0057A8` (primary)
+- [ ] Topbar progress bar: gradient `#0057A8 → #004A9E`
+- [ ] Dashboard hero banner: `#002D5C`
+- [ ] Tombol primary di semua halaman: `#0057A8`
+- [ ] Login page gradient: `#002D5C → #0057A8`
+- [ ] Pastikan **tidak ada** `#003087` atau `#001F54` via browser DevTools Inspector
+
+#### B. Form Error State
+- [ ] Submit login form kosong → border merah `#C62828` + teks error muncul di bawah input
+- [ ] Upload file melebihi 10MB → area upload berubah ke `.file-upload _error` state
+- [ ] Form reject item tanpa catatan → validasi muncul dengan aria-describedby
+
+#### C. Skeleton Loader & Tooltip
+- [ ] Dashboard: skeleton muncul saat pertama kali load (sebelum data tersedia)
+- [ ] Arsip tabel: skeleton muncul saat filter berubah
+- [ ] Tooltip pada kolom pagu: hover muncul dengan delay 150ms, font mono, bg `#0F1923`
+- [ ] Tooltip tidak keluar dari viewport (flip position)
+
+#### D. Dark Mode
+- [ ] Aktifkan dark mode via OS → semua surface berubah ke token dark
+- [ ] Teks tetap terbaca (kontras ≥ AA) di semua dark surface
+- [ ] Sidebar dark: `#010409` background, `#E6EDF3` text
+- [ ] Tombol primary dark: `#4D9EE0` (5.1:1 kontras ✓)
+
+#### E. Responsif — Tablet (768px–1023px)
+- [ ] Sidebar collapsed ke 64px (icon only)
+- [ ] Konten utama mengisi sisa lebar
+- [ ] Tabel dapat di-scroll horizontal
+- [ ] Card KPI dashboard: 2 kolom (tidak overflow)
+
+#### F. Responsif — Mobile (< 640px)
+- [ ] Sidebar tersembunyi, hamburger button muncul
+- [ ] Overlay gelap muncul saat sidebar dibuka
+- [ ] Tabel hanya tampil kolom esensial (atau scroll horizontal)
+
+#### G. Print / PDF — Section 14
+- [ ] `Ctrl+P` dari halaman item detail → tampilan A4
+- [ ] Sidebar, topbar, tombol, file-upload **tidak tercetak**
+- [ ] Tabel memiliki header bg `#E8F0FA`, striped `#F5F8FC`
+- [ ] Font `Plus Jakarta Sans` 10pt, line-height 1.5
+- [ ] Footer: nomor halaman + tanggal cetak
+- [ ] Watermark "DOKUMEN RESMI BPS" hanya muncul jika class `.draft` aktif
+
+#### H. Font Loading
+- [ ] DevTools → Network → filter `font` → Plus Jakarta Sans & JetBrains Mono ter-load dengan `font-display: swap`
+- [ ] Tidak ada FOIT (flash of invisible text) pada first load
+- [ ] Angka di kolom pagu/kode: font mono terpakai (bukan sans)
+
+#### I. Aksesibilitas
+- [ ] Semua tombol: outline `3px solid #3D87CC` saat focused
+- [ ] Icon dekoratif: `aria-hidden="true"`
+- [ ] Contrast ratio setiap pasangan warna ≥ 4.5:1 (gunakan browser DevTools)

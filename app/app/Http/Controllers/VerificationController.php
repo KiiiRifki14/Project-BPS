@@ -9,6 +9,10 @@ class VerificationController extends Controller
 {
     public function index(Request $request)
     {
+        if (auth()->user()->role !== 'BENDAHARA') {
+            abort(403, 'Akses ditolak: Hanya Bendahara Pengeluaran yang berwenang melakukan verifikasi pencairan.');
+        }
+
         $status = $request->query('status', 'PENDING');
         $search = $request->query('search');
 

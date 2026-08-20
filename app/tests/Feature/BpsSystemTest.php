@@ -247,4 +247,27 @@ class BpsSystemTest extends TestCase
         $response->assertStatus(403);
         $this->assertEquals('PENDING', $item->fresh()->verification_status);
     }
+
+    public function test_admin_cannot_access_verify_route(): void
+    {
+        Storage::fake('private');
+
+        $admin    = User::where('role', 'ADMIN')->first();
+        $operator = User::where('role', 'OPERATOR')->first();
+        $item     = Item::where('code', '001366')->first();
+
+        // Upload 1 dokumen agar tidak terhalang Guard 2
+        $this->actingAs($operator)->post(route('documents.store', $item), [
+            'files'  => [UploadedFile::fake()->create('spj.pdf', 100, 'application/pdf')],
+            'labels' => ['SPJ'],
+        ]);
+
+        // PATCH verify → harus 403 karena Admin tidak boleh memproses verifikasi
+        $response = $this->actingAs($admin)->patch(route('items.verify', $item), [
+            'action' => 'APPROVED',
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertEquals('PENDING', $item->fresh()->verification_status);
+    }
 }

@@ -265,7 +265,7 @@
         <div class="space-y-6 lg:sticky lg:top-24">
 
             {{-- Container Panel Verifikasi Bendahara --}}
-            @if(in_array(auth()->user()->role, ['BENDAHARA', 'ADMIN']))
+            @if(auth()->user()->role === 'BENDAHARA')
                 <div x-data="{
                     checkedDocs: {{ $item->verification_status === 'APPROVED' ? json_encode($item->documents->pluck('id')->mapWithKeys(fn($id) => [(string)$id => true])) : '{}' }},
                     totalDocs: {{ $item->documents->count() }},
@@ -424,7 +424,9 @@
 
     {{-- Modal Box --}}
     <div class="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden z-10 border border-slate-700 flex flex-col max-h-[90vh]">
-        <div class="px-6 py-4 bg-[#001F54] text-white flex items-center justify-between border-b border-slate-700">
+        <div class="px-6 py-4 text-white flex items-center justify-between border-b border-slate-700"
+             style="background: var(--color-primary-900);">
+
             <div class="min-w-0 pr-4">
                 <div class="text-sm font-extrabold truncate" x-text="fileName"></div>
                 <div class="text-[11px] font-semibold text-slate-300 mt-0.5">Pratinjau Dokumen Inline — BPS Kabupaten Subang</div>
