@@ -43,11 +43,14 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 
     // 3. Verifikasi Pencairan & Centang Check (Bendahara & Admin)
-    Route::middleware('role:BENDAHARA,ADMIN')->group(function () {
+    Route::middleware(['role:BENDAHARA,ADMIN'])->group(function () {
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
         Route::patch('/items/{item}/verify', [ItemController::class, 'verify'])->name('items.verify');
-        Route::patch('/documents/{document}/check', [DocumentController::class, 'toggleCheck'])->name('documents.check');
+        Route::patch('/documents/{document}/check', [DocumentController::class, 'toggleCheck'])
+            ->middleware('throttle:60,1')
+            ->name('documents.check');
     });
+
 
 
     // 4. Kelola Master POK (Supervisor & Admin)
