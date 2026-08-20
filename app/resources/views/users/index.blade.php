@@ -5,13 +5,17 @@
 <div class="space-y-8">
 
     {{-- Header Card --}}
-    <div class="card-corporate p-8 flex items-center justify-between flex-wrap gap-6">
+    <div class="sakdi-card p-8 flex items-center justify-between flex-wrap gap-6"
+         style="border-left: 4px solid var(--color-primary);">
         <div>
-            <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-900 font-extrabold text-xs px-3.5 py-1.5 rounded-lg mb-2">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-2 text-xs font-extrabold"
+                 style="background: var(--color-primary-50); border: 1px solid var(--color-primary-100); color: var(--color-primary-900);">
                 <span>👥 KHUSUS ADMINISTRATOR</span>
             </div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Manajemen Pengguna Sistem</h1>
-            <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+            <h1 class="text-2xl font-black tracking-tight" style="color: var(--color-neutral-900);">
+                Manajemen Pengguna Sistem
+            </h1>
+            <p class="text-xs sm:text-sm font-medium mt-1" style="color: var(--color-neutral-500);">
                 Kelola hak akses pengguna, peranan RBAC (Admin, Supervisor, Operator, Bendahara), dan reset password.
             </p>
         </div>
@@ -21,13 +25,14 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
         {{-- Left: Users Table --}}
-        <div class="lg:col-span-2 table-container-v4">
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <h2 class="text-sm font-extrabold text-slate-900">Daftar Pengguna Aktif ({{ $users->total() }} Total User)</h2>
+        <div class="lg:col-span-2 sakdi-table-wrapper">
+            <div class="px-6 py-4 flex items-center justify-between"
+                 style="background: var(--color-neutral-50); border-bottom: 1px solid var(--color-neutral-300);">
+                <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Daftar Pengguna Aktif ({{ $users->total() }} Total User)</h2>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="table-v4">
+                <table class="sakdi-table">
                     <thead>
                         <tr>
                             <th>NIP / Username</th>
@@ -40,39 +45,40 @@
                         @foreach($users as $user)
                         <tr>
                             <td class="whitespace-nowrap">
-                                <span class="font-mono text-xs font-bold text-blue-900 bg-blue-50 border border-blue-200 px-3 py-1 rounded-lg">
+                                <span class="num-mono text-xs font-bold px-3 py-1 rounded-lg"
+                                      style="color: var(--color-primary-900); background: var(--color-primary-50); border: 1px solid var(--color-primary-100);">
                                     {{ $user->nip_username }}
                                 </span>
                             </td>
                             <td>
-                                <div class="font-extrabold text-slate-900 text-sm">
+                                <div class="font-extrabold text-sm" style="color: var(--color-neutral-900);">
                                     {{ $user->name }}
                                     @if($user->id === auth()->id())
-                                        <span class="text-[10px] font-black bg-blue-100 text-blue-900 px-2 py-0.5 rounded ml-1">Anda</span>
+                                        <span class="sakdi-badge sakdi-badge-primary ml-1">Anda</span>
                                     @endif
                                 </div>
                             </td>
                             <td>
                                 @php
                                     $roleBadge = match($user->role) {
-                                        'ADMIN'      => 'bg-red-50 text-red-700 border-red-200',
-                                        'SUPERVISOR' => 'bg-blue-50 text-blue-800 border-blue-200',
-                                        'BENDAHARA'  => 'bg-amber-50 text-amber-800 border-amber-200',
-                                        default      => 'bg-emerald-50 text-emerald-800 border-emerald-200',
+                                        'ADMIN'      => 'sakdi-badge-error',
+                                        'SUPERVISOR' => 'sakdi-badge-primary',
+                                        'BENDAHARA'  => 'sakdi-badge-warning',
+                                        default      => 'sakdi-badge-success',
                                     };
                                 @endphp
-                                <span class="text-xs font-extrabold px-3 py-1 rounded-md border {{ $roleBadge }}">
+                                <span class="sakdi-badge {{ $roleBadge }}">
                                     {{ $user->role }}
                                 </span>
                             </td>
                             <td class="text-center whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-1.5" x-data>
-                                    <button type="button" class="btn-bps btn-bps-secondary btn-bps-sm"
+                                    <button type="button" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm"
                                             @click="$dispatch('open-edit-user', {{ json_encode(['id' => $user->id, 'name' => $user->name, 'role' => $user->role]) }})">
                                         ✏️ Edit
                                     </button>
 
-                                    <button type="button" class="btn-bps btn-bps-secondary btn-bps-sm"
+                                    <button type="button" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm"
                                             @click="$dispatch('open-reset-pw', {{ json_encode(['id' => $user->id, 'name' => $user->name]) }})">
                                         🔑 Reset
                                     </button>
@@ -81,7 +87,7 @@
                                     <form action="{{ route('users.destroy', $user) }}" method="POST"
                                           onsubmit="return confirm('Hapus pengguna {{ $user->name }}?')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn-bps btn-bps-danger btn-bps-sm">🗑️</button>
+                                        <button type="submit" class="sakdi-btn sakdi-btn-danger sakdi-btn-sm">🗑️</button>
                                     </form>
                                     @endif
                                 </div>
@@ -93,128 +99,68 @@
             </div>
 
             {{-- Pagination Links for Users --}}
-            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200">
+            <div class="px-6 py-4 border-t" style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">
                 {{ $users->links() }}
             </div>
         </div>
 
-        {{-- Right: User Form Panel --}}
-        <div class="space-y-6 lg:sticky lg:top-24"
-             x-data="{
-                panel: 'add',
-                editUser: null,
-                resetUser: null,
-             }"
-             @open-edit-user.window="editUser = $event.detail; panel = 'edit'"
-             @open-reset-pw.window="resetUser = $event.detail; panel = 'reset'">
+        {{-- Right: Add User Form --}}
+        <div class="sakdi-card p-6 lg:sticky lg:top-24">
+            <h3 class="text-sm font-extrabold mb-4" style="color: var(--color-neutral-900);">➕ Tambah Pengguna Baru</h3>
+            <form action="{{ route('users.store') }}" method="POST" class="space-y-4">
+                @csrf
 
-            {{-- Panel Selector --}}
-            <div class="flex gap-2 p-1.5 bg-slate-200/80 rounded-xl">
-                <button @click="panel = 'add'" :class="panel === 'add' ? 'btn-bps btn-bps-primary text-xs flex-1' : 'btn-bps btn-bps-secondary text-xs flex-1'">
-                    ➕ Tambah
-                </button>
-                <button @click="panel = 'edit'" :class="panel === 'edit' ? 'btn-bps btn-bps-primary text-xs flex-1' : 'btn-bps btn-bps-secondary text-xs flex-1'" x-show="editUser">
-                    ✏️ Edit
-                </button>
-                <button @click="panel = 'reset'" :class="panel === 'reset' ? 'btn-bps btn-bps-primary text-xs flex-1' : 'btn-bps btn-bps-secondary text-xs flex-1'" x-show="resetUser">
-                    🔑 Reset
-                </button>
-            </div>
-
-            {{-- Add Form --}}
-            <div x-show="panel === 'add'" class="card-corporate p-6">
-                <h2 class="text-sm font-extrabold text-slate-900 mb-4">➕ Tambah Pengguna Baru</h2>
-                <form action="{{ route('users.store') }}" method="POST" class="space-y-4">
-                    @csrf
-                    <div>
-                        <label class="form-label-custom">NIP / Username *</label>
-                        <input type="text" name="nip_username" class="form-input-v4" placeholder="190123456789" required>
-                    </div>
-                    <div>
-                        <label class="form-label-custom">Nama Lengkap *</label>
-                        <input type="text" name="name" class="form-input-v4" placeholder="Nama Lengkap" required>
-                    </div>
-                    <div>
-                        <label class="form-label-custom">Role Access *</label>
-                        <select name="role" class="form-input-v4" required>
-                            <option value="OPERATOR">OPERATOR — Input Dokumen SPJ</option>
-                            <option value="SUPERVISOR">SUPERVISOR — Kelola Master POK</option>
-                            <option value="BENDAHARA">BENDAHARA — Verifikasi Pencairan</option>
-                            <option value="ADMIN">ADMIN — Akses Penuh Sistem</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label-custom">Password *</label>
-                        <input type="password" name="password" class="form-input-v4" placeholder="Minimal 6 karakter" required>
-                    </div>
-                    <div>
-                        <label class="form-label-custom">Konfirmasi Password *</label>
-                        <input type="password" name="password_confirmation" class="form-input-v4" required>
-                    </div>
-                    <button type="submit" class="btn-bps btn-bps-primary w-full py-3">➕ Simpan Pengguna Baru</button>
-                </form>
-            </div>
-
-            {{-- Edit Form --}}
-            <template x-if="panel === 'edit' && editUser">
-                <div class="card-corporate p-6">
-                    <h2 class="text-sm font-extrabold text-slate-900 mb-4">✏️ Edit Pengguna: <span x-text="editUser.name"></span></h2>
-                    <form :action="'/users/' + editUser.id" method="POST" class="space-y-4">
-                        @csrf
-                        <input type="hidden" name="_method" value="PATCH">
-                        <div>
-                            <label class="form-label-custom">Nama Lengkap *</label>
-                            <input type="text" name="name" class="form-input-v4" :value="editUser.name" required>
-                        </div>
-                        <div>
-                            <label class="form-label-custom">Role Access *</label>
-                            <select name="role" class="form-input-v4" required>
-                                <option value="OPERATOR" :selected="editUser.role === 'OPERATOR'">OPERATOR</option>
-                                <option value="SUPERVISOR" :selected="editUser.role === 'SUPERVISOR'">SUPERVISOR</option>
-                                <option value="BENDAHARA" :selected="editUser.role === 'BENDAHARA'">BENDAHARA</option>
-                                <option value="ADMIN" :selected="editUser.role === 'ADMIN'">ADMIN</option>
-                            </select>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="submit" class="btn-bps btn-bps-primary flex-1">💾 Simpan</button>
-                            <button type="button" @click="panel = 'add'; editUser = null" class="btn-bps btn-bps-secondary">Batal</button>
-                        </div>
-                    </form>
+                <div>
+                    <label class="sakdi-label sakdi-label-required" for="nip_username">NIP / Username</label>
+                    <input type="text" id="nip_username" name="nip_username" class="sakdi-input num-mono"
+                           placeholder="199501012020011001" required value="{{ old('nip_username') }}">
+                    @error('nip_username')
+                        <div class="sakdi-input-error-msg">{{ $message }}</div>
+                    @enderror
                 </div>
-            </template>
 
-            {{-- Reset PW Form --}}
-            <template x-if="panel === 'reset' && resetUser">
-                <div class="card-corporate p-6">
-                    <h2 class="text-sm font-extrabold text-slate-900 mb-1">🔑 Reset Password</h2>
-                    <p class="text-xs text-slate-500 mb-4">Untuk: <strong x-text="resetUser.name"></strong></p>
-                    <form :action="'/users/' + resetUser.id + '/reset-password'" method="POST" class="space-y-4">
-                        @csrf
-                        <div>
-                            <label class="form-label-custom">Password Baru *</label>
-                            <input type="password" name="password" class="form-input-v4" placeholder="Minimal 6 karakter" required>
-                        </div>
-                        <div>
-                            <label class="form-label-custom">Konfirmasi Password Baru *</label>
-                            <input type="password" name="password_confirmation" class="form-input-v4" required>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="submit" class="btn-bps btn-bps-danger flex-1">🔑 Reset Password</button>
-                            <button type="button" @click="panel = 'add'; resetUser = null" class="btn-bps btn-bps-secondary">Batal</button>
-                        </div>
-                    </form>
+                <div>
+                    <label class="sakdi-label sakdi-label-required" for="name">Nama Lengkap</label>
+                    <input type="text" id="name" name="name" class="sakdi-input"
+                           placeholder="Ahmad Fauzi, S.S.T." required value="{{ old('name') }}">
+                    @error('name')
+                        <div class="sakdi-input-error-msg">{{ $message }}</div>
+                    @enderror
                 </div>
-            </template>
 
-            {{-- Role Reference --}}
-            <div class="p-4 rounded-xl bg-slate-100 border border-slate-200 text-xs leading-relaxed space-y-1">
-                <div class="font-bold text-slate-800 mb-2">📋 Matriks Role Access System:</div>
-                <div>🔴 <strong>ADMIN</strong> — Akses penuh seluruh modul</div>
-                <div>🔵 <strong>SUPERVISOR</strong> — Kelola struktur master POK</div>
-                <div>🟢 <strong>OPERATOR</strong> — Upload & kelola dokumen SPJ</div>
-                <div>🟡 <strong>BENDAHARA</strong> — Verifikasi & persetujuan pencairan</div>
-            </div>
+                <div>
+                    <label class="sakdi-label sakdi-label-required" for="role">Hak Akses / Peran (RBAC)</label>
+                    <select id="role" name="role" class="sakdi-select" required>
+                        <option value="" disabled selected>-- Pilih Peran --</option>
+                        <option value="OPERATOR" {{ old('role') === 'OPERATOR' ? 'selected' : '' }}>🟢 OPERATOR — Upload SPJ & Dokumen</option>
+                        <option value="BENDAHARA" {{ old('role') === 'BENDAHARA' ? 'selected' : '' }}>🟡 BENDAHARA — Verifikasi & Persetujuan Pencairan</option>
+                        <option value="SUPERVISOR" {{ old('role') === 'SUPERVISOR' ? 'selected' : '' }}>🔵 SUPERVISOR — Kelola Master POK & Monitoring</option>
+                        <option value="ADMIN" {{ old('role') === 'ADMIN' ? 'selected' : '' }}>🔴 ADMIN — Akses Penuh Sistem</option>
+                    </select>
+                    @error('role')
+                        <div class="sakdi-input-error-msg">{{ $message }}</div>
+                    @enderror
+                </div>
 
+                <div>
+                    <label class="sakdi-label sakdi-label-required" for="password">Password Default</label>
+                    <input type="password" id="password" name="password" class="sakdi-input"
+                           placeholder="••••••••" required>
+                    @error('password')
+                        <div class="sakdi-input-error-msg">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="sakdi-label sakdi-label-required" for="password_confirmation">Konfirmasi Password</label>
+                    <input type="password" id="password_confirmation" name="password_confirmation" class="sakdi-input"
+                           placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="sakdi-btn sakdi-btn-primary w-full py-3">
+                    💾 Simpan Pengguna Baru
+                </button>
+            </form>
         </div>
 
     </div>

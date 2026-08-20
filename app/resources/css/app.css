@@ -136,39 +136,9 @@
 
 /* ─────────────────────────────────────────────────────────────────
    SECTION 11 — DARK MODE TOKENS
-
-   Dua jalur aktivasi yang TERPISAH (pola yang benar):
-   A. OS preference → :root:not(.light)  — bisa di-override paksa light mode
-   B. Manual toggle → class .dark pada <html>
-
-   Cara override paksa light mode: tambahkan class .light ke <html>
-   Cara paksa dark mode: tambahkan class .dark ke <html>
+   Aktif hanya jika class .dark ditambahkan pada <html>
+   Default aplikasi adalah SAKDI BPS Light Mode (#F8FAFC, #FFFFFF, #0057A8)
    ───────────────────────────────────────────────────────────────── */
-
-/* A. OS dark mode — hanya aktif kalau user TIDAK paksa .light */
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --color-bg-base:       #0D1117;
-    --color-bg-surface:    #161B22;
-    --color-bg-elevated:   #1C2128;
-    --color-white:         #161B22;
-    --color-primary:       #4D9EE0;
-    --color-primary-400:   #A8CCEE;
-    --color-accent:        #F09060;
-    --color-positive:      #3DB86B;
-    --color-error:         #F77171;
-    --color-warning:       #F5A623;
-    --color-neutral-900:   #E6EDF3;
-    --color-neutral-700:   #8D96A0;
-    --color-neutral-500:   #525C65;
-    --color-neutral-300:   #30363D;
-    --color-neutral-100:   #1C2128;
-    --color-neutral-50:    #0D1117;
-  }
-}
-
-/* B. Manual dark mode toggle — class .dark pada <html> -->
-/* Override OS preference, bekerja di semua kondisi */
 .dark {
   --color-bg-base:       #0D1117;
   --color-bg-surface:    #161B22;
@@ -187,6 +157,7 @@
   --color-neutral-100:   #1C2128;
   --color-neutral-50:    #0D1117;
 }
+
 
 /* ─────────────────────────────────────────────────────────────────
    BASE STYLES
