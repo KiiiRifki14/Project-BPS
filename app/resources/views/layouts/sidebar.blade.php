@@ -17,8 +17,9 @@
                 📊
             </div>
             <div class="sidebar-text-block">
-                <div class="text-sm font-extrabold text-white tracking-wide leading-snug">SAKDI</div>
-                <div class="text-[11px] font-semibold" style="color: rgba(255,255,255,0.6);">BPS Kab. Subang</div>
+                <div class="text-xs font-extrabold text-white tracking-wide leading-snug">Arsip Keuangan</div>
+                <div class="text-[10px] font-semibold" style="color: rgba(255,255,255,0.65);">BPS Kab. Subang</div>
+
             </div>
         </div>
         {{-- Tablet collapse toggle button --}}

@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name') }} | @yield('title', 'Dashboard')</title>
-    <meta name="description" content="SAKDI — Sistem Administrasi Keuangan dan Pengarsipan Digital BPS Kabupaten Subang. Pengelolaan dokumen pertanggungjawaban keuangan secara digital dan terstruktur.">
+    <meta name="description" content="Sistem Data Digital Arsip Keuangan BPS Kabupaten Subang — Pengelolaan dokumen pertanggungjawaban keuangan secara digital dan terstruktur.">
+
 
     {{-- View Transitions API — zero-flicker SPA navigation --}}
     <meta name="view-transition" content="same-origin">
@@ -61,7 +62,8 @@
                 <div>
                     <p class="text-sm font-extrabold text-slate-900 tracking-tight leading-none"
                        style="color: var(--color-neutral-900);">
-                        SAKDI — Arsip Keuangan Digital
+                        Sistem Data Digital Arsip Keuangan
+
                     </p>
                     <span class="text-[11px] font-semibold leading-none"
                           style="color: var(--color-neutral-500);">

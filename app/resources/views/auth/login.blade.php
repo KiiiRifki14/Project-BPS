@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — SAKDI BPS Kabupaten Subang</title>
-    <meta name="description" content="Masuk ke SAKDI — Sistem Administrasi Keuangan dan Pengarsipan Digital BPS Kabupaten Subang.">
+    <title>Login — Sistem Data Digital Arsip Keuangan BPS Kabupaten Subang</title>
+    <meta name="description" content="Masuk ke Sistem Data Digital Arsip Keuangan BPS Kabupaten Subang.">
+
 
     {{-- Fonts: Plus Jakarta Sans (bukan Inter) — sesuai DESIGN.md Section 2 --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -237,7 +238,8 @@
     {{-- Brand Panel (left) --}}
     <div class="login-brand">
         <div class="login-logo">📊</div>
-        <h1>SAKDI — Sistem Administrasi Keuangan dan Pengarsipan Digital</h1>
+        <h1>Sistem Data Digital Arsip Keuangan</h1>
+
         <p>BPS Kabupaten Subang — Pengelolaan dokumen pertanggungjawaban keuangan yang terstruktur, aman, dan efisien.</p>
 
         <div class="feature-list">
