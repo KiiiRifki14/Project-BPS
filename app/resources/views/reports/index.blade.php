@@ -28,6 +28,52 @@
         </div>
     </div>
 
+    {{-- FILTER TAHUN & BULAN REKAPITULASI --}}
+    <div class="sakdi-card w-full p-6">
+        <form method="GET" action="{{ route('reports.index') }}" class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full" style="background: var(--color-primary);"></span>
+                <h2 class="text-xs font-black uppercase tracking-wider" style="color: var(--color-neutral-700);">FILTER PERIODE LAPORAN BULANAN &amp; TAHUNAN</h2>
+            </div>
+
+            <div class="flex items-center gap-3 flex-wrap">
+                <div>
+                    <select name="year" onchange="this.form.submit()" class="sakdi-select text-xs font-bold py-2">
+                        @foreach($fiscalYears as $fy)
+                            <option value="{{ $fy->year }}" {{ $year == $fy->year ? 'selected' : '' }}>
+                                📅 Tahun Anggaran {{ $fy->year }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <select name="month" onchange="this.form.submit()" class="sakdi-select text-xs font-bold py-2">
+                        <option value="">🗓️ Semua Bulan (Tahunan)</option>
+                        @php
+                            $months = [
+                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                            ];
+                        @endphp
+                        @foreach($months as $num => $name)
+                            <option value="{{ $num }}" {{ $month == $num ? 'selected' : '' }}>
+                                Bulan {{ $name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @if($month)
+                    <a href="{{ route('reports.index', ['year' => $year]) }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm">
+                        Reset Bulan
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
     {{-- KPI Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full">
         <div class="sakdi-card-stat sakdi-card-stat-neutral p-6">
@@ -58,8 +104,14 @@
     {{-- Detailed Sub-Output Breakdown List --}}
     <div class="sakdi-card w-full overflow-hidden p-0">
 
-        <div class="px-6 py-5 border-b" style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">
-            <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Rekapitulasi Berkas per Sub-Output (Total {{ $subOutputs->total() }} Sub-Output)</h2>
+        <div class="px-6 py-5 border-b flex items-center justify-between flex-wrap gap-4"
+             style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">
+            <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">
+                Rekapitulasi Berkas per Sub-Output (Periode {{ $month ? $months[(int)$month] : '1 Tahun Full' }} {{ $year }})
+            </h2>
+            <span class="sakdi-badge sakdi-badge-neutral font-mono">
+                Total {{ $subOutputs->total() }} Sub-Output
+            </span>
         </div>
 
         <div class="divide-y" style="border-color: var(--color-neutral-100);">
