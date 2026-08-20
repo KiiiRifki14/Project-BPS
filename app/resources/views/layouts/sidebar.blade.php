@@ -3,7 +3,11 @@
     DESIGN.md: sidebar-width 256px, primary-900 bg (#002D5C)
     Responsive: hidden mobile | collapsed 64px tablet | full 256px desktop
 ══════════════════════════════════════════════════════════ --}}
-<aside class="sidebar-v4" :class="{ 'open': sidebarOpen }">
+<aside class="sidebar-v4"
+       :class="{ 'open': sidebarOpen, 'sidebar-force-collapsed': sidebarCollapsed }"
+       x-data="{ hovered: false }"
+       @mouseenter="hovered = true"
+       @mouseleave="hovered = false">
 
     {{-- BRANDING & HEADER --}}
     <div class="sidebar-header">
@@ -12,11 +16,22 @@
                  style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
                 📊
             </div>
-            <div>
+            <div class="sidebar-text-block">
                 <div class="text-sm font-extrabold text-white tracking-wide leading-snug">SAKDI</div>
                 <div class="text-[11px] font-semibold" style="color: rgba(255,255,255,0.6);">BPS Kab. Subang</div>
             </div>
         </div>
+        {{-- Tablet collapse toggle button --}}
+        <button class="hidden md:flex lg:hidden items-center justify-center w-8 h-8 rounded-lg ml-auto transition-colors"
+                style="color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.05);"
+                @click.stop="toggleSidebarCollapse()"
+                :title="sidebarCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'"
+                aria-label="Toggle sidebar">
+            <svg class="w-4 h-4 transition-transform" :class="sidebarCollapsed ? 'rotate-180' : ''"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+            </svg>
+        </button>
     </div>
 
     {{-- FISCAL YEAR INDICATOR --}}
@@ -166,9 +181,9 @@
                  style="background: var(--color-primary);">
                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
             </div>
-            <div class="min-w-0 flex-1">
-                <div class="text-xs font-bold text-white truncate leading-snug">{{ auth()->user()->name }}</div>
-                <div class="text-[10px] font-extrabold uppercase tracking-wide"
+            <div class="min-w-0 flex-1 sidebar-text-block">
+                <div class="text-xs font-bold text-white truncate leading-snug user-name">{{ auth()->user()->name }}</div>
+                <div class="text-[10px] font-extrabold uppercase tracking-wide user-role"
                      style="color: var(--color-primary-400); font-family: var(--font-mono);">
                     {{ auth()->user()->role }}
                 </div>
@@ -177,3 +192,4 @@
     </div>
 
 </aside>
+

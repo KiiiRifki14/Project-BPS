@@ -5,18 +5,25 @@
 <div class="space-y-8">
 
     {{-- ── TOP HERO SECTION: INSTANT SEARCH (SEARCH-FIRST DIRECTORY) ── --}}
-    <div class="rounded-2xl bg-[#001F54] p-8 text-white shadow-lg">
-        <div class="max-w-3xl">
-            <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-blue-200 font-extrabold text-xs px-3.5 py-1.5 rounded-lg mb-3">
-                <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+    <div class="relative overflow-hidden rounded-2xl p-8 text-white shadow-lg"
+         style="background: var(--color-primary-900);">
+        {{-- Decorative glow --}}
+        <div class="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none"
+             style="background: radial-gradient(circle, rgba(61,135,204,0.2) 0%, transparent 70%); transform: translate(30%, -30%);"></div>
+        <div class="max-w-3xl relative z-10">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-3 text-xs font-extrabold"
+                 style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.85);">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
                 <span>SEARCH-FIRST DIRECTORY BROWSER</span>
             </div>
 
             <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
                 Browser Arsip Keuangan POK
             </h1>
-            <p class="text-xs sm:text-sm text-slate-200 font-medium mt-1 mb-6 leading-relaxed">
-                Temukan cepat dokumen SPJ & kegiatan berdasarkan Kode Item (misal: <span class="font-mono text-amber-300 font-bold">001366</span>), Kode Akun (<span class="font-mono text-amber-300 font-bold">521213</span>), atau Kata Kunci Kegiatan.
+            <p class="text-xs sm:text-sm font-medium mt-1 mb-6 leading-relaxed" style="color: rgba(255,255,255,0.8);">
+                Temukan cepat dokumen SPJ &amp; kegiatan berdasarkan Kode Item (misal: <span class="font-mono font-bold" style="color: #FBD063;">001366</span>), Kode Akun (<span class="font-mono font-bold" style="color: #FBD063;">521213</span>), atau Kata Kunci Kegiatan.
             </p>
 
             <form method="GET" action="{{ route('items.index') }}" class="flex flex-col sm:flex-row gap-3">
@@ -28,20 +35,28 @@
                 <div class="relative flex-1">
                     <input type="text"
                            name="search"
+                           id="search-input"
                            value="{{ $search }}"
                            placeholder="Ketik Kode Item (001366), Kode Akun, atau Nama Kegiatan..."
-                           class="w-full pl-12 pr-4 py-3.5 bg-white text-slate-900 rounded-xl border border-slate-300 shadow-inner text-sm font-medium outline-none placeholder-slate-400">
-                    <span class="absolute left-4 top-3.5 text-slate-400">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                           class="w-full pl-12 pr-4 py-3.5 rounded-xl text-sm font-medium outline-none"
+                           style="background: #fff; color: var(--color-neutral-700); border: 1.5px solid var(--color-neutral-300); box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);"
+                           aria-label="Cari item kegiatan">
+                    <span class="absolute left-4 top-3.5" style="color: var(--color-neutral-500);" aria-hidden="true">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
                     </span>
                 </div>
 
                 <div class="flex gap-2">
-                    <button type="submit" class="btn-bps bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-sm px-6 py-3.5">
+                    <button type="submit" class="sakdi-btn font-extrabold text-sm px-6 py-3.5"
+                            style="background: var(--color-accent); color: #fff; border-color: var(--color-accent); min-height: 48px;">
                         Cari Item
                     </button>
                     @if($search || $subOutputId || $outputId || $programId || $filter)
-                        <a href="{{ route('items.index') }}" class="btn-bps btn-bps-secondary text-sm px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white border-white/20">
+                        <a href="{{ route('items.index') }}"
+                           class="sakdi-btn text-sm px-5 py-3.5"
+                           style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); min-height: 48px;">
                             Reset
                         </a>
                     @endif
@@ -50,21 +65,23 @@
         </div>
     </div>
 
+
     {{-- ── MIDDLE SECTION: CASCADING FILTER DROPDOWNS ── --}}
-    <div class="card-corporate p-6">
+    <div class="sakdi-card p-6">
         <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
             <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-blue-900"></span>
-                <h2 class="text-xs font-black text-slate-700 uppercase tracking-wider">CASCADING DIRECTORY FILTER (NAVIGASI 3 TINGKAT)</h2>
+                <span class="w-2.5 h-2.5 rounded-full" style="background: var(--color-primary);"></span>
+                <h2 class="text-xs font-black uppercase tracking-wider" style="color: var(--color-neutral-700);">CASCADING DIRECTORY FILTER (NAVIGASI 3 TINGKAT)</h2>
             </div>
             @if($selectedSubOutput)
-                <div class="inline-flex items-center gap-2 text-xs font-extrabold text-blue-900 bg-blue-50 px-3.5 py-1.5 rounded-lg border border-blue-200">
+                <div class="inline-flex items-center gap-2 text-xs font-extrabold sakdi-badge sakdi-badge-primary px-3.5 py-1.5">
                     <span>📌 Sub-Output Aktif:</span>
-                    <span class="font-mono text-blue-800">[{{ $selectedSubOutput->code }}]</span>
+                    <span class="num-mono">{{ $selectedSubOutput->code }}</span>
                     <span>{{ Str::limit($selectedSubOutput->name, 30) }}</span>
                 </div>
             @endif
         </div>
+
 
         <form method="GET" action="{{ route('items.index') }}" id="cascadingFilterForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             @if($search) <input type="hidden" name="search" value="{{ $search }}"> @endif

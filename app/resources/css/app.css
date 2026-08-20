@@ -136,10 +136,18 @@
 
 /* ─────────────────────────────────────────────────────────────────
    SECTION 11 — DARK MODE TOKENS
-   Aktif via OS preference ATAU class .dark pada <html>
+
+   Dua jalur aktivasi yang TERPISAH (pola yang benar):
+   A. OS preference → :root:not(.light)  — bisa di-override paksa light mode
+   B. Manual toggle → class .dark pada <html>
+
+   Cara override paksa light mode: tambahkan class .light ke <html>
+   Cara paksa dark mode: tambahkan class .dark ke <html>
    ───────────────────────────────────────────────────────────────── */
+
+/* A. OS dark mode — hanya aktif kalau user TIDAK paksa .light */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --color-bg-base:       #0D1117;
     --color-bg-surface:    #161B22;
     --color-bg-elevated:   #1C2128;
@@ -159,6 +167,8 @@
   }
 }
 
+/* B. Manual dark mode toggle — class .dark pada <html> -->
+/* Override OS preference, bekerja di semua kondisi */
 .dark {
   --color-bg-base:       #0D1117;
   --color-bg-surface:    #161B22;
@@ -718,12 +728,32 @@
   .sakdi-breadcrumb-sep { color: var(--color-neutral-300); }
   .sakdi-breadcrumb-current { color: var(--color-neutral-700); font-weight: 500; }
 
-  /* ── Tooltip ─────────────────────────────────────────────────────── */
+  /* ── Tooltip — hover (desktop) + click/touch (mobile) ──────────── */
+  /*
+   * USAGE DUA POLA:
+   * 1. Pure CSS (desktop hover):
+   *    <div class="sakdi-tooltip-wrapper">
+   *      trigger
+   *      <span class="sakdi-tooltip-content">Teks</span>
+   *    </div>
+   *
+   * 2. Alpine.js (touch-friendly, semua device):
+   *    <div class="sakdi-tooltip-wrapper"
+   *         x-data="{ tipOpen: false }"
+   *         @click="tipOpen = !tipOpen"
+   *         @mouseover="tipOpen = true"
+   *         @mouseleave="tipOpen = false"
+   *         @touchstart.prevent="tipOpen = !tipOpen"
+   *         @keydown.escape="tipOpen = false">
+   *      trigger
+   *      <span class="sakdi-tooltip-content" x-show="tipOpen">Teks</span>
+   *    </div>
+   */
   .sakdi-tooltip-wrapper {
     position: relative;
     display: inline-block;
   }
-  .sakdi-tooltip-wrapper .sakdi-tooltip-content {
+  .sakdi-tooltip-content {
     position: absolute;
     bottom: calc(100% + 8px);
     left: 50%;
@@ -737,15 +767,19 @@
     border-radius: var(--r-xs);
     padding: var(--sp-1) var(--sp-2);
     max-width: 220px;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: break-word;
     z-index: var(--z-tooltip);
     pointer-events: none;
     opacity: 0;
     transition: opacity var(--dur-fast) var(--ease-standard);
   }
+  /* Desktop hover */
   .sakdi-tooltip-wrapper:hover .sakdi-tooltip-content { opacity: 1; }
+  /* Alpine.js click/touch fallback — class ditambah via x-show atau :class */
+  .sakdi-tooltip-content.tooltip-open { opacity: 1; }
   /* Arrow */
-  .sakdi-tooltip-wrapper .sakdi-tooltip-content::after {
+  .sakdi-tooltip-content::after {
     content: '';
     position: absolute;
     top: 100%;
@@ -754,6 +788,18 @@
     border: 5px solid transparent;
     border-top-color: var(--color-neutral-900);
   }
+  /* Overflow guard — flip to bottom if too close to viewport top */
+  .sakdi-tooltip-wrapper.tooltip-below .sakdi-tooltip-content {
+    bottom: auto;
+    top: calc(100% + 8px);
+  }
+  .sakdi-tooltip-wrapper.tooltip-below .sakdi-tooltip-content::after {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: var(--color-neutral-900);
+  }
+
 
   /* ── Skeleton Loader ─────────────────────────────────────────────── */
   .sakdi-skeleton {
@@ -967,22 +1013,60 @@
 
 @media (min-width: 768px) and (max-width: 1023px) {
   /* Tablet: collapsed 64px icon-only */
+  /* Default collapsed via CSS */
   :root { --sidebar-w: var(--sidebar-collapsed-w); }
   .main-content { margin-left: var(--sidebar-collapsed-w); }
-  .sidebar-v4 { width: var(--sidebar-collapsed-w); overflow: hidden; }
-  .sidebar-v4:hover { width: 256px; overflow: visible; box-shadow: 8px 0 24px rgba(0,0,0,0.2); }
-  .sidebar-v4 .sidebar-header > div > div:last-child,
-  .sidebar-v4 .nav-link-v4 > span,
+
+  .sidebar-v4 {
+    width: var(--sidebar-collapsed-w);
+    overflow: hidden;
+    transition: width var(--dur-normal) var(--ease-standard);
+  }
+
+  /* Expand on hover — only when NOT manually force-collapsed via Alpine */
+  .sidebar-v4:not(.sidebar-force-collapsed):hover {
+    width: 256px;
+    overflow: visible;
+    box-shadow: 8px 0 24px rgba(0,0,0,0.2);
+  }
+
+  /* Text elements hidden in collapsed state */
+  .sidebar-v4 .sidebar-text-block,
+  .sidebar-v4 .nav-link-v4 > span:not(.badge),
   .sidebar-v4 .nav-section-label,
-  .sidebar-v4 .sidebar-footer-v4 > div > div:last-child { opacity: 0; transition: opacity var(--dur-normal); }
-  .sidebar-v4:hover .sidebar-header > div > div:last-child,
-  .sidebar-v4:hover .nav-link-v4 > span,
-  .sidebar-v4:hover .nav-section-label,
-  .sidebar-v4:hover .sidebar-footer-v4 > div > div:last-child { opacity: 1; }
-  .sidebar-v4 .sidebar-header { padding: var(--sp-4); }
+  .sidebar-v4 .sidebar-footer-v4 .user-name,
+  .sidebar-v4 .sidebar-footer-v4 .user-role {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-normal) var(--ease-standard);
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  /* Text visible on hover (unless force-collapsed) */
+  .sidebar-v4:not(.sidebar-force-collapsed):hover .sidebar-text-block,
+  .sidebar-v4:not(.sidebar-force-collapsed):hover .nav-link-v4 > span:not(.badge),
+  .sidebar-v4:not(.sidebar-force-collapsed):hover .nav-section-label,
+  .sidebar-v4:not(.sidebar-force-collapsed):hover .sidebar-footer-v4 .user-name,
+  .sidebar-v4:not(.sidebar-force-collapsed):hover .sidebar-footer-v4 .user-role {
+    opacity: 1;
+    pointer-events: auto;
+    width: auto;
+  }
+
+  .sidebar-v4 .sidebar-header { padding: var(--sp-3); }
   .sidebar-v4 .nav-link-v4 { padding: 11px var(--sp-3); justify-content: center; }
-  .sidebar-v4:hover .nav-link-v4 { justify-content: flex-start; }
+  .sidebar-v4:not(.sidebar-force-collapsed):hover .nav-link-v4 { justify-content: flex-start; }
+
+  /* Force expanded when toggle button used */
+  .sidebar-v4:not(.sidebar-force-collapsed):hover,
+  .sidebar-v4.sidebar-force-expanded {
+    width: 256px;
+    overflow: visible;
+  }
 }
+
 
 /* ─────────────────────────────────────────────────────────────────
    SECTION 14 — PRINT / PDF TOKENS

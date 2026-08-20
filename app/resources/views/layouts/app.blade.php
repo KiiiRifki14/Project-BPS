@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{{-- Dark mode: tambah class .dark untuk paksa dark, .light untuk paksa light --}}
 <html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
@@ -18,7 +19,20 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full" x-data="{ sidebarOpen: false }">
+<body class="h-full"
+      x-data="{
+          sidebarOpen: false,
+          sidebarCollapsed: false,
+          toggleSidebarCollapse() {
+              this.sidebarCollapsed = !this.sidebarCollapsed;
+              localStorage.setItem('sakdi-sidebar-collapsed', this.sidebarCollapsed);
+          },
+          initSidebarState() {
+              const saved = localStorage.getItem('sakdi-sidebar-collapsed');
+              if (saved !== null) this.sidebarCollapsed = saved === 'true';
+          }
+      }"
+      x-init="initSidebarState()">
 
 {{-- ── SIDEBAR NAVIGATION ── --}}
 @include('layouts.sidebar')
