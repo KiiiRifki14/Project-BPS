@@ -297,7 +297,7 @@
         <div class="space-y-6 lg:sticky lg:top-24">
 
             {{-- Container Panel Verifikasi Bendahara --}}
-            @if(auth()->user()->role === 'BENDAHARA')
+            @if(auth()->user()->role === 'BENDAHARA' || auth()->user()->role === 'ADMIN')
                 <div x-data="{
                     checkedDocs: {{ $item->verification_status === 'APPROVED' ? json_encode($item->documents->pluck('id')->mapWithKeys(fn($id) => [(string)$id => true])) : '{}' }},
                     totalDocs: {{ $item->documents->count() }},
@@ -308,46 +308,51 @@
                         return this.totalDocs > 0 && this.checkedCount === this.totalDocs;
                     },
                     showRejectModal: false
-                }" class="card-corporate p-6 bg-white border border-slate-200 shadow-sm space-y-4">
+                }" class="sakdi-card p-6 space-y-4">
 
-                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <h3 class="font-extrabold text-sm flex items-center gap-2" style="color: var(--color-neutral-900);">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--color-primary);" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                         <span>Panel Verifikasi Bendahara</span>
                     </h3>
 
                     <!-- Status Item Saat Ini -->
                     @if($item->verification_status === 'APPROVED')
-                        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold flex items-center gap-2">
-                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div class="sakdi-alert sakdi-alert-success text-xs font-semibold">
+                            <svg class="sakdi-alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span>Item ini telah disetujui oleh Bendahara. Status terkunci.</span>
                         </div>
                     @else
                         <!-- Box Ceklis Dokumen -->
-                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
-                            <div class="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1">
+                        <div class="p-4 rounded-xl border space-y-3"
+                             style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">
+                            <div class="flex items-center justify-between text-xs font-extrabold mb-1"
+                                 style="color: var(--color-neutral-700);">
                                 <span>📋 CEKLIS VERIFIKASI BERKAS</span>
-                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md font-mono text-[11px]" x-text="checkedCount + ' / ' + totalDocs + ' Terverifikasi'"></span>
+                                <span :class="canApprove ? 'sakdi-badge sakdi-badge-success' : 'sakdi-badge sakdi-badge-warning'"
+                                      x-text="checkedCount + ' / ' + totalDocs + ' Dokumen Terverifikasi'"></span>
                             </div>
 
                             <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                                 @forelse($item->documents as $doc)
-                                    <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs">
-                                        <input 
-                                            type="checkbox" 
-                                            x-model="checkedDocs['{{ $doc->id }}']" 
+                                    <label class="flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-colors"
+                                           style="background: var(--color-white); border-color: var(--color-neutral-300);">
+                                        <input
+                                            type="checkbox"
+                                            x-model="checkedDocs['{{ $doc->id }}']"
                                             @if($item->verification_status === 'APPROVED') checked disabled @endif
-                                            class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 disabled:opacity-75 disabled:cursor-not-allowed"
+                                            class="rounded border-slate-300 w-4 h-4 disabled:opacity-75 disabled:cursor-not-allowed"
+                                            style="accent-color: var(--color-primary);"
                                         >
-                                        <span class="font-medium text-slate-800 truncate flex-1">{{ $doc->file_name }}</span>
-                                        <span class="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded mr-1">{{ $doc->label ?? 'Dokumen' }}</span>
+                                        <span class="font-bold truncate flex-1" style="color: var(--color-neutral-900);">{{ $doc->file_name }}</span>
+                                        <span class="sakdi-badge sakdi-badge-neutral text-[10px] mr-1">{{ $doc->label ?? 'Dokumen' }}</span>
                                         <button type="button"
                                                 @click.stop="$dispatch('open-preview-modal', { url: '{{ route('documents.stream', $doc) }}', title: '{{ addslashes($doc->file_name) }}', type: '{{ $doc->file_type }}' })"
-                                                class="text-slate-400 hover:text-blue-800 p-1">
+                                                class="p-1 hover:underline" style="color: var(--color-primary);">
                                             👁️
                                         </button>
                                     </label>
                                 @empty
-                                    <p class="text-xs text-slate-400 italic p-2 text-center">Belum ada dokumen terunggah.</p>
+                                    <p class="text-xs italic p-2 text-center" style="color: var(--color-neutral-500);">Belum ada dokumen terunggah.</p>
                                 @endforelse
                             </div>
                         </div>
@@ -358,26 +363,26 @@
                             @method('PATCH')
                             <input type="hidden" name="action" value="APPROVED">
 
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 :disabled="!canApprove"
-                                :class="canApprove ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-70'"
-                                class="w-full py-3 px-4 font-semibold text-sm rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                                :class="canApprove ? 'sakdi-btn sakdi-btn-success w-full' : 'sakdi-btn sakdi-btn-secondary w-full opacity-60 cursor-not-allowed'"
                             >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 <span>Setujui Pencairan (Approved)</span>
                             </button>
                         </form>
 
                         <!-- Tombol Tolak / Minta Revisi -->
-                        <button 
-                            type="button" 
-                            @click="showRejectModal = true" 
-                            class="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                        <button
+                            type="button"
+                            @click="showRejectModal = true"
+                            class="sakdi-btn sakdi-btn-danger w-full"
                         >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span>Tolak / Minta Revisi</span>
                         </button>
+
 
                         {{-- Rejection Modal --}}
                         <div x-show="showRejectModal"
