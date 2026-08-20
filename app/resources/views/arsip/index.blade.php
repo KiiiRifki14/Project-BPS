@@ -2,7 +2,43 @@
 @section('title', 'Arsip Keuangan POK')
 
 @section('content')
-<div class="space-y-8">
+<div class="space-y-8"
+     x-data="{
+         hierarchy: {{ json_encode($hierarchy) }},
+         programId: '{{ $programId }}',
+         outputId: '{{ $outputId }}',
+         subOutputId: '{{ $subOutputId }}',
+
+         get availableOutputs() {
+             if (!this.programId) return [];
+             const prog = this.hierarchy.find(p => p.id == this.programId);
+             return prog ? (prog.outputs || []) : [];
+         },
+
+         get availableSubOutputs() {
+             if (!this.outputId) return [];
+             for (let prog of this.hierarchy) {
+                 const out = (prog.outputs || []).find(o => o.id == this.outputId);
+                 if (out) return out.sub_outputs || [];
+             }
+             return [];
+         },
+
+         onProgramChange() {
+             this.outputId = '';
+             this.subOutputId = '';
+             $refs.filterForm.submit();
+         },
+
+         onOutputChange() {
+             this.subOutputId = '';
+             $refs.filterForm.submit();
+         },
+
+         onSubOutputChange() {
+             $refs.filterForm.submit();
+         }
+     }">
 
     {{-- ── TOP HERO SECTION: INSTANT SEARCH (SEARCH-FIRST DIRECTORY) ── --}}
     <div class="relative overflow-hidden rounded-2xl p-8 text-white shadow-lg w-full"
@@ -83,67 +119,45 @@
             @endif
         </div>
 
-        <form method="GET" action="{{ route('items.index') }}" id="cascadingFilterForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <form method="GET" action="{{ route('items.index') }}" x-ref="filterForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             @if($search) <input type="hidden" name="search" value="{{ $search }}"> @endif
             @if($filter) <input type="hidden" name="filter" value="{{ $filter }}"> @endif
 
             {{-- Dropdown 1: Program --}}
             <div>
                 <label class="sakdi-label">Pilih Program</label>
-                <select name="program_id" onchange="onProgramChange(this)" class="sakdi-select">
+                <select name="program_id" x-model="programId" @change="onProgramChange()" class="sakdi-select">
                     <option value="">-- Semua Program --</option>
                     @foreach($programs as $p)
-                        <option value="{{ $p->id }}" {{ $programId == $p->id ? 'selected' : '' }}>
+                        <option value="{{ $p->id }}">
                             [{{ $p->code }}] {{ Str::limit($p->name, 35) }}
                         </option>
                     @endforeach
                 </select>
             </div>
 
-            {{-- Dropdown 2: Output --}}
+            {{-- Dropdown 2: Output (Dynamically updated via Alpine.js) --}}
             <div>
                 <label class="sakdi-label">Pilih Output</label>
-                <select name="output_id" onchange="onOutputChange(this)" class="sakdi-select">
+                <select name="output_id" x-model="outputId" @change="onOutputChange()" class="sakdi-select">
                     <option value="">-- Semua Output --</option>
-                    @foreach($outputs as $o)
-                        <option value="{{ $o->id }}" {{ $outputId == $o->id ? 'selected' : '' }}>
-                            [{{ $o->code }}] {{ Str::limit($o->name, 35) }}
-                        </option>
-                    @endforeach
+                    <template x-for="out in (programId ? availableOutputs : {{ json_encode($outputs) }})" :key="out.id">
+                        <option :value="out.id" :selected="out.id == outputId" x-text="'[' + out.code + '] ' + out.name"></option>
+                    </template>
                 </select>
             </div>
 
-            {{-- Dropdown 3: Sub-Output --}}
+            {{-- Dropdown 3: Sub-Output (Dynamically updated via Alpine.js) --}}
             <div>
                 <label class="sakdi-label">Pilih Sub-Output</label>
-                <select name="sub_output_id" onchange="this.form.submit()" class="sakdi-select">
+                <select name="sub_output_id" x-model="subOutputId" @change="onSubOutputChange()" class="sakdi-select">
                     <option value="">-- Semua Sub-Output --</option>
-                    @foreach($subOutputs as $so)
-                        <option value="{{ $so->id }}" {{ $subOutputId == $so->id ? 'selected' : '' }}>
-                            [{{ $so->code }}] {{ Str::limit($so->name, 35) }}
-                        </option>
-                    @endforeach
+                    <template x-for="so in (outputId ? availableSubOutputs : {{ json_encode($subOutputs) }})" :key="so.id">
+                        <option :value="so.id" :selected="so.id == subOutputId" x-text="'[' + so.code + '] ' + so.name"></option>
+                    </template>
                 </select>
             </div>
         </form>
-
-        <script>
-        function onProgramChange(select) {
-            const form = select.form;
-            const outputSelect = form.querySelector('[name="output_id"]');
-            const subOutputSelect = form.querySelector('[name="sub_output_id"]');
-            if (outputSelect) outputSelect.value = '';
-            if (subOutputSelect) subOutputSelect.value = '';
-            form.submit();
-        }
-
-        function onOutputChange(select) {
-            const form = select.form;
-            const subOutputSelect = form.querySelector('[name="sub_output_id"]');
-            if (subOutputSelect) subOutputSelect.value = '';
-            form.submit();
-        }
-        </script>
 
         {{-- Filter Status Verifikasi Bar --}}
         <div class="flex items-center justify-between flex-wrap gap-4 mt-6 pt-5"

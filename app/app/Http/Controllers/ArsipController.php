@@ -18,9 +18,11 @@ class ArsipController extends Controller
         $outputId = $request->get('output_id');
         $subOutputId = $request->get('sub_output_id');
 
-        $programs = Program::all();
-        $outputs = $programId ? Output::where('program_id', $programId)->get() : Output::all();
+        $hierarchy  = Program::with('outputs.subOutputs')->get();
+        $programs   = Program::all();
+        $outputs    = $programId ? Output::where('program_id', $programId)->get() : Output::all();
         $subOutputs = $outputId ? SubOutput::where('output_id', $outputId)->get() : SubOutput::all();
+
 
         // Quick stats
         $stats = [
@@ -68,6 +70,7 @@ class ArsipController extends Controller
         $selectedSubOutput = $subOutputId ? SubOutput::find($subOutputId) : null;
 
         return view('arsip.index', compact(
+            'hierarchy',
             'programs',
             'outputs',
             'subOutputs',
@@ -80,5 +83,6 @@ class ArsipController extends Controller
             'selectedSubOutput',
             'items'
         ));
+
     }
 }
