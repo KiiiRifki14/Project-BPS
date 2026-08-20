@@ -42,12 +42,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 
-    // 3. Verifikasi Pencairan (Bendahara only)
-    Route::middleware('role:BENDAHARA')->group(function () {
+    // 3. Verifikasi Pencairan & Centang Check (Bendahara & Admin)
+    Route::middleware('role:BENDAHARA,ADMIN')->group(function () {
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
-        // PATCH verify dikunci pada level middleware (sesuai Diagram 12 ERD)
         Route::patch('/items/{item}/verify', [ItemController::class, 'verify'])->name('items.verify');
+        Route::patch('/documents/{document}/check', [DocumentController::class, 'toggleCheck'])->name('documents.check');
     });
+
 
     // 4. Kelola Master POK (Supervisor & Admin)
     Route::middleware('role:SUPERVISOR,ADMIN')->group(function () {

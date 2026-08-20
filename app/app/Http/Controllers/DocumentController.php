@@ -75,19 +75,69 @@ class DocumentController extends Controller
             $uploaded++;
         }
 
-        // 🔄 STATE MACHINE: Jika item sebelumnya REJECTED, reset ke PENDING
-        // agar Bendahara dapat melakukan re-review atas dokumen perbaikan.
+        // 🔄 STATE MACHINE & GUARD 5: Jika item sebelumnya REJECTED, reset ke PENDING
+        // dan reset seluruh checklist dokumen lama ke false agar Bendahara re-review dari nol.
         $statusNote = '';
         if ($item->verification_status === 'REJECTED') {
+            $item->documents()->update([
+                'is_checked'         => false,
+                'checked_by_user_id' => null,
+                'checked_at'         => null,
+            ]);
             $item->update([
                 'verification_status' => 'PENDING',
                 'rejection_note'      => null,
             ]);
-            $statusNote = ' Status item direset ke PENDING untuk re-review Bendahara.';
+            $statusNote = ' Status item dan seluruh checklist dokumen direset ke PENDING untuk re-review Bendahara.';
         }
 
         return back()->with('success', "{$uploaded} dokumen berhasil diunggah untuk item [{$item->code}].{$statusNote}");
     }
+
+    /**
+     * Bendahara / Admin: Toggle document checklist status via AJAX.
+     * Route: PATCH /documents/{document}/check
+     */
+    public function toggleCheck(Request $request, Document $document)
+    {
+        $user = $request->user();
+
+        if (!$user->isBendahara() && !$user->isAdmin()) {
+            return response()->json(['error' => 'Akses ditolak: Hanya Bendahara Pengeluaran atau Admin yang berwenang melakukan verifikasi centang dokumen.'], 403);
+        }
+
+        if ($document->item->verification_status === 'APPROVED') {
+            return response()->json(['error' => 'Item ini sudah disetujui. Status checklist terkunci.'], 422);
+        }
+
+        $request->validate([
+            'is_checked' => 'required|boolean',
+        ]);
+
+        $isChecked = $request->boolean('is_checked');
+
+        $document->update([
+            'is_checked'          => $isChecked,
+            'checked_by_user_id'  => $isChecked ? $user->id : null,
+            'checked_at'          => $isChecked ? now() : null,
+        ]);
+
+        $item = $document->item->fresh();
+        $totalDocs    = $item->documents()->count();
+        $checkedCount = $item->documents()->where('is_checked', true)->count();
+        $canApprove   = $totalDocs > 0 && $checkedCount === $totalDocs;
+
+        return response()->json([
+            'success'       => true,
+            'is_checked'    => $document->is_checked,
+            'checked_by'    => $document->checkedBy ? $document->checkedBy->name : null,
+            'checked_at'    => $document->checked_at ? $document->checked_at->format('d/m/Y H:i') : null,
+            'checked_count' => $checkedCount,
+            'total_docs'    => $totalDocs,
+            'can_approve'   => $canApprove,
+        ]);
+    }
+
 
     /**
      * Securely stream a file — requires authenticated session.

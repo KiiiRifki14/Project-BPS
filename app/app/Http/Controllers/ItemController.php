@@ -27,8 +27,9 @@ class ItemController extends Controller
      */
     public function verify(Request $request, Item $item)
     {
-        if (auth()->user()->role !== 'BENDAHARA') {
-            abort(403, 'Akses ditolak: Hanya Bendahara Pengeluaran yang berwenang melakukan verifikasi pencairan.');
+        $user = auth()->user();
+        if (!$user->isBendahara() && !$user->isAdmin()) {
+            abort(403, 'Akses ditolak: Hanya Bendahara Pengeluaran atau Admin yang berwenang melakukan verifikasi pencairan.');
         }
 
         $validated = $request->validate([
@@ -40,9 +41,27 @@ class ItemController extends Controller
             'rejection_note.required_if'   => 'Catatan penolakan wajib diisi jika status Ditolak.',
         ]);
 
-        // 🛑 GUARD 2: Minimum 1 document required before APPROVED
-        if ($validated['action'] === 'APPROVED' && $item->documents()->count() === 0) {
-            return back()->with('error', 'Gagal menyetujui pencairan: Minimal harus ada 1 dokumen SPJ/BAPP yang terunggah sebelum dapat disetujui.');
+        // 🛑 GUARD 2 (REVISI): Minimum 1 document required AND ALL documents must be checked (is_checked = true)
+        if ($validated['action'] === 'APPROVED') {
+            $totalDocs = $item->documents()->count();
+            $uncheckedCount = $item->documents()->where('is_checked', false)->count();
+
+            if ($totalDocs === 0) {
+                return back()->with('error', 'Gagal menyetujui pencairan: Minimal harus ada 1 dokumen SPJ/BAPP yang terunggah sebelum dapat disetujui.');
+            }
+
+            if ($uncheckedCount > 0) {
+                return back()->with('error', "Gagal menyetujui pencairan: Masih ada {$uncheckedCount} dokumen yang belum dicentang/diperiksa oleh Bendahara.");
+            }
+        }
+
+        // 🧹 GUARD 5: Jika status REJECTED, reset seluruh checklist dokumen item ke false
+        if ($validated['action'] === 'REJECTED') {
+            $item->documents()->update([
+                'is_checked'         => false,
+                'checked_by_user_id' => null,
+                'checked_at'         => null,
+            ]);
         }
 
         $item->update([
@@ -53,4 +72,5 @@ class ItemController extends Controller
         $statusLabel = $validated['action'] === 'APPROVED' ? 'Disetujui (Siap Cair)' : 'Ditolak';
         return back()->with('success', "Status item [{$item->code}] berhasil diubah menjadi: {$statusLabel}.");
     }
+
 }

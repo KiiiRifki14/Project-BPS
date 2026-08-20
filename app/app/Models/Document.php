@@ -19,7 +19,16 @@ class Document extends Model
         'file_type',
         'uploaded_by_user_id',
         'label',
+        'is_checked',
+        'checked_by_user_id',
+        'checked_at',
     ];
+
+    protected $casts = [
+        'is_checked' => 'boolean',
+        'checked_at' => 'datetime',
+    ];
+
 
     /**
      * 🧹 GUARD 3: Physical Storage Garbage Collection
@@ -44,6 +53,12 @@ class Document extends Model
     {
         return $this->belongsTo(User::class, 'uploaded_by_user_id');
     }
+
+    public function checkedBy()
+    {
+        return $this->belongsTo(User::class, 'checked_by_user_id');
+    }
+
 
     public function getFileSizeFormattedAttribute(): string
     {
