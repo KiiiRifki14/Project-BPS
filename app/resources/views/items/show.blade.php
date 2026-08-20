@@ -6,80 +6,111 @@
 
     {{-- ── BREADCRUMB TRAIL & BACK TO VERIFICATION ── --}}
     <div class="flex items-center justify-between flex-wrap gap-4">
-        <nav class="flex items-center gap-2 flex-wrap text-xs font-semibold text-slate-500 bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-xs flex-1">
-            <a href="{{ route('dashboard') }}" class="hover:text-blue-800 transition-colors">🏠 Dashboard</a>
-            <span class="text-slate-300">/</span>
-            <span class="font-mono text-slate-700">[{{ $breadcrumb['program']->code }}]</span>
-            <span class="text-slate-300">/</span>
-            <span class="font-mono text-slate-700">[{{ $breadcrumb['output']->code }}]</span>
-            <span class="text-slate-300">/</span>
-            <span class="font-mono text-slate-700">[{{ $breadcrumb['sub_output']->code }}]</span>
-            <span class="text-slate-300">/</span>
-            <span class="font-mono text-slate-700">[{{ $breadcrumb['component']->code }}]</span>
-            <span class="text-slate-300">/</span>
-            <span class="font-mono text-slate-700">[{{ $breadcrumb['sub_component']->code }}]</span>
-            <span class="text-slate-300">/</span>
-            <span class="font-mono text-slate-700">[{{ $breadcrumb['account']->code }}]</span>
-            <span class="text-slate-300">/</span>
-            <span class="font-mono font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Item {{ $item->code }}</span>
+        <nav class="sakdi-breadcrumb sakdi-card px-5 py-3 flex-1">
+            <a href="{{ route('dashboard') }}" class="hover:underline">🏠 Dashboard</a>
+            <span class="sakdi-breadcrumb-sep">/</span>
+            <span class="num-mono">[{{ $breadcrumb['program']->code }}]</span>
+            <span class="sakdi-breadcrumb-sep">/</span>
+            <span class="num-mono">[{{ $breadcrumb['output']->code }}]</span>
+            <span class="sakdi-breadcrumb-sep">/</span>
+            <span class="num-mono">[{{ $breadcrumb['sub_output']->code }}]</span>
+            <span class="sakdi-breadcrumb-sep">/</span>
+            <span class="num-mono">[{{ $breadcrumb['component']->code }}]</span>
+            <span class="sakdi-breadcrumb-sep">/</span>
+            <span class="num-mono">[{{ $breadcrumb['sub_component']->code }}]</span>
+            <span class="sakdi-breadcrumb-sep">/</span>
+            <span class="num-mono">[{{ $breadcrumb['account']->code }}]</span>
+            <span class="sakdi-breadcrumb-sep">/</span>
+            <span class="num-mono font-bold sakdi-badge sakdi-badge-primary">Item {{ $item->code }}</span>
         </nav>
 
         @if(request()->query('from') === 'verification' || auth()->user()->isBendahara())
-            <a href="{{ route('verification.index') }}" class="btn-bps btn-bps-secondary btn-bps-sm font-extrabold text-blue-900 bg-blue-50 border-blue-200 hover:bg-blue-100 shadow-xs">
+            <a href="{{ route('verification.index') }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-extrabold">
                 ← Kembali ke Inbox Verifikasi
             </a>
         @endif
     </div>
 
     {{-- ── ITEM HEADER CARD ── --}}
-    <div class="card-corporate p-8 relative overflow-hidden">
+    <div class="sakdi-card p-8 relative overflow-hidden">
+        {{-- Verifikasi Stepper --}}
+        <div class="sakdi-stepper mb-6 pb-6" style="border-bottom: 1px solid var(--color-neutral-300);">
+            <div class="sakdi-stepper-step {{ $item->documents->count() > 0 ? 'done' : 'active' }}">
+                <div class="sakdi-step-indicator">{{ $item->documents->count() > 0 ? '✓' : '1' }}</div>
+                <div class="sakdi-step-label">Dokumen SPJ ({{ $item->documents->count() }})</div>
+            </div>
+            <div class="sakdi-stepper-step {{ $item->verification_status === 'APPROVED' ? 'done' : ($item->verification_status === 'REJECTED' ? 'error' : ($item->documents->count() > 0 ? 'active' : '')) }}">
+                <div class="sakdi-step-indicator">
+                    {{ $item->verification_status === 'APPROVED' ? '✓' : ($item->verification_status === 'REJECTED' ? '✕' : '2') }}
+                </div>
+                <div class="sakdi-step-label">Verifikasi Bendahara</div>
+            </div>
+            <div class="sakdi-stepper-step {{ $item->verification_status === 'APPROVED' ? 'done' : ($item->verification_status === 'REJECTED' ? 'error' : '') }}">
+                <div class="sakdi-step-indicator">
+                    {{ $item->verification_status === 'APPROVED' ? '✓' : ($item->verification_status === 'REJECTED' ? '✕' : '3') }}
+                </div>
+                <div class="sakdi-step-label">Pencairan Dana</div>
+            </div>
+        </div>
+
         <div class="flex items-start justify-between flex-wrap gap-6">
             <div class="flex-1 min-w-[280px]">
                 <div class="flex items-center gap-3 flex-wrap mb-3">
-                    <span class="font-mono text-xs font-extrabold text-blue-900 bg-blue-50 border border-blue-200 px-3.5 py-1 rounded-lg">
+                    <span class="num-mono text-xs font-extrabold px-3.5 py-1 rounded-lg"
+                          style="color: var(--color-primary-900); background: var(--color-primary-50); border: 1px solid var(--color-primary-100);">
                         KODE ITEM: {{ $item->code }}
                     </span>
 
                     @if($item->verification_status === 'APPROVED')
-                        <span class="badge-corp badge-corp-approved text-xs py-1 px-3">
-                            <span>Siap Cair (Approved)</span>
+                        <span class="sakdi-badge sakdi-badge-success text-xs py-1 px-3">
+                            ✓ Siap Cair (Approved)
                         </span>
                     @elseif($item->verification_status === 'REJECTED')
-                        <span class="badge-corp badge-corp-rejected text-xs py-1 px-3">
-                            <span>Ditolak — Butuh Revisi</span>
+                        <span class="sakdi-badge sakdi-badge-error text-xs py-1 px-3">
+                            ✕ Ditolak — Butuh Revisi
                         </span>
                     @else
-                        <span class="badge-corp badge-corp-pending text-xs py-1 px-3">
-                            <span>Menunggu Verifikasi</span>
+                        <span class="sakdi-badge sakdi-badge-warning text-xs py-1 px-3">
+                            ⏳ Menunggu Verifikasi
                         </span>
                     @endif
                 </div>
 
-                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-2">{{ $item->name }}</h1>
+                <h1 class="text-xl sm:text-2xl font-black tracking-tight mb-2" style="color: var(--color-neutral-900);">
+                    {{ $item->name }}
+                </h1>
 
-                <div class="text-xs text-slate-600 space-y-1">
-                    <div>📂 Akun: <strong class="font-mono text-slate-800">{{ $item->account->code }}</strong> — {{ $item->account->name }}</div>
-                    <div>🗂 Sub-Komponen: <strong class="font-mono text-slate-800">{{ $breadcrumb['sub_component']->code }}</strong> — {{ $breadcrumb['sub_component']->name }}</div>
+                <div class="text-xs space-y-1" style="color: var(--color-neutral-500);">
+                    <div>📂 Akun: <strong class="num-mono" style="color: var(--color-neutral-900);">{{ $item->account->code }}</strong> — {{ $item->account->name }}</div>
+                    <div>🗂 Sub-Komponen: <strong class="num-mono" style="color: var(--color-neutral-900);">{{ $breadcrumb['sub_component']->code }}</strong> — {{ $breadcrumb['sub_component']->name }}</div>
                 </div>
             </div>
 
             <div class="text-right">
-                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Pagu Anggaran</div>
-                <div class="text-2xl font-black text-emerald-800 font-mono tracking-tight">{{ $item->pagu_formatted }}</div>
-                <div class="text-xs font-semibold text-slate-500 mt-1">{{ $item->documents->count() }} dokumen terunggah</div>
+                <div class="sakdi-overline mb-1">Pagu Anggaran</div>
+                <div class="text-2xl font-black num-mono tracking-tight" style="color: var(--color-positive-700);">
+                    {{ $item->pagu_formatted }}
+                </div>
+                <div class="text-xs font-semibold mt-1" style="color: var(--color-neutral-500);">
+                    {{ $item->documents->count() }} dokumen terunggah
+                </div>
             </div>
         </div>
 
         {{-- Rejection Note Alert --}}
         @if($item->verification_status === 'REJECTED' && $item->rejection_note)
-        <div class="mt-6 p-4 rounded-xl bg-red-50 border-l-4 border-l-red-600 border border-red-200">
-            <div class="flex items-center gap-2 text-xs font-black text-red-900 uppercase tracking-wider mb-1">
-                <span>📝 Catatan Penolakan Bendahara:</span>
+        <div class="sakdi-alert sakdi-alert-error mt-6">
+            <svg class="sakdi-alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <div class="font-extrabold text-xs uppercase tracking-wider mb-1">📝 Catatan Penolakan Bendahara:</div>
+                <div class="text-sm font-semibold leading-relaxed">{{ $item->rejection_note }}</div>
             </div>
-            <div class="text-sm font-semibold text-red-800 leading-relaxed">{{ $item->rejection_note }}</div>
         </div>
         @endif
     </div>
+
 
     {{-- ── MAIN WORKSPACE GRID ── --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">

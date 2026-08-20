@@ -5,64 +5,69 @@
 <div class="space-y-8">
 
     {{-- Header Banner --}}
-    <div class="card-corporate p-8 flex items-center justify-between flex-wrap gap-6">
+    <div class="sakdi-card p-8 flex items-center justify-between flex-wrap gap-6"
+         style="border-left: 4px solid var(--color-primary);">
         <div>
-            <div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-900 font-extrabold text-xs px-3.5 py-1.5 rounded-lg mb-2">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-2 text-xs font-extrabold"
+                 style="background: var(--color-accent-50); border: 1px solid var(--color-accent-200); color: var(--color-accent-700);">
                 <span>🏦 BENDAHARA INBOX VERIFIKASI</span>
             </div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Verifikasi Pencairan Dana Kegiatan</h1>
-            <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+            <h1 class="text-2xl font-black tracking-tight" style="color: var(--color-neutral-900);">
+                Verifikasi Pencairan Dana Kegiatan
+            </h1>
+            <p class="text-xs sm:text-sm font-medium mt-1" style="color: var(--color-neutral-500);">
                 Tinjau kelengkapan dokumen SPJ, BAPP, dan Kuitansi sebelum menyetujui pencairan anggaran BPS Subang.
             </p>
         </div>
 
-        {{-- Status Filter Buttons --}}
+        {{-- Status Filter Buttons / Tabs --}}
         <div class="flex items-center gap-2 flex-wrap">
             <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'PENDING'])) }}"
-               class="btn-bps btn-bps-sm {{ $status === 'PENDING' ? 'bg-amber-500 text-slate-950 font-black' : 'btn-bps-secondary' }}">
+               class="sakdi-btn sakdi-btn-sm {{ $status === 'PENDING' ? 'sakdi-btn-accent' : 'sakdi-btn-secondary' }}">
                 ⏳ Antrean Pending ({{ $pendingCount }})
             </a>
             <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'APPROVED'])) }}"
-               class="btn-bps btn-bps-sm {{ $status === 'APPROVED' ? 'btn-bps-success' : 'btn-bps-secondary' }}">
+               class="sakdi-btn sakdi-btn-sm {{ $status === 'APPROVED' ? 'sakdi-btn-success' : 'sakdi-btn-secondary' }}">
                 ✅ Siap Cair ({{ $approvedCount }})
             </a>
             <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'REJECTED'])) }}"
-               class="btn-bps btn-bps-sm {{ $status === 'REJECTED' ? 'btn-bps-danger' : 'btn-bps-secondary' }}">
+               class="sakdi-btn sakdi-btn-sm {{ $status === 'REJECTED' ? 'sakdi-btn-danger' : 'sakdi-btn-secondary' }}">
                 ❌ Ditolak ({{ $rejectedCount }})
             </a>
             <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'ALL'])) }}"
-               class="btn-bps btn-bps-sm {{ $status === 'ALL' ? 'btn-bps-primary' : 'btn-bps-secondary' }}">
+               class="sakdi-btn sakdi-btn-sm {{ $status === 'ALL' ? 'sakdi-btn-primary' : 'sakdi-btn-secondary' }}">
                 Semua Status
             </a>
         </div>
     </div>
 
     {{-- Items Verification Table --}}
-    <div class="table-container-v4">
-        <div class="px-6 py-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-wrap gap-4">
-            <h2 class="text-sm font-extrabold text-slate-900">
-                Daftar Antrean Verifikasi — Filter: <span class="text-blue-900 font-mono">{{ $status }}</span>
+    <div class="sakdi-table-wrapper">
+        <div class="px-6 py-5 flex items-center justify-between flex-wrap gap-4"
+             style="background: var(--color-neutral-50); border-bottom: 1px solid var(--color-neutral-300);">
+            <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">
+                Daftar Antrean Verifikasi — Filter: <span class="num-mono" style="color: var(--color-primary);">{{ $status }}</span>
             </h2>
         </div>
 
         {{-- Input Search Box Kode Item / Nama Kegiatan --}}
-        <div class="p-6 border-b border-slate-200 bg-white">
+        <div class="p-6 border-b" style="border-color: var(--color-neutral-300); background: var(--color-bg-surface);">
             <form method="GET" action="{{ route('verification.index') }}" class="flex gap-3">
                 <input type="hidden" name="status" value="{{ $status }}">
                 <div class="relative flex-1">
-                    <input 
-                        type="text" 
-                        name="search" 
-                        value="{{ request('search') }}" 
-                        placeholder="🔍 Ketik Kode Item (misal: 001366) atau Kata Kunci Kegiatan..." 
-                        class="w-full rounded-xl border-slate-300 pl-10 pr-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="🔍 Ketik Kode Item (misal: 001366) atau Kata Kunci Kegiatan..."
+                        class="sakdi-input pl-10"
                     >
                 </div>
-                <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors shrink-0">
+                <button type="submit" class="sakdi-btn sakdi-btn-primary">
                     Cari Item
                 </button>
                 @if(request('search'))
-                    <a href="{{ route('verification.index', ['status' => $status]) }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl border border-slate-300 transition-colors shrink-0 flex items-center justify-center">
+                    <a href="{{ route('verification.index', ['status' => $status]) }}" class="sakdi-btn sakdi-btn-secondary">
                         Reset
                     </a>
                 @endif
@@ -70,7 +75,7 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="table-v4">
+            <table class="sakdi-table">
                 <thead>
                     <tr>
                         <th class="w-32 text-center">Kode Item</th>
@@ -86,55 +91,62 @@
                     @forelse($items as $item)
                     <tr>
                         <td class="text-center whitespace-nowrap">
-                            <span class="font-mono text-xs font-bold text-blue-900 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg">
+                            <span class="num-mono text-xs font-bold px-3 py-1.5 rounded-lg"
+                                  style="color: var(--color-primary-900); background: var(--color-primary-50); border: 1px solid var(--color-primary-100);">
                                 {{ $item->code }}
                             </span>
                         </td>
-                        <td class="font-extrabold text-slate-900 text-sm">
+                        <td class="font-extrabold text-sm" style="color: var(--color-neutral-900);">
                             {{ $item->name }}
                         </td>
                         <td class="text-xs">
-                            <div class="font-bold text-slate-800">Akun {{ $item->account->code }}</div>
-                            <div class="text-[10px] font-mono text-blue-800 mt-0.5">
+                            <div class="font-bold" style="color: var(--color-neutral-700);">Akun {{ $item->account->code }}</div>
+                            <div class="text-[10px] num-mono mt-0.5" style="color: var(--color-primary);">
                                 {{ $item->account->subComponent->component->subOutput->code }}
                             </div>
                         </td>
-                        <td class="text-right font-mono font-bold text-emerald-800 text-sm whitespace-nowrap">
+                        <td class="text-right num-mono font-bold text-sm whitespace-nowrap" style="color: var(--color-positive-700);">
                             Rp {{ number_format($item->pagu, 0, ',', '.') }}
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            <span class="text-xs font-extrabold px-3 py-1 rounded-full {{ $item->documents->count() > 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-400' }}">
-                                📄 {{ $item->documents->count() }} File
-                            </span>
-                        </td>
-                        <td class="text-center whitespace-nowrap">
-                            @if($item->verification_status === 'APPROVED')
-                                <span class="badge-corp badge-corp-approved">
-                                    <span>Siap Cair</span>
-                                </span>
-                            @elseif($item->verification_status === 'REJECTED')
-                                <span class="badge-corp badge-corp-rejected">
-                                    <span>Ditolak</span>
+                            @if($item->documents->count() > 0)
+                                <span class="sakdi-badge sakdi-badge-success">
+                                    📄 {{ $item->documents->count() }} File
                                 </span>
                             @else
-                                <span class="badge-corp badge-corp-pending">
-                                    <span>Pending</span>
+                                <span class="sakdi-badge sakdi-badge-neutral">
+                                    Belum ada
                                 </span>
                             @endif
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            <a href="{{ route('items.show', [$item, 'from' => 'verification']) }}" class="btn-bps btn-bps-primary btn-bps-sm">
-                                <span>🔍 Tinjau & Verifikasi</span>
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            @if($item->verification_status === 'APPROVED')
+                                <span class="sakdi-badge sakdi-badge-success">
+                                    ✓ Siap Cair
+                                </span>
+                            @elseif($item->verification_status === 'REJECTED')
+                                <span class="sakdi-badge sakdi-badge-error">
+                                    ✕ Ditolak
+                                </span>
+                            @else
+                                <span class="sakdi-badge sakdi-badge-warning">
+                                    ⏳ Pending
+                                </span>
+                            @endif
+                        </td>
+                        <td class="text-center whitespace-nowrap">
+                            <a href="{{ route('items.show', [$item, 'from' => 'verification']) }}" class="sakdi-btn sakdi-btn-primary sakdi-btn-sm">
+                                <span>🔍 Tinjau &amp; Verifikasi</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </a>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-16 text-slate-400">
+                        <td colspan="7" class="text-center py-16" style="color: var(--color-neutral-500);">
                             <div class="text-4xl mb-3">🎉</div>
-                            <div class="font-extrabold text-slate-700 text-base">Tidak ada antrean verifikasi</div>
-                            <div class="text-xs text-slate-400 mt-1">Semua dokumen SPJ telah ditinjau atau belum diunggah operator.</div>
+                            <div class="font-extrabold text-base" style="color: var(--color-neutral-700);">Tidak ada antrean verifikasi</div>
+                            <div class="text-xs mt-1" style="color: var(--color-neutral-500);">Semua dokumen SPJ telah ditinjau atau belum diunggah operator.</div>
                         </td>
                     </tr>
                     @endforelse
@@ -143,7 +155,7 @@
         </div>
 
         {{-- Pagination --}}
-        <div class="px-6 py-4 bg-slate-50 border-t border-slate-200">
+        <div class="px-6 py-4 border-t" style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">
             {{ $items->appends(request()->query())->links() }}
         </div>
     </div>
