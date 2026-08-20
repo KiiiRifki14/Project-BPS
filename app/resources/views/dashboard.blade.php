@@ -15,7 +15,8 @@
         <div class="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none"
              style="background: radial-gradient(circle, rgba(77,158,224,0.18) 0%, transparent 70%); transform: translate(30%, -30%);"></div>
         <div class="relative z-10 flex items-center justify-between flex-wrap gap-6">
-            <div class="max-w-2xl">
+            <div class="flex-1 min-w-[280px]">
+
                 <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-3 text-xs font-extrabold"
                      style="background: rgba(232,96,28,0.2); border: 1px solid rgba(232,96,28,0.3); color: var(--color-accent-200);">
                     <span>⭐ MODUL UTAMA MVP CORE FOCUS</span>

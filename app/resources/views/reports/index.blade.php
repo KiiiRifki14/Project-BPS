@@ -5,7 +5,7 @@
 <div class="space-y-8">
 
     {{-- Page Header --}}
-    <div class="sakdi-card p-8 flex items-center justify-between flex-wrap gap-6"
+    <div class="sakdi-card w-full p-8 flex items-center justify-between flex-wrap gap-6"
          style="border-left: 4px solid var(--color-primary);">
         <div>
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-2 text-xs font-extrabold"
@@ -29,7 +29,7 @@
     </div>
 
     {{-- KPI Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full">
         <div class="sakdi-card-stat sakdi-card-stat-neutral p-6">
             <div class="sakdi-overline mb-2">TOTAL KEGIATAN POK</div>
             <div class="text-2xl font-black mt-2" style="color: var(--color-neutral-900);">{{ $summary['total_items'] }} Item</div>
@@ -56,7 +56,8 @@
     </div>
 
     {{-- Detailed Sub-Output Breakdown List --}}
-    <div class="sakdi-card overflow-hidden p-0">
+    <div class="sakdi-card w-full overflow-hidden p-0">
+
         <div class="px-6 py-5 border-b" style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">
             <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Rekapitulasi Berkas per Sub-Output (Total {{ $subOutputs->total() }} Sub-Output)</h2>
         </div>

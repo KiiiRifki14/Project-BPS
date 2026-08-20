@@ -5,7 +5,7 @@
 <div class="space-y-8">
 
     {{-- Header Banner --}}
-    <div class="sakdi-card p-8 flex items-center justify-between flex-wrap gap-6"
+    <div class="sakdi-card w-full p-8 flex items-center justify-between flex-wrap gap-6"
          style="border-left: 4px solid var(--color-primary);">
         <div>
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-2 text-xs font-extrabold"
@@ -42,7 +42,8 @@
     </div>
 
     {{-- Items Verification Table --}}
-    <div class="sakdi-table-wrapper">
+    <div class="sakdi-table-wrapper w-full">
+
         <div class="px-6 py-5 flex items-center justify-between flex-wrap gap-4"
              style="background: var(--color-neutral-50); border-bottom: 1px solid var(--color-neutral-300);">
             <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">

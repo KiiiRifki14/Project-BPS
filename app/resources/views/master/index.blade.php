@@ -5,7 +5,7 @@
 <div class="space-y-8" x-data="{ tab: 'items' }">
 
     {{-- Page Header --}}
-    <div class="sakdi-card p-8 flex items-center justify-between flex-wrap gap-6"
+    <div class="sakdi-card w-full p-8 flex items-center justify-between flex-wrap gap-6"
          style="border-left: 4px solid var(--color-primary);">
         <div>
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-2 text-xs font-extrabold"
@@ -22,7 +22,8 @@
     </div>
 
     {{-- TABS BAR --}}
-    <div class="sakdi-tabs mb-6">
+    <div class="sakdi-tabs w-full mb-6">
+
         @foreach([
             ['id' => 'items', 'label' => '📋 Item Kegiatan'],
             ['id' => 'accounts', 'label' => '💳 Akun'],

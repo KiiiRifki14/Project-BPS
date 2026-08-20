@@ -32,7 +32,8 @@
     </div>
 
     {{-- ── ITEM HEADER CARD ── --}}
-    <div class="sakdi-card p-8 relative overflow-hidden">
+    <div class="sakdi-card w-full p-8 relative overflow-hidden">
+
         {{-- Verifikasi Stepper --}}
         <div class="sakdi-stepper mb-6 pb-6" style="border-bottom: 1px solid var(--color-neutral-300);">
             <div class="sakdi-stepper-step {{ $item->documents->count() > 0 ? 'done' : 'active' }}">

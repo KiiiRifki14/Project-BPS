@@ -10,7 +10,8 @@
         {{-- Decorative glow --}}
         <div class="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none"
              style="background: radial-gradient(circle, rgba(61,135,204,0.2) 0%, transparent 70%); transform: translate(30%, -30%);"></div>
-        <div class="max-w-3xl relative z-10">
+        <div class="w-full relative z-10">
+
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-3 text-xs font-extrabold"
                  style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.85);">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

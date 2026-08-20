@@ -5,7 +5,8 @@
 <div class="space-y-8">
 
     {{-- Header Card --}}
-    <div class="sakdi-card p-8 flex items-center justify-between flex-wrap gap-6"
+    <div class="sakdi-card w-full p-8 flex items-center justify-between flex-wrap gap-6"
+
          style="border-left: 4px solid var(--color-primary);">
         <div>
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-2 text-xs font-extrabold"
