@@ -18,46 +18,63 @@
 
     <style>
         :root {
-            --login-bg-from: #002d5c;
-            --login-bg-mid: #0057a8;
-            --login-bg-to: #004a9e;
+            --login-bg-from: rgba(0, 45, 92, 0.4);
+            /* Biru Tua Terang (dengan transparansi untuk gedung) */
+            --login-bg-to: rgba(0, 74, 158, 0.6);
+            /* Biru Medium Terang */
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
             margin: 0;
-            background: radial-gradient(circle at 20% 20%, #003b78 0%, var(--login-bg-from) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
             box-sizing: border-box;
+
+            /* --- Konfigurasi Split Background --- */
+            /* 1. Gradasi Biru Penuh di Seluruh Background */
+            /* 2. Foto Gedung Hanya Dimunculkan di Sisi Kiri (Lebar 50%) */
+            background:
+                linear-gradient(135deg, rgba(0, 45, 92, 0.4) 0%, rgba(0, 74, 158, 0.85) 100%),
+                url('/images/BPS Subang.jpg') no-repeat left center;
+
+            /*Mengatur Ukuran Gambar: Lebar 50% (sisi Kiri), Tinggi 100% Layar */
+            background-size: 100% 100%, 100% 100%;
         }
 
+        /* Layout diperramping/dikecilkan menyerupai persegi panjang presisi */
         .login-container {
             display: grid;
-            grid-template-columns: 1.1fr 1fr;
-            max-width: 960px;
+            grid-template-columns: 1fr 1fr;
+            max-width: 820px;
             width: 100%;
-            border-radius: 20px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
-            background: #ffffff;
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+
+            /* --- Perubahan untuk transparansi kartu login --- */
+            background: rgba(255, 255, 255, 0.9);
+            /* Sedikit transparan agar gedung terlihat */
+            backdrop-filter: blur(1.5px);
+            /* Efek blur halus di belakang kartu */
+            -webkit-backdrop-filter: blur(1.5px);
         }
 
         /* ── Brand Panel (Left) ── */
         .login-brand {
             position: relative;
-            background: linear-gradient(145deg, rgba(0, 87, 168, 0.95), rgba(0, 45, 92, 0.98));
-            padding: 48px 40px;
+            background: linear-gradient(145deg, rgba(0, 87, 168, 0.9), rgba(0, 45, 92, 0.95));
+            /* Menyesuaikan transparansi */
+            padding: 36px 32px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             overflow: hidden;
         }
 
-        /* Background Grid Overlay */
         .login-brand::before {
             content: '';
             position: absolute;
@@ -66,7 +83,7 @@
             right: 0;
             bottom: 0;
             background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-            background-size: 24px 24px;
+            background-size: 20px 20px;
             opacity: 0.6;
             pointer-events: none;
         }
@@ -76,64 +93,69 @@
             z-index: 1;
         }
 
-        .login-logo {
-            width: 56px;
-            height: 56px;
-            background: #ffffff;
-            border-radius: 14px;
+        .brand-title-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .login-logo-clean {
+            width: 72px;
+            height: 72px;
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            padding: 8px;
+            background: transparent;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
         }
 
-        .login-logo img {
+        .login-logo-clean img {
             width: 100%;
             height: 100%;
             object-fit: contain;
         }
 
         .login-brand h1 {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 800;
             color: #ffffff;
-            line-height: 1.35;
-            margin: 0 0 12px;
-            letter-spacing: -0.02em;
+            line-height: 1.25;
+            margin: 0;
+            letter-spacing: -0.01em;
         }
 
         .login-brand p {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.75);
-            line-height: 1.6;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.5;
             margin: 0;
         }
 
         .feature-list {
             position: relative;
             z-index: 1;
-            margin: 32px 0;
+            margin: 24px 0;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
         }
 
         .feature-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.9);
+            gap: 10px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.95);
             font-weight: 500;
         }
 
         .feature-icon-wrapper {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.12);
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
@@ -145,27 +167,28 @@
         .brand-footer {
             position: relative;
             z-index: 1;
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.45);
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
             letter-spacing: 0.02em;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding-top: 12px;
         }
 
         /* ── Form Card (Right) ── */
         .login-form-card {
-            padding: 48px 40px;
+            padding: 36px 32px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            background: #ffffff;
+            background: transparent;
+            /* Kartu login mengikuti transparansi container */
         }
 
         .form-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
             color: #0f172a;
-            margin: 0 0 6px;
+            margin: 0 0 4px;
             letter-spacing: -0.02em;
             display: flex;
             align-items: center;
@@ -173,21 +196,21 @@
         }
 
         .form-sub {
-            font-size: 13px;
-            color: #64748b;
-            margin-bottom: 28px;
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 20px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .form-label {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: #334155;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .input-relative {
@@ -198,8 +221,8 @@
 
         .input-icon-left {
             position: absolute;
-            left: 14px;
-            color: #94a3b8;
+            left: 12px;
+            color: #64748b;
             pointer-events: none;
             display: flex;
             align-items: center;
@@ -207,40 +230,39 @@
 
         .form-input {
             width: 100%;
-            padding: 12px 14px 12px 42px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 14px;
+            padding: 10px 12px 10px 38px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13px;
             font-family: inherit;
             outline: none;
             transition: all 0.2s ease;
-            color: #1e293b;
-            background: #f8fafc;
+            color: #0f172a;
+            background: rgba(248, 250, 252, 0.8);
             box-sizing: border-box;
         }
 
         .form-input:focus {
             background: #ffffff;
             border-color: #0057a8;
-            box-shadow: 0 0 0 4px rgba(0, 87, 168, 0.12);
+            box-shadow: 0 0 0 3px rgba(0, 87, 168, 0.15);
         }
 
         .btn-toggle-pw {
             position: absolute;
-            right: 12px;
+            right: 10px;
             background: none;
             border: none;
-            color: #94a3b8;
+            color: #64748b;
             cursor: pointer;
             padding: 4px;
             display: flex;
             align-items: center;
-            border-radius: 6px;
-            transition: color 0.2s;
+            border-radius: 4px;
         }
 
         .btn-toggle-pw:hover {
-            color: #475569;
+            color: #1e293b;
         }
 
         .form-input.input-error {
@@ -250,8 +272,8 @@
 
         .error-msg {
             color: #ef4444;
-            font-size: 12px;
-            margin-top: 6px;
+            font-size: 11px;
+            margin-top: 4px;
             display: flex;
             align-items: center;
             gap: 4px;
@@ -261,33 +283,33 @@
         .remember-row {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 24px;
+            gap: 8px;
+            margin-bottom: 18px;
         }
 
         .remember-row input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             border-radius: 4px;
             accent-color: #0057a8;
             cursor: pointer;
         }
 
         .remember-row label {
-            font-size: 13px;
-            color: #475569;
+            font-size: 12px;
+            color: #334155;
             cursor: pointer;
             font-weight: 500;
         }
 
         .btn-login {
             width: 100%;
-            padding: 13px 24px;
+            padding: 11px 20px;
             background: #0057a8;
             color: #ffffff;
             border: none;
-            border-radius: 10px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             font-family: inherit;
@@ -296,85 +318,76 @@
             justify-content: center;
             gap: 8px;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 14px rgba(0, 87, 168, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 87, 168, 0.3);
         }
 
         .btn-login:hover {
             background: #004a9e;
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(0, 87, 168, 0.4);
+            box-shadow: 0 6px 16px rgba(0, 87, 168, 0.4);
         }
 
-        .btn-login:active {
-            transform: translateY(0);
-        }
-
-        /* ── Modern Demo Account Chips ── */
+        /* ── Demo Account Box (Static / Non-clickable) ── */
         .demo-card {
-            margin-top: 28px;
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: 12px;
-            border: 1px dashed #cbd5e1;
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(248, 250, 252, 0.7);
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            user-select: none;
         }
 
         .demo-title {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: #64748b;
-            margin-bottom: 12px;
+            color: #475569;
+            margin-bottom: 8px;
         }
 
         .demo-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            gap: 6px;
         }
 
-        .demo-chip {
+        .demo-chip-static {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            padding: 8px 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s ease;
+            padding: 6px 8px;
+            border-radius: 6px;
+            cursor: default;
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 1px;
             text-align: left;
         }
 
-        .demo-chip:hover {
-            border-color: #0057a8;
-            background: #f0f7ff;
-            transform: translateY(-1px);
-        }
-
         .demo-role {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .demo-user {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            color: #64748b;
+            font-size: 9px;
+            color: #475569;
         }
 
         .dot-role {
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
         }
 
         @media (max-width: 768px) {
             .login-container {
                 grid-template-columns: 1fr;
+                max-width: 420px;
             }
 
             .login-brand {
@@ -382,7 +395,7 @@
             }
 
             .login-form-card {
-                padding: 36px 24px;
+                padding: 28px 20px;
             }
         }
     </style>
@@ -395,12 +408,15 @@
         {{-- Brand Panel (left) --}}
         <div class="login-brand">
             <div class="brand-header">
-                <div class="login-logo">
-                    {{-- Logo BPS Vector / Image --}}
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/28/Lambang_Badan_Pusat_Statistik_%28BPS%29_Indonesia.svg"
-                        alt="Logo BPS">
+                {{-- Row: Logo BPS Transparan (Tanpa BG) + Judul Sejajar --}}
+                <div class="brand-title-row">
+                    <div class="login-logo-clean">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/28/Lambang_Badan_Pusat_Statistik_%28BPS%29_Indonesia.svg"
+                            alt="Logo BPS">
+                    </div>
+                    <h1>Sistem Data Digital<br>Arsip Keuangan</h1>
                 </div>
-                <h1>Sistem Data Digital<br>Arsip Keuangan</h1>
+
                 <p>BPS Kabupaten Subang — Pengelolaan dokumen pertanggungjawaban keuangan yang terstruktur, aman, dan
                     efisien.</p>
             </div>
@@ -408,7 +424,7 @@
             <div class="feature-list">
                 <div class="feature-item">
                     <div class="feature-icon-wrapper">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
@@ -418,7 +434,7 @@
 
                 <div class="feature-item">
                     <div class="feature-icon-wrapper">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path
@@ -430,7 +446,7 @@
 
                 <div class="feature-item">
                     <div class="feature-icon-wrapper">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -441,7 +457,7 @@
 
                 <div class="feature-item">
                     <div class="feature-icon-wrapper">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
                         </svg>
@@ -451,10 +467,10 @@
 
                 <div class="feature-item">
                     <div class="feature-icon-wrapper">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path
-                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
                     </div>
                     Akses berbasis peran (RBAC)
@@ -476,14 +492,14 @@
 
             {{-- Session Error Alert --}}
             @if ($errors->any())
-                <div style="background:#fef2f2; border: 1px solid #fca5a5; padding: 12px 14px; border-radius: 10px; margin-bottom: 20px; display:flex; align-items:center; gap:10px; color:#b91c1c;"
+                <div style="background:#fef2f2; border: 1px solid #fca5a5; padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; display:flex; align-items:center; gap:8px; color:#b91c1c;"
                     role="alert">
-                    <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor"
+                    <svg style="width:18px; height:18px; flex-shrink:0;" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span style="font-size:13px; font-weight:500;">{{ $errors->first() }}</span>
+                    <span style="font-size:12px; font-weight:500;">{{ $errors->first() }}</span>
                 </div>
             @endif
 
@@ -495,7 +511,7 @@
                     <label class="form-label" for="nip_username">NIP / Username</label>
                     <div class="input-relative">
                         <span class="input-icon-left">
-                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
                                 viewBox="0 0 24 24">
                                 <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
@@ -507,7 +523,8 @@
                     </div>
                     @error('nip_username')
                         <div class="error-msg" role="alert">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg width="12" height="12" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8v4m0 4h.01" />
                             </svg>
@@ -521,10 +538,10 @@
                     <label class="form-label" for="password">Password</label>
                     <div class="input-relative">
                         <span class="input-icon-left">
-                            <svg width="18" height="18" fill="none" stroke="currentColor"
+                            <svg width="16" height="16" fill="none" stroke="currentColor"
                                 stroke-width="2" viewBox="0 0 24 24">
                                 <path
-                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
                         </span>
                         <input type="password" id="password" name="password"
@@ -532,7 +549,7 @@
                             placeholder="••••••••" autocomplete="current-password" required>
                         <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility()"
                             aria-label="Toggle Password">
-                            <svg id="eye-icon" width="18" height="18" fill="none" stroke="currentColor"
+                            <svg id="eye-icon" width="16" height="16" fill="none" stroke="currentColor"
                                 stroke-width="2" viewBox="0 0 24 24">
                                 <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path
@@ -542,7 +559,7 @@
                     </div>
                     @error('password')
                         <div class="error-msg" role="alert">
-                            <svg width="14" height="14" fill="none" stroke="currentColor"
+                            <svg width="12" height="12" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8v4m0 4h.01" />
@@ -561,39 +578,39 @@
                 {{-- Submit Button --}}
                 <button type="submit" class="btn-login">
                     <span>Masuk ke Sistem</span>
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
                         viewBox="0 0 24 24">
                         <path d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                 </button>
             </form>
 
-            {{-- Demo Accounts (Interactive Quick-Fill) --}}
+            {{-- Demo Accounts (Statis - Tidak Bisa Diklik) --}}
             <div class="demo-card">
-                <div class="demo-title">Klik untuk Auto-fill Akun Demo:</div>
+                <div class="demo-title">Demo Akun (Development):</div>
                 <div class="demo-grid">
-                    <div class="demo-chip" onclick="fillDemo('admin', 'admin123')">
+                    <div class="demo-chip-static">
                         <span class="demo-role" style="color: #ef4444;">
                             <span class="dot-role" style="background:#ef4444;"></span> Admin
                         </span>
                         <span class="demo-user">admin / admin123</span>
                     </div>
 
-                    <div class="demo-chip" onclick="fillDemo('supervisor', 'super123')">
+                    <div class="demo-chip-static">
                         <span class="demo-role" style="color: #3b82f6;">
                             <span class="dot-role" style="background:#3b82f6;"></span> Supervisor
                         </span>
                         <span class="demo-user">supervisor / super123</span>
                     </div>
 
-                    <div class="demo-chip" onclick="fillDemo('operator', 'oper123')">
+                    <div class="demo-chip-static">
                         <span class="demo-role" style="color: #10b981;">
                             <span class="dot-role" style="background:#10b981;"></span> Operator
                         </span>
                         <span class="demo-user">operator / oper123</span>
                     </div>
 
-                    <div class="demo-chip" onclick="fillDemo('bendahara', 'bend123')">
+                    <div class="demo-chip-static">
                         <span class="demo-role" style="color: #f59e0b;">
                             <span class="dot-role" style="background:#f59e0b;"></span> Bendahara
                         </span>
@@ -618,12 +635,6 @@
                 eyeIcon.innerHTML =
                     `<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
             }
-        }
-
-        // Auto Fill Credentials
-        function fillDemo(username, password) {
-            document.getElementById('nip_username').value = username;
-            document.getElementById('password').value = password;
         }
     </script>
 
