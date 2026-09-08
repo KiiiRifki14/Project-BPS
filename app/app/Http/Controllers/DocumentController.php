@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Document;
 use App\Models\Item;
 use Illuminate\Http\Request;
@@ -91,6 +92,13 @@ class DocumentController extends Controller
             $statusNote = ' Status item dan seluruh checklist dokumen direset ke PENDING untuk re-review Bendahara.';
         }
 
+        ActivityLog::create([
+            'item_id'     => $item->id,
+            'user_id'     => $user->id,
+            'action'      => 'UPLOAD_DOCUMENT',
+            'description' => "{$uploaded} berkas SPJ baru diunggah oleh {$user->name}.",
+        ]);
+
         return back()->with('success', "{$uploaded} dokumen berhasil diunggah untuk item [{$item->code}].{$statusNote}");
     }
 
@@ -122,10 +130,19 @@ class DocumentController extends Controller
             'checked_at'          => $isChecked ? now() : null,
         ]);
 
-        $item = $document->item->fresh();
+        $item         = $document->item->fresh();
         $totalDocs    = $item->documents()->count();
         $checkedCount = $item->documents()->where('is_checked', true)->count();
         $canApprove   = $totalDocs > 0 && $checkedCount === $totalDocs;
+
+        ActivityLog::create([
+            'item_id'     => $document->item_id,
+            'user_id'     => $user->id,
+            'action'      => $isChecked ? 'CHECK_DOCUMENT' : 'UNCHECK_DOCUMENT',
+            'description' => $isChecked 
+                ? "Berkas \"{$document->file_name}\" ({$document->label}) diperiksa & dicentang oleh {$user->name}."
+                : "Centang berkas \"{$document->file_name}\" dibatalkan oleh {$user->name}.",
+        ]);
 
         return response()->json([
             'success'       => true,
@@ -137,7 +154,6 @@ class DocumentController extends Controller
             'can_approve'   => $canApprove,
         ]);
     }
-
 
     /**
      * Securely stream a file — requires authenticated session.
@@ -216,6 +232,13 @@ class DocumentController extends Controller
         }
 
         $fileName = $document->file_name;
+
+        ActivityLog::create([
+            'item_id'     => $item->id,
+            'user_id'     => $user->id,
+            'action'      => 'DELETE_DOCUMENT',
+            'description' => "Berkas SPJ \"{$fileName}\" dihapus oleh {$user->name}.",
+        ]);
 
         // Guard 3 di Model Document::booted() akan menghapus file fisik otomatis
         $document->delete();

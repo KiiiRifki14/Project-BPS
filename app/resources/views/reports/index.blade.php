@@ -20,7 +20,10 @@
             </p>
         </div>
 
-        <div>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('reports.export', request()->query()) }}" class="sakdi-btn sakdi-btn-primary font-extrabold shadow-sm">
+                <span>📊 Export ke Excel (.csv)</span>
+            </a>
             <button onclick="window.print()" class="sakdi-btn sakdi-btn-secondary">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                 <span>Cetak Laporan</span>
@@ -28,12 +31,12 @@
         </div>
     </div>
 
-    {{-- FILTER TAHUN & BULAN REKAPITULASI --}}
+    {{-- FILTER TAHUN, BULAN & MINGGUAN REKAPITULASI --}}
     <div class="sakdi-card w-full p-6">
         <form method="GET" action="{{ route('reports.index') }}" class="flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full" style="background: var(--color-primary);"></span>
-                <h2 class="text-xs font-black uppercase tracking-wider" style="color: var(--color-neutral-700);">FILTER PERIODE LAPORAN BULANAN &amp; TAHUNAN</h2>
+                <h2 class="text-xs font-black uppercase tracking-wider" style="color: var(--color-neutral-700);">FILTER PERIODE LAPORAN (MINGGUAN, BULANAN &amp; TAHUNAN)</h2>
             </div>
 
             <div class="flex items-center gap-3 flex-wrap">
@@ -66,8 +69,21 @@
                 </div>
 
                 @if($month)
+                <div>
+                    <select name="week" onchange="this.form.submit()" class="sakdi-select text-xs font-bold py-2">
+                        <option value="">📆 Full 1 Bulan</option>
+                        <option value="1" {{ request('week') == '1' ? 'selected' : '' }}>Minggu ke-1 (Tgl 1-7)</option>
+                        <option value="2" {{ request('week') == '2' ? 'selected' : '' }}>Minggu ke-2 (Tgl 8-14)</option>
+                        <option value="3" {{ request('week') == '3' ? 'selected' : '' }}>Minggu ke-3 (Tgl 15-21)</option>
+                        <option value="4" {{ request('week') == '4' ? 'selected' : '' }}>Minggu ke-4 (Tgl 22-28)</option>
+                        <option value="5" {{ request('week') == '5' ? 'selected' : '' }}>Minggu ke-5 (Tgl 29-31)</option>
+                    </select>
+                </div>
+                @endif
+
+                @if($month || request('week'))
                     <a href="{{ route('reports.index', ['year' => $year]) }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm">
-                        Reset Bulan
+                        Reset Filter
                     </a>
                 @endif
             </div>

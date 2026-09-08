@@ -87,14 +87,22 @@
                 </div>
             </div>
 
-            <div class="text-right">
-                <div class="sakdi-overline mb-1">Pagu Anggaran</div>
-                <div class="text-2xl font-black num-mono tracking-tight" style="color: var(--color-positive-700);">
-                    {{ $item->pagu_formatted }}
+            <div class="text-right flex flex-col items-end gap-2">
+                <div>
+                    <div class="sakdi-overline mb-1">Pagu Anggaran</div>
+                    <div class="text-2xl font-black num-mono tracking-tight" style="color: var(--color-positive-700);">
+                        {{ $item->pagu_formatted }}
+                    </div>
+                    <div class="text-xs font-semibold mt-1" style="color: var(--color-neutral-500);">
+                        {{ $item->documents->count() }} dokumen terunggah
+                    </div>
                 </div>
-                <div class="text-xs font-semibold mt-1" style="color: var(--color-neutral-500);">
-                    {{ $item->documents->count() }} dokumen terunggah
-                </div>
+
+                @if($item->documents->count() > 0)
+                <a href="{{ route('items.download-zip', $item) }}" class="sakdi-btn sakdi-btn-primary sakdi-btn-sm text-xs font-extrabold shadow-sm mt-1">
+                    📦 Unduh Semua Berkas (ZIP)
+                </a>
+                @endif
             </div>
         </div>
 
@@ -473,8 +481,34 @@
                             </div>
                         </div>
                     @endif
+            {{-- Container Visual Activity Log Timeline --}}
+            <div class="sakdi-card p-6 space-y-4">
+                <h3 class="font-extrabold text-sm flex items-center gap-2" style="color: var(--color-neutral-900);">
+                    <span>📜 Riwayat Aktivitas &amp; Audit Log</span>
+                </h3>
+
+                <div class="space-y-4 relative pl-4 border-l-2" style="border-color: var(--color-neutral-300);">
+                    @forelse($item->activityLogs as $log)
+                    <div class="relative group">
+                        <!-- Dot -->
+                        <span class="absolute -left-[21px] top-1 w-3 h-3 rounded-full border-2 border-white shadow-sm"
+                              style="background: @if(str_contains($log->action, 'APPROVED')) #10B981 @elseif(str_contains($log->action, 'REJECTED')) #EF4444 @elseif(str_contains($log->action, 'CHECK')) #3B82F6 @else #6B7280 @endif;">
+                        </span>
+                        <div>
+                            <div class="flex items-center justify-between text-[10px] num-mono mb-0.5" style="color: var(--color-neutral-500);">
+                                <span class="font-bold uppercase">{{ $log->user->name ?? 'System' }} ({{ $log->user->role ?? 'SYS' }})</span>
+                                <span>{{ $log->created_at->format('d/m/Y H:i') }} WIB</span>
+                            </div>
+                            <p class="text-xs font-semibold leading-snug" style="color: var(--color-neutral-800);">
+                                {{ $log->description }}
+                            </p>
+                        </div>
+                    </div>
+                    @empty
+                    <p class="text-xs italic text-center py-2" style="color: var(--color-neutral-500);">Belum ada riwayat aktivitas.</p>
+                    @endforelse
                 </div>
-            @endif
+            </div>
 
         </div>
 

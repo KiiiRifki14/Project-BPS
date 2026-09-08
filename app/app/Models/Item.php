@@ -32,6 +32,11 @@ class Item extends Model
         return $this->hasMany(Document::class);
     }
 
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class)->latest();
+    }
+
     /**
      * Get the full breadcrumb path for this item.
      */

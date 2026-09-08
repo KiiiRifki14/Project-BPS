@@ -312,4 +312,69 @@ class BpsSystemTest extends TestCase
         $response->assertStatus(403);
         $this->assertEquals('PENDING', $item->fresh()->verification_status);
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // NEW FEATURE TESTS — ZIP DOWNLOAD, CSV EXPORT & ACTIVITY LOGS
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function test_user_can_download_item_documents_as_zip(): void
+    {
+        if (!class_exists(\ZipArchive::class)) {
+            $this->markTestSkipped('Ekstensi PHP ZipArchive tidak aktif pada PHP CLI lingkungan pengujian.');
+        }
+
+        Storage::fake('private');
+
+        $operator = User::where('role', 'OPERATOR')->first();
+        $item     = Item::where('code', '001366')->first();
+
+        $this->actingAs($operator)->post(route('documents.store', $item), [
+            'files'  => [UploadedFile::fake()->create('berkas1.pdf', 100, 'application/pdf')],
+            'labels' => ['Berkas 1'],
+        ]);
+
+        $response = $this->actingAs($operator)->get(route('items.download-zip', $item));
+        $response->assertOk();
+        $this->assertTrue(str_contains($response->headers->get('content-type'), 'zip'));
+    }
+
+    public function test_user_can_export_report_as_csv(): void
+    {
+        $admin = User::where('role', 'ADMIN')->first();
+
+        $response = $this->actingAs($admin)->get(route('reports.export', ['year' => 2026, 'month' => 8]));
+        $response->assertOk();
+        $this->assertTrue(str_contains($response->headers->get('content-type'), 'text/csv'));
+    }
+
+    public function test_activity_log_recorded_on_actions(): void
+    {
+        Storage::fake('private');
+
+        $operator  = User::where('role', 'OPERATOR')->first();
+        $bendahara = User::where('role', 'BENDAHARA')->first();
+        $item      = Item::where('code', '001366')->first();
+
+        // 1. Upload logs activity
+        $this->actingAs($operator)->post(route('documents.store', $item), [
+            'files'  => [UploadedFile::fake()->create('dokumen_audit.pdf', 100, 'application/pdf')],
+            'labels' => ['Audit Doc'],
+        ]);
+
+        $this->assertDatabaseHas('activity_logs', [
+            'item_id' => $item->id,
+            'user_id' => $operator->id,
+            'action'  => 'UPLOAD_DOCUMENT',
+        ]);
+
+        // 2. Check document logs activity
+        $doc = $item->fresh()->documents()->first();
+        $this->actingAs($bendahara)->patchJson(route('documents.check', $doc), ['is_checked' => true]);
+
+        $this->assertDatabaseHas('activity_logs', [
+            'item_id' => $item->id,
+            'user_id' => $bendahara->id,
+            'action'  => 'CHECK_DOCUMENT',
+        ]);
+    }
 }

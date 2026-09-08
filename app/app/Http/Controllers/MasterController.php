@@ -124,6 +124,36 @@ class MasterController extends Controller
         return back()->with('success', "Akun [{$request->code}] berhasil ditambahkan.");
     }
 
+    public function destroyAccount(Account $account)
+    {
+        $account->delete();
+        return back()->with('success', "Akun [{$account->code}] berhasil dihapus.");
+    }
+
+    public function destroySubComponent(SubComponent $subComponent)
+    {
+        $subComponent->delete();
+        return back()->with('success', "Sub-Komponen [{$subComponent->code}] berhasil dihapus.");
+    }
+
+    public function destroyComponent(Component $component)
+    {
+        $component->delete();
+        return back()->with('success', "Komponen [{$component->code}] berhasil dihapus.");
+    }
+
+    public function destroySubOutput(SubOutput $subOutput)
+    {
+        $subOutput->delete();
+        return back()->with('success', "Sub-Output [{$subOutput->code}] berhasil dihapus.");
+    }
+
+    public function destroyOutput(Output $output)
+    {
+        $output->delete();
+        return back()->with('success', "Output [{$output->code}] berhasil dihapus.");
+    }
+
     // ── ITEM ──────────────────────────────────────────
     public function storeItem(Request $request)
     {

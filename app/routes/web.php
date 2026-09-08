@@ -27,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
 
     // 5. Laporan & Rekapitulasi Digital
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [ReportController::class, 'exportCsv'])->name('reports.export');
 
     // Profile (Breeze default)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -35,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
 
     // ── ITEM DETAIL WORKSPACE ─────────────────────────
     Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');
+    Route::get('/items/{item}/download-zip', [ItemController::class, 'downloadZip'])->name('items.download-zip');
 
     // ── DOCUMENTS ─────────────────────────────────────
     Route::post('/items/{item}/documents', [DocumentController::class, 'store'])->name('documents.store');
@@ -63,10 +65,19 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/master/programs/{program}', [MasterController::class, 'destroyProgram'])->name('master.programs.destroy');
 
         Route::post('/master/outputs', [MasterController::class, 'storeOutput'])->name('master.outputs.store');
+        Route::delete('/master/outputs/{output}', [MasterController::class, 'destroyOutput'])->name('master.outputs.destroy');
+
         Route::post('/master/sub-outputs', [MasterController::class, 'storeSubOutput'])->name('master.sub-outputs.store');
+        Route::delete('/master/sub-outputs/{subOutput}', [MasterController::class, 'destroySubOutput'])->name('master.sub-outputs.destroy');
+
         Route::post('/master/components', [MasterController::class, 'storeComponent'])->name('master.components.store');
+        Route::delete('/master/components/{component}', [MasterController::class, 'destroyComponent'])->name('master.components.destroy');
+
         Route::post('/master/sub-components', [MasterController::class, 'storeSubComponent'])->name('master.sub-components.store');
+        Route::delete('/master/sub-components/{subComponent}', [MasterController::class, 'destroySubComponent'])->name('master.sub-components.destroy');
+
         Route::post('/master/accounts', [MasterController::class, 'storeAccount'])->name('master.accounts.store');
+        Route::delete('/master/accounts/{account}', [MasterController::class, 'destroyAccount'])->name('master.accounts.destroy');
 
         Route::post('/master/items', [MasterController::class, 'storeItem'])->name('master.items.store');
         Route::patch('/master/items/{item}', [MasterController::class, 'updateItem'])->name('master.items.update');

@@ -67,6 +67,8 @@
 
             $isArsipActive = (request()->routeIs('items.index') || request()->routeIs('arsip.*')) ||
                 (request()->routeIs('items.show') && request()->query('from') !== 'verification' && !auth()->user()->isBendahara());
+
+            $rejectedCount = \App\Models\Item::where('verification_status', 'REJECTED')->count();
         @endphp
         <a href="{{ route('items.index') }}"
            class="nav-link-v4 {{ $isArsipActive ? 'active' : '' }}"
@@ -75,7 +77,11 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
             </svg>
-            <span class="font-bold">Arsip Keuangan POK</span>
+            <span class="font-bold flex-1">Arsip Keuangan POK</span>
+            @if(auth()->user()->isOperator() && $rejectedCount > 0)
+                <span class="text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0"
+                      style="background: #EF4444; color: #FFFFFF;" title="Item Perlu Perbaikan">{{ $rejectedCount }} Ditolak</span>
+            @endif
         </a>
 
         {{-- 3. Verifikasi Pencairan (BENDAHARA only) --}}

@@ -9,8 +9,9 @@ class VerificationController extends Controller
 {
     public function index(Request $request)
     {
-        if (auth()->user()->role !== 'BENDAHARA') {
-            abort(403, 'Akses ditolak: Hanya Bendahara Pengeluaran yang berwenang melakukan verifikasi pencairan.');
+        $user = auth()->user();
+        if (!$user->isBendahara() && !$user->isAdmin()) {
+            abort(403, 'Akses ditolak: Hanya Bendahara Pengeluaran atau Admin yang berwenang melakukan verifikasi pencairan.');
         }
 
         $status = $request->query('status', 'PENDING');
@@ -33,9 +34,11 @@ class VerificationController extends Controller
             });
         }
 
-        $items = $query->orderBy('updated_at', 'desc')->paginate(15)->withQueryString();
+        // Priority Sorting: Item yang PENDING paling lama berada paling atas (FIFO Audit Rule)
+        $orderDir = $status === 'PENDING' ? 'asc' : 'desc';
+        $items = $query->orderBy('updated_at', $orderDir)->paginate(15)->withQueryString();
 
-        $pendingCount = Item::where('verification_status', 'PENDING')->count();
+        $pendingCount  = Item::where('verification_status', 'PENDING')->count();
         $approvedCount = Item::where('verification_status', 'APPROVED')->count();
         $rejectedCount = Item::where('verification_status', 'REJECTED')->count();
 
