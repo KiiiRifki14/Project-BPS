@@ -377,4 +377,75 @@ class BpsSystemTest extends TestCase
             'action'  => 'CHECK_DOCUMENT',
         ]);
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SECURITY TESTS — UPLOAD VALIDATION, DIRECT ACCESS & IDOR
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function test_security_upload_blocks_php_and_executable_files(): void
+    {
+        Storage::fake('private');
+
+        $operator = User::where('role', 'OPERATOR')->first();
+        $item     = Item::where('code', '001366')->first();
+
+        // 1. Coba upload file .php
+        $responsePhp = $this->actingAs($operator)->post(route('documents.store', $item), [
+            'files'  => [UploadedFile::fake()->create('exploit.php', 50, 'application/x-php')],
+            'labels' => ['Exploit Script'],
+        ]);
+        $responsePhp->assertSessionHasErrors('files.0');
+        $this->assertCount(0, $item->fresh()->documents);
+
+        // 2. Coba upload file .phtml
+        $responsePhtml = $this->actingAs($operator)->post(route('documents.store', $item), [
+            'files'  => [UploadedFile::fake()->create('shell.phtml', 50, 'text/html')],
+            'labels' => ['Phtml Shell'],
+        ]);
+        $responsePhtml->assertSessionHasErrors('files.0');
+        $this->assertCount(0, $item->fresh()->documents);
+
+        // 3. Coba upload file .exe
+        $responseExe = $this->actingAs($operator)->post(route('documents.store', $item), [
+            'files'  => [UploadedFile::fake()->create('malware.exe', 50, 'application/x-msdownload')],
+            'labels' => ['Malware Exe'],
+        ]);
+        $responseExe->assertSessionHasErrors('files.0');
+        $this->assertCount(0, $item->fresh()->documents);
+    }
+
+    public function test_security_unauthenticated_cannot_download_or_stream_document(): void
+    {
+        Storage::fake('private');
+
+        $operator = User::where('role', 'OPERATOR')->first();
+        $item     = Item::where('code', '001366')->first();
+
+        $this->actingAs($operator)->post(route('documents.store', $item), [
+            'files'  => [UploadedFile::fake()->create('confidential_spj.pdf', 100, 'application/pdf')],
+            'labels' => ['Confidential SPJ'],
+        ]);
+
+        $doc = $item->fresh()->documents()->first();
+        $this->assertNotNull($doc);
+
+        // Logout dan coba akses stream / preview dokumen tanpa login
+        auth()->logout();
+        $responseStream = $this->get(route('documents.stream', $doc));
+        $this->assertTrue(in_array($responseStream->status(), [302, 401, 403]));
+
+        // Coba akses download dokumen tanpa login
+        $responseDownload = $this->get(route('documents.download', $doc));
+        $this->assertTrue(in_array($responseDownload->status(), [302, 401, 403]));
+    }
+
+    public function test_security_direct_storage_or_uploads_path_is_blocked(): void
+    {
+        // URL akses langsung ke direktori file private harus 404
+        $responseStorage = $this->get('/storage/');
+        $this->assertEquals(404, $responseStorage->status());
+
+        $responseUploads = $this->get('/uploads/');
+        $this->assertEquals(404, $responseUploads->status());
+    }
 }
