@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {{-- Dark mode: tambah class .dark untuk paksa dark, .light untuk paksa light --}}
-<html lang="id" class="h-full">
+<html lang="id" class="h-full bg-white" style="background-color: #FFFFFF !important; background-image: none !important;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +20,8 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full"
+<body class="h-full bg-white"
+      style="background-color: #FFFFFF !important; background-image: none !important;"
       x-data="{
           sidebarOpen: false,
           sidebarCollapsed: false,
@@ -39,7 +40,7 @@
 @include('layouts.sidebar')
 
 {{-- ── MAIN CONTENT WORKSPACE ── --}}
-<div class="main-content">
+<div class="main-content bg-white" style="background-color: #FFFFFF !important; background-image: none !important;">
 
     {{-- Topbar Header --}}
     <header class="sakdi-topbar">
@@ -89,9 +90,18 @@
                          style="color: var(--color-neutral-900);">
                         {{ auth()->user()->name }}
                     </div>
-                    <div class="text-[10px] font-bold uppercase tracking-wider"
-                         style="color: var(--color-primary); font-family: var(--font-mono);">
-                        {{ auth()->user()->role }}
+                    @php
+                        $roleBadge = match(auth()->user()->role) {
+                            'ADMIN'      => 'sakdi-badge-error',
+                            'SUPERVISOR' => 'sakdi-badge-primary',
+                            'BENDAHARA'  => 'sakdi-badge-warning',
+                            default      => 'sakdi-badge-success',
+                        };
+                    @endphp
+                    <div class="mt-0.5">
+                        <span class="sakdi-badge {{ $roleBadge }} text-[10px] font-bold uppercase tracking-wider">
+                            {{ auth()->user()->role }}
+                        </span>
                     </div>
                 </div>
                 <form method="POST" action="{{ route('logout') }}" data-turbo="false">
@@ -114,7 +124,7 @@
     </header>
 
     {{-- Page Body --}}
-    <main class="page-body" id="page-body-container">
+    <main class="page-body bg-white" id="page-body-container" style="background-color: #FFFFFF !important; background-image: none !important;">
 
         {{-- Session Flash: Success --}}
         @if(session('success'))

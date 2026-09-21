@@ -28,6 +28,10 @@
             <a href="{{ route('verification.index') }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-extrabold">
                 ← Kembali ke Inbox Verifikasi
             </a>
+        @else
+            <a href="{{ route('items.index') }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-extrabold">
+                ← Kembali ke Arsip POK
+            </a>
         @endif
     </div>
 
@@ -215,6 +219,30 @@
                         </div>
                     </form>
                 @endif
+            </div>
+            @else
+            {{-- Panel Panduan Ruang Kerja Verifikasi Bendahara --}}
+            <div class="sakdi-card p-6" style="border-left: 4px solid var(--color-primary);">
+                <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-xl">📋</span>
+                        <div>
+                            <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">
+                                Ruang Kerja Verifikasi SPJ (Bendahara Pengeluaran)
+                            </h2>
+                            <p class="text-xs font-medium" style="color: var(--color-neutral-500);">
+                                Tinjau keabsahan berkas fisik, kuitansi, &amp; BAPP honor sebelum menetapkan persetujuan.
+                            </p>
+                        </div>
+                    </div>
+                    <span class="sakdi-badge sakdi-badge-warning text-xs font-bold">
+                        Mode Pemeriksaan
+                    </span>
+                </div>
+                <div class="p-3.5 rounded-xl border text-xs leading-relaxed"
+                     style="background: var(--color-neutral-50); border-color: var(--color-neutral-300); color: var(--color-neutral-700);">
+                    💡 <strong>Panduan Verifikasi:</strong> Buka dan telaah setiap dokumen pada tabel di bawah menggunakan tombol <strong>Pratinjau (👁️)</strong>. Lakukan pengecekan tanda tangan, kuitansi, dan nominal pagu. Berikan centang pada <strong>Panel Verifikasi Berkas</strong> di sebelah kanan untuk setiap dokumen yang sah.
+                </div>
             </div>
             @endif
 
@@ -481,6 +509,80 @@
                             </div>
                         </div>
                     @endif
+                </div>
+            @else
+                {{-- Panel Status & Ceklis Berkas (Tampilan Operator & Supervisor) --}}
+                <div class="sakdi-card p-6 space-y-4">
+                    <h3 class="font-extrabold text-sm flex items-center gap-2" style="color: var(--color-neutral-900);">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--color-primary);" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <span>Status &amp; Verifikasi Berkas SPJ</span>
+                    </h3>
+
+                    <!-- Status Item Saat Ini -->
+                    @if($item->verification_status === 'APPROVED')
+                        <div class="sakdi-alert sakdi-alert-success text-xs font-semibold">
+                            <svg class="sakdi-alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Item telah disetujui oleh Bendahara. Status siap cair &amp; berkas terkunci.</span>
+                        </div>
+                    @elseif($item->verification_status === 'REJECTED')
+                        <div class="sakdi-alert sakdi-alert-error text-xs font-semibold">
+                            <svg class="sakdi-alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Item ditolak oleh Bendahara. Silakan periksa catatan revisi di atas dan unggah perbaikan berkas.</span>
+                        </div>
+                    @else
+                        <div class="sakdi-alert sakdi-alert-warning text-xs font-semibold">
+                            <svg class="sakdi-alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Berkas sedang dalam antrean verifikasi Bendahara Pengeluaran.</span>
+                        </div>
+                    @endif
+
+                    <!-- Box Ceklis Dokumen (Read Only untuk Operator & Supervisor) -->
+                    @php
+                        $checkedDocsCount = $item->documents->where('is_checked', true)->count();
+                        $totalDocsCount = $item->documents->count();
+                    @endphp
+                    <div class="p-4 rounded-xl border space-y-3"
+                         style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">
+                        <div class="flex items-center justify-between text-xs font-extrabold mb-1"
+                             style="color: var(--color-neutral-700);">
+                            <span>📋 CEKLIS STATUS VERIFIKASI</span>
+                            <span class="{{ $totalDocsCount > 0 && $checkedDocsCount === $totalDocsCount ? 'sakdi-badge sakdi-badge-success' : 'sakdi-badge sakdi-badge-warning' }}">
+                                {{ $checkedDocsCount }} / {{ $totalDocsCount }} Terverifikasi
+                            </span>
+                        </div>
+
+                        <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                            @forelse($item->documents as $doc)
+                                <div class="flex items-center gap-2 p-2 rounded-lg border text-xs"
+                                     style="background: var(--color-white); border-color: var(--color-neutral-300);">
+                                    <span class="text-sm">
+                                        @if($doc->is_checked)
+                                            <span title="Terverifikasi Bendahara">✅</span>
+                                        @else
+                                            <span title="Menunggu Ceklis Bendahara">⏳</span>
+                                        @endif
+                                    </span>
+                                    <span class="font-bold truncate flex-1" style="color: var(--color-neutral-900);">{{ $doc->file_name }}</span>
+                                    <span class="sakdi-badge sakdi-badge-neutral text-[10px] mr-1">{{ $doc->label ?? 'Dokumen' }}</span>
+                                    <button type="button"
+                                            @click.stop="$dispatch('open-preview-modal', { url: '{{ route('documents.stream', $doc) }}', title: '{{ addslashes($doc->file_name) }}', type: '{{ $doc->file_type }}' })"
+                                            class="p-1 hover:underline" style="color: var(--color-primary);" title="Pratinjau Dokumen">
+                                        👁️
+                                    </button>
+                                </div>
+                            @empty
+                                <p class="text-xs italic p-2 text-center" style="color: var(--color-neutral-500);">Belum ada dokumen terunggah.</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-lg border text-[11px] font-medium"
+                         style="background: var(--color-primary-50); border-color: var(--color-primary-100); color: var(--color-primary-900);">
+                        ℹ️ <strong>Informasi Verifikasi:</strong> Dokumen diverifikasi satu per satu oleh Bendahara Pengeluaran. Status pencairan akan aktif setelah seluruh berkas tercentang lengkap (100%).
+                    </div>
+                </div>
+            @endif
+
             {{-- Container Visual Activity Log Timeline --}}
             <div class="sakdi-card p-6 space-y-4">
                 <h3 class="font-extrabold text-sm flex items-center gap-2" style="color: var(--color-neutral-900);">

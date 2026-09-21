@@ -2,11 +2,19 @@
 @section('title', 'Manajemen Pengguna')
 
 @section('content')
-<div class="space-y-8">
+<div class="space-y-8"
+     x-data="{
+         showEditModal: false,
+         editUser: { id: null, name: '', role: '' },
+         showResetModal: false,
+         resetUser: { id: null, name: '' }
+     }"
+     @open-edit-user.window="editUser = $event.detail; showEditModal = true"
+     @open-reset-pw.window="resetUser = $event.detail; showResetModal = true"
+>
 
     {{-- Header Card --}}
     <div class="sakdi-card w-full p-8 flex items-center justify-between flex-wrap gap-6"
-
          style="border-left: 4px solid var(--color-primary);">
         <div>
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-2 text-xs font-extrabold"
@@ -39,7 +47,7 @@
                             <th>NIP / Username</th>
                             <th>Nama Lengkap</th>
                             <th>Role Access</th>
-                            <th class="text-center w-48">Aksi</th>
+                            <th class="text-center w-80">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -73,23 +81,27 @@
                                 </span>
                             </td>
                             <td class="text-center whitespace-nowrap">
-                                <div class="flex items-center justify-center gap-1.5" x-data>
-                                    <button type="button" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm"
+                                <div class="grid grid-cols-3 gap-2 w-[275px] mx-auto items-center">
+                                    <button type="button" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm w-full justify-center"
                                             @click="$dispatch('open-edit-user', {{ json_encode(['id' => $user->id, 'name' => $user->name, 'role' => $user->role]) }})">
                                         ✏️ Edit
                                     </button>
 
-                                    <button type="button" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm"
+                                    <button type="button" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm w-full justify-center"
                                             @click="$dispatch('open-reset-pw', {{ json_encode(['id' => $user->id, 'name' => $user->name]) }})">
                                         🔑 Reset
                                     </button>
 
                                     @if($user->id !== auth()->id())
-                                    <form action="{{ route('users.destroy', $user) }}" method="POST"
+                                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="w-full"
                                           onsubmit="return confirm('Hapus pengguna {{ $user->name }}?')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="sakdi-btn sakdi-btn-danger sakdi-btn-sm">🗑️</button>
+                                        <button type="submit" class="sakdi-btn sakdi-btn-danger sakdi-btn-sm w-full justify-center">
+                                            🗑️ Hapus
+                                        </button>
                                     </form>
+                                    @else
+                                    <div class="w-full"></div>
                                     @endif
                                 </div>
                             </td>
@@ -164,6 +176,100 @@
             </form>
         </div>
 
+    </div>
+
+    {{-- ── EDIT USER MODAL ── --}}
+    <div x-show="showEditModal"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+         style="display:none;"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-cloak>
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showEditModal = false"></div>
+        <div class="sakdi-card max-w-md w-full p-6 relative z-10 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b pb-3" style="border-color: var(--color-neutral-300);">
+                <h3 class="text-base font-extrabold flex items-center gap-2" style="color: var(--color-neutral-900);">
+                    <span>✏️ Edit Data Pengguna</span>
+                </h3>
+                <button type="button" @click="showEditModal = false" class="text-gray-400 hover:text-gray-600 text-lg font-bold">✕</button>
+            </div>
+
+            <form :action="'/users/' + editUser.id" method="POST" class="space-y-4">
+                @csrf
+                @method('PATCH')
+
+                <div>
+                    <label class="sakdi-label sakdi-label-required">Nama Lengkap</label>
+                    <input type="text" name="name" class="sakdi-input" required x-model="editUser.name">
+                </div>
+
+                <div>
+                    <label class="sakdi-label sakdi-label-required">Hak Akses / Peran (RBAC)</label>
+                    <select name="role" class="sakdi-select" required x-model="editUser.role">
+                        <option value="OPERATOR">🟢 OPERATOR — Upload SPJ & Dokumen</option>
+                        <option value="BENDAHARA">🟡 BENDAHARA — Verifikasi & Persetujuan Pencairan</option>
+                        <option value="SUPERVISOR">🔵 SUPERVISOR — Kelola Master POK & Monitoring</option>
+                        <option value="ADMIN">🔴 ADMIN — Akses Penuh Sistem</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3 border-t" style="border-color: var(--color-neutral-300);">
+                    <button type="button" @click="showEditModal = false" class="sakdi-btn sakdi-btn-secondary">
+                        Batal
+                    </button>
+                    <button type="submit" class="sakdi-btn sakdi-btn-primary">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ── RESET PASSWORD MODAL ── --}}
+    <div x-show="showResetModal"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+         style="display:none;"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-cloak>
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showResetModal = false"></div>
+        <div class="sakdi-card max-w-md w-full p-6 relative z-10 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b pb-3" style="border-color: var(--color-neutral-300);">
+                <h3 class="text-base font-extrabold flex items-center gap-2" style="color: var(--color-neutral-900);">
+                    <span>🔑 Reset Password Pengguna</span>
+                </h3>
+                <button type="button" @click="showResetModal = false" class="text-gray-400 hover:text-gray-600 text-lg font-bold">✕</button>
+            </div>
+
+            <p class="text-xs" style="color: var(--color-neutral-600);">
+                Reset password untuk pengguna <strong x-text="resetUser.name" class="font-extrabold text-slate-900"></strong>.
+            </p>
+
+            <form :action="'/users/' + resetUser.id + '/reset-password'" method="POST" class="space-y-4">
+                @csrf
+
+                <div>
+                    <label class="sakdi-label sakdi-label-required">Password Baru</label>
+                    <input type="password" name="password" class="sakdi-input" placeholder="••••••••" required minlength="6">
+                </div>
+
+                <div>
+                    <label class="sakdi-label sakdi-label-required">Konfirmasi Password Baru</label>
+                    <input type="password" name="password_confirmation" class="sakdi-input" placeholder="••••••••" required minlength="6">
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3 border-t" style="border-color: var(--color-neutral-300);">
+                    <button type="button" @click="showResetModal = false" class="sakdi-btn sakdi-btn-secondary">
+                        Batal
+                    </button>
+                    <button type="submit" class="sakdi-btn sakdi-btn-danger">
+                        🔑 Reset Password
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
 </div>

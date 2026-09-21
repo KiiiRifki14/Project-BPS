@@ -84,8 +84,8 @@
             @endif
         </a>
 
-        {{-- 3. Verifikasi Pencairan (BENDAHARA only) --}}
-        @if(auth()->user()->role === 'BENDAHARA')
+        {{-- 3. Verifikasi Pencairan (BENDAHARA & ADMIN) --}}
+        @if(in_array(auth()->user()->role, ['BENDAHARA', 'ADMIN']))
         @php
             $pendingCount = \App\Models\Item::where('verification_status', 'PENDING')->count();
         @endphp
@@ -184,14 +184,22 @@
     {{-- USER FOOTER --}}
     <div class="sidebar-footer-v4">
         <div class="flex items-center gap-3">
+            @php
+                $roleColor = match(auth()->user()->role) {
+                    'ADMIN'      => '#F87171',
+                    'SUPERVISOR' => '#38BDF8',
+                    'BENDAHARA'  => '#FBBF24',
+                    default      => '#34D399',
+                };
+            @endphp
             <div class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-sm"
-                 style="background: var(--color-primary);">
+                 style="background: {{ $roleColor }};">
                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
             </div>
             <div class="min-w-0 flex-1 sidebar-text-block">
                 <div class="text-xs font-bold text-white truncate leading-snug user-name">{{ auth()->user()->name }}</div>
                 <div class="text-[10px] font-extrabold uppercase tracking-wide user-role"
-                     style="color: var(--color-primary-400); font-family: var(--font-mono);">
+                     style="color: {{ $roleColor }}; font-family: var(--font-mono);">
                     {{ auth()->user()->role }}
                 </div>
             </div>

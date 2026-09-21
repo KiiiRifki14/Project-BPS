@@ -106,7 +106,7 @@
                                     <form action="{{ route('master.items.destroy', $item) }}" method="POST"
                                           onsubmit="return confirm('Hapus item {{ $item->code }}?')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="sakdi-btn sakdi-btn-danger sakdi-btn-sm" title="Hapus Item">🗑️</button>
+                                        <button type="submit" class="sakdi-btn sakdi-btn-danger sakdi-btn-sm" title="Hapus Item">🗑️ Hapus</button>
                                     </form>
                                 </div>
                             </td>

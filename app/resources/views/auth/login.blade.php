@@ -18,13 +18,11 @@
 
     <style>
         :root {
-            --login-bg-from: rgba(0, 45, 92, 0.4);
-            /* Biru Tua Terang (dengan transparansi untuk gedung) */
-            --login-bg-to: rgba(0, 74, 158, 0.6);
-            /* Biru Medium Terang */
+            --login-bg-from: #002D5C;
+            --login-bg-to: #004A9E;
         }
 
-        body {
+        body.login-page {
             font-family: 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
             margin: 0;
@@ -33,16 +31,7 @@
             justify-content: center;
             padding: 20px;
             box-sizing: border-box;
-
-            /* --- Konfigurasi Split Background --- */
-            /* 1. Gradasi Biru Penuh di Seluruh Background */
-            /* 2. Foto Gedung Hanya Dimunculkan di Sisi Kiri (Lebar 50%) */
-            background:
-                linear-gradient(135deg, rgba(0, 45, 92, 0.4) 0%, rgba(0, 74, 158, 0.85) 100%),
-                url('/images/BPS Subang.jpg') no-repeat left center;
-
-            /*Mengatur Ukuran Gambar: Lebar 50% (sisi Kiri), Tinggi 100% Layar */
-            background-size: 100% 100%, 100% 100%;
+            background: linear-gradient(135deg, #002D5C 0%, #004A9E 50%, #0057A8 100%);
         }
 
         /* Layout diperramping/dikecilkan menyerupai persegi panjang presisi */
@@ -53,21 +42,14 @@
             width: 100%;
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
-
-            /* --- Perubahan untuk transparansi kartu login --- */
-            background: rgba(255, 255, 255, 0.9);
-            /* Sedikit transparan agar gedung terlihat */
-            backdrop-filter: blur(1.5px);
-            /* Efek blur halus di belakang kartu */
-            -webkit-backdrop-filter: blur(1.5px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.15);
+            background: #FFFFFF;
         }
 
         /* ── Brand Panel (Left) ── */
         .login-brand {
             position: relative;
-            background: linear-gradient(145deg, rgba(0, 87, 168, 0.9), rgba(0, 45, 92, 0.95));
-            /* Menyesuaikan transparansi */
+            background: linear-gradient(145deg, #0057A8 0%, #002D5C 100%);
             padding: 36px 32px;
             display: flex;
             flex-direction: column;
@@ -401,7 +383,7 @@
     </style>
 </head>
 
-<body>
+<body class="login-page">
 
     <div class="login-container">
 
