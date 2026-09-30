@@ -18,8 +18,10 @@
 
     <style>
         :root {
-            --login-bg-from: #002D5C;
-            --login-bg-to: #004A9E;
+            --login-bg-from: rgba(0, 45, 92, 0.4);
+            /* Biru Tua Terang (dengan transparansi untuk gedung) */
+            --login-bg-to: rgba(0, 74, 158, 0.6);
+            /* Biru Medium Terang */
         }
 
         body.login-page {
@@ -31,7 +33,10 @@
             justify-content: center;
             padding: 20px;
             box-sizing: border-box;
-            background: linear-gradient(135deg, #002D5C 0%, #004A9E 50%, #0057A8 100%);
+
+            /* Foto Gedung BPS Subang */
+            background: linear-gradient(135deg, rgba(0, 45, 92, 0.45) 0%, rgba(0, 74, 158, 0.8) 100%),
+                        url("{{ asset('images/BPS Subang.jpg') }}") center center / cover no-repeat fixed !important;
         }
 
         /* Layout diperramping/dikecilkan menyerupai persegi panjang presisi */
@@ -42,14 +47,18 @@
             width: 100%;
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.15);
-            background: #FFFFFF;
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+
+            /* --- Transparansi kartu login agar gedung terlihat elegan --- */
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(1.5px);
+            -webkit-backdrop-filter: blur(1.5px);
         }
 
         /* ── Brand Panel (Left) ── */
         .login-brand {
             position: relative;
-            background: linear-gradient(145deg, #0057A8 0%, #002D5C 100%);
+            background: linear-gradient(145deg, rgba(0, 87, 168, 0.9), rgba(0, 45, 92, 0.95));
             padding: 36px 32px;
             display: flex;
             flex-direction: column;
@@ -383,7 +392,7 @@
     </style>
 </head>
 
-<body class="login-page">
+<body class="login-page" style="background: linear-gradient(135deg, rgba(0, 45, 92, 0.45) 0%, rgba(0, 74, 158, 0.8) 100%), url('{{ asset('images/BPS Subang.jpg') }}') center center / cover no-repeat fixed !important;">
 
     <div class="login-container">
 
