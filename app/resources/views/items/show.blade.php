@@ -110,26 +110,14 @@
             </div>
         </div>
 
-        {{-- Rejection Note Alert --}}
-        @if($item->verification_status === 'REJECTED' && $item->rejection_note)
-        <div class="sakdi-alert sakdi-alert-error mt-6">
-            <svg class="sakdi-alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <div>
-                <div class="font-extrabold text-xs uppercase tracking-wider mb-1">📝 Catatan Penolakan Bendahara:</div>
-                <div class="text-sm font-semibold leading-relaxed">{{ $item->rejection_note }}</div>
-            </div>
-        </div>
-        @endif
     </div>
 
 
     {{-- ── MAIN WORKSPACE GRID ── --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
         {{-- LEFT COLUMN: DOCUMENT LIST & DROPZONE --}}
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-8 space-y-6">
 
             {{-- Upload Dropzone Form --}}
             @if(auth()->user()->canUpload())
@@ -276,73 +264,90 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="sakdi-table">
+                    <table class="sakdi-table w-full text-xs [&_th]:!px-3 [&_th]:!py-3 [&_td]:!px-3 [&_td]:!py-3">
                         <thead>
                             <tr>
-                                <th class="w-10 text-center">#</th>
-                                <th>Nama File Dokumen</th>
-                                <th>Label Berkas</th>
-                                <th>Ukuran</th>
-                                <th>Pengunggah</th>
-                                <th class="text-center">Status Verifikasi</th>
-                                <th class="text-center w-36">Aksi</th>
+                                <th class="w-8 text-center !px-2">#</th>
+                                <th class="!px-3">Nama File Dokumen</th>
+                                <th class="!px-2.5">Label Berkas</th>
+                                <th class="!px-2 text-right">Ukuran</th>
+                                <th class="!px-2.5">Pengunggah</th>
+                                <th class="text-center !px-2.5">Status Verifikasi</th>
+                                <th class="text-center w-28 !px-2">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($item->documents as $i => $doc)
                             <tr>
-                                <td class="text-center text-xs num-mono" style="color: var(--color-neutral-500);">{{ $i + 1 }}</td>
-                                <td>
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-xl">
+                                <td class="text-center text-xs num-mono !px-2" style="color: var(--color-neutral-500);">{{ $i + 1 }}</td>
+                                <td class="!px-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="text-lg shrink-0">
                                             @if($doc->isPdf()) 📄 @else 🖼️ @endif
                                         </span>
                                         <div class="min-w-0">
-                                            <div class="font-bold text-xs truncate max-w-xs" style="color: var(--color-neutral-900);">{{ $doc->file_name }}</div>
+                                            <div class="font-bold text-xs truncate max-w-[170px] xl:max-w-xs" style="color: var(--color-neutral-900);">{{ $doc->file_name }}</div>
                                             <div class="text-[10px] num-mono uppercase mt-0.5" style="color: var(--color-neutral-500);">
                                                 {{ $doc->file_type }} • {{ $doc->created_at->format('d/m/Y H:i') }}
                                             </div>
                                         </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td class="!px-2.5 whitespace-nowrap">
                                     @if($doc->label)
-                                        <span class="sakdi-badge sakdi-badge-primary text-xs">
+                                        <span class="sakdi-badge sakdi-badge-primary text-[11px] px-2 py-0.5">
                                             🏷️ {{ $doc->label }}
                                         </span>
                                     @else
                                         <span class="text-xs" style="color: var(--color-neutral-500);">—</span>
                                     @endif
                                 </td>
-                                <td class="text-xs num-mono whitespace-nowrap" style="color: var(--color-neutral-700);">{{ $doc->file_size_formatted }}</td>
-                                <td class="text-xs whitespace-nowrap" style="color: var(--color-neutral-700);">{{ $doc->uploadedBy->name }}</td>
-                                <td class="text-center whitespace-nowrap">
+                                <td class="text-xs num-mono whitespace-nowrap text-right !px-2" style="color: var(--color-neutral-700);">{{ $doc->file_size_formatted }}</td>
+                                <td class="text-xs whitespace-nowrap !px-2.5" style="color: var(--color-neutral-700);">{{ $doc->uploadedBy->name }}</td>
+                                <td class="text-center whitespace-nowrap !px-2.5">
                                     @if($doc->is_checked)
                                         <span class="sakdi-badge sakdi-badge-success text-xs font-bold" title="Dicentang oleh {{ $doc->checkedBy->name ?? 'Bendahara' }} pada {{ $doc->checked_at ? $doc->checked_at->format('d/m/Y H:i') : '' }}">
                                             ✓ Lolos
                                         </span>
                                     @elseif($item->verification_status === 'REJECTED')
-                                        <span class="sakdi-badge sakdi-badge-error text-xs font-bold" title="Dokumen ini belum lolos verifikasi atau memerlukan revisi">
-                                            ✕ Perlu Revisi
-                                        </span>
+                                        @if($item->rejection_note)
+                                            <button type="button"
+                                                    @click="$dispatch('open-rejection-info', {
+                                                        fileName: '{{ addslashes($doc->file_name) }}',
+                                                        label: '{{ addslashes($doc->label ?? '') }}',
+                                                        note: '{{ addslashes($item->rejection_note) }}',
+                                                        user: '{{ addslashes($doc->uploadedBy->name ?? 'Operator') }}',
+                                                        size: '{{ $doc->file_size_formatted }}'
+                                                    })"
+                                                    class="sakdi-badge sakdi-badge-error text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer hover:bg-red-200 transition-all hover:scale-105 active:scale-95 shadow-xs"
+                                                    style="border: 1px solid #F87171;"
+                                                    title="Catatan: &quot;{{ $item->rejection_note }}&quot; (Klik untuk lihat catatan revisi)">
+                                                <span>✕ Perlu Revisi</span>
+                                                <span class="w-3.5 h-3.5 rounded-full bg-red-600 text-white inline-flex items-center justify-center text-[9px] font-black italic shadow-xs">i</span>
+                                            </button>
+                                        @else
+                                            <span class="sakdi-badge sakdi-badge-error text-xs font-bold" title="Dokumen ini belum lolos verifikasi atau memerlukan revisi">
+                                                ✕ Perlu Revisi
+                                            </span>
+                                        @endif
                                     @else
                                         <span class="sakdi-badge sakdi-badge-warning text-xs font-semibold">
                                             ⏳ Belum Dicek
                                         </span>
                                     @endif
                                 </td>
-                                <td class="text-center whitespace-nowrap">
-                                    <div class="flex items-center justify-center gap-1.5" x-data>
+                                <td class="text-center whitespace-nowrap w-28 !px-2">
+                                    <div class="flex items-center justify-center gap-1" x-data>
                                         {{-- Stream Inline Preview Modal Button --}}
                                         <button type="button"
                                                 @click="$dispatch('open-preview-modal', { url: '{{ route('documents.stream', $doc) }}', title: '{{ addslashes($doc->file_name) }}', type: '{{ $doc->file_type }}' })"
-                                                class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm" title="Pratinjau Dokumen">
+                                                class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm p-1.5 h-7 w-7 inline-flex items-center justify-center" title="Pratinjau Dokumen">
                                             👁️
                                         </button>
 
                                         {{-- Download Button --}}
                                         <a href="{{ route('documents.download', $doc) }}"
-                                           class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm" title="Unduh Dokumen">
+                                           class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm p-1.5 h-7 w-7 inline-flex items-center justify-center" title="Unduh Dokumen">
                                             ⬇️
                                         </a>
 
@@ -351,7 +356,7 @@
                                         <form action="{{ route('documents.destroy', $doc) }}" method="POST"
                                               onsubmit="return confirm('Hapus dokumen ini?')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="sakdi-btn sakdi-btn-danger sakdi-btn-sm" title="Hapus Dokumen">🗑️</button>
+                                            <button type="submit" class="sakdi-btn sakdi-btn-danger sakdi-btn-sm p-1.5 h-7 w-7 inline-flex items-center justify-center" title="Hapus Dokumen">🗑️</button>
                                         </form>
                                         @endif
                                     </div>
@@ -374,7 +379,7 @@
         </div>
 
         {{-- RIGHT COLUMN: BENDAHARA ACTION CONTROL PANEL --}}
-        <div class="space-y-6 lg:sticky lg:top-24">
+        <div class="space-y-6 lg:col-span-4 lg:sticky lg:top-24">
 
             {{-- Container Panel Verifikasi Bendahara --}}
             @if(auth()->user()->role === 'BENDAHARA' || auth()->user()->role === 'ADMIN')
@@ -463,6 +468,22 @@
                                         >
                                         <span class="font-bold truncate flex-1" style="color: var(--color-neutral-900);">{{ $doc->file_name }}</span>
                                         <span class="sakdi-badge sakdi-badge-neutral text-[10px] mr-1">{{ $doc->label ?? 'Dokumen' }}</span>
+                                        @if($item->verification_status === 'REJECTED' && !$doc->is_checked && $item->rejection_note)
+                                            <button type="button"
+                                                    @click.stop="$dispatch('open-rejection-info', {
+                                                        fileName: '{{ addslashes($doc->file_name) }}',
+                                                        label: '{{ addslashes($doc->label ?? '') }}',
+                                                        note: '{{ addslashes($item->rejection_note) }}',
+                                                        user: '{{ addslashes($doc->uploadedBy->name ?? 'Operator') }}',
+                                                        size: '{{ $doc->file_size_formatted }}'
+                                                    })"
+                                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer mr-1"
+                                                    style="background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5;"
+                                                    title="Catatan Penolakan: &quot;{{ $item->rejection_note }}&quot; (Klik untuk rincian)">
+                                                <span class="w-3 h-3 rounded-full bg-red-600 text-white flex items-center justify-center text-[8px] font-black italic">i</span>
+                                                <span>Catatan</span>
+                                            </button>
+                                        @endif
                                         <button type="button"
                                                 @click.stop="$dispatch('open-preview-modal', { url: '{{ route('documents.stream', $doc) }}', title: '{{ addslashes($doc->file_name) }}', type: '{{ $doc->file_type }}' })"
                                                 class="p-1 hover:underline text-xs" style="color: var(--color-primary);" title="Pratinjau Dokumen">
@@ -706,42 +727,12 @@
                 </div>
             @endif
 
-            {{-- Container Visual Activity Log Timeline --}}
-            <div class="sakdi-card p-6 space-y-4">
-                <h3 class="font-extrabold text-sm flex items-center gap-2" style="color: var(--color-neutral-900);">
-                    <span>📜 Riwayat Aktivitas &amp; Audit Log</span>
-                </h3>
-
-                <div class="space-y-4 relative pl-4 border-l-2" style="border-color: var(--color-neutral-300);">
-                    @forelse($item->activityLogs as $log)
-                    <div class="relative group">
-                        <!-- Dot -->
-                        <span class="absolute -left-[21px] top-1 w-3 h-3 rounded-full border-2 border-white shadow-sm"
-                              style="background: @if(str_contains($log->action, 'APPROVED')) #10B981 @elseif(str_contains($log->action, 'REJECTED')) #EF4444 @elseif(str_contains($log->action, 'CHECK')) #3B82F6 @else #6B7280 @endif;">
-                        </span>
-                        <div>
-                            <div class="flex items-center justify-between text-[10px] num-mono mb-0.5" style="color: var(--color-neutral-500);">
-                                <span class="font-bold uppercase">{{ $log->user->name ?? 'System' }} ({{ $log->user->role ?? 'SYS' }})</span>
-                                <span>{{ $log->created_at->format('d/m/Y H:i') }} WIB</span>
-                            </div>
-                            <p class="text-xs font-semibold leading-snug" style="color: var(--color-neutral-800);">
-                                {{ $log->description }}
-                            </p>
-                        </div>
-                    </div>
-                    @empty
-                    <p class="text-xs italic text-center py-2" style="color: var(--color-neutral-500);">Belum ada riwayat aktivitas.</p>
-                    @endforelse
-                </div>
-            </div>
-
         </div>
 
     </div>
 
 </div>
 
-{{-- ── INLINE DOCUMENT STREAM PREVIEW MODAL ── --}}
 {{-- ── INLINE DOCUMENT STREAM PREVIEW MODAL (TELEPORTED) ── --}}
 <template x-teleport="body">
     <div x-data="{
@@ -825,6 +816,99 @@
                              style="border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                     </div>
                 </template>
+            </div>
+        </div>
+    </div>
+</template>
+
+{{-- ── MODAL INFORMASI PENOLAKAN DOKUMEN (TELEPORTED) ── --}}
+<template x-teleport="body">
+    <div x-data="{ open: false, fileName: '', label: '', note: '', user: '', size: '' }"
+         @open-rejection-info.window="open = true; fileName = $event.detail.fileName; label = $event.detail.label; note = $event.detail.note; user = $event.detail.user; size = $event.detail.size;"
+         @keydown.escape.window="open = false"
+         x-show="open"
+         x-cloak
+         class="fixed inset-0 flex items-center justify-center p-4"
+         style="display:none; position: fixed; inset: 0; z-index: 99999;"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="rejection-info-modal-title">
+
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+             @click="open = false"></div>
+
+        <!-- Modal Dialog Box -->
+        <div class="relative bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-lg border border-red-200 z-10"
+             @click.outside="open = false">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 flex items-center justify-between"
+                 style="background: linear-gradient(135deg, #991B1B 0%, #DC2626 100%);">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-lg font-black shadow-inner">
+                        ℹ️
+                    </div>
+                    <div>
+                        <h3 id="rejection-info-modal-title" class="text-base font-extrabold text-white">
+                            Catatan Penolakan Dokumen
+                        </h3>
+                        <p class="text-xs text-red-100 font-medium">
+                            Dokumen perlu diperbaiki / diunggah ulang
+                        </p>
+                    </div>
+                </div>
+                <button type="button" @click="open = false"
+                        class="text-white/80 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer text-sm font-bold"
+                        title="Tutup (Esc)">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4">
+                <!-- Info Berkas -->
+                <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+                    <div class="text-2xl mt-0.5">📄</div>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nama Berkas Dokumen</div>
+                        <div class="text-sm font-extrabold text-slate-800 break-words" x-text="fileName"></div>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            <span class="sakdi-badge sakdi-badge-primary text-[10px]" x-show="label" x-text="'🏷️ ' + label"></span>
+                            <span class="sakdi-badge sakdi-badge-error text-[10px] font-bold">✕ Perlu Revisi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alasan Penolakan dari Bendahara -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-black uppercase tracking-wider text-red-700 flex items-center gap-1.5">
+                        <span>📝</span>
+                        <span>Alasan / Catatan Penolakan Bendahara:</span>
+                    </label>
+                    <div class="p-4 rounded-xl border-2 border-red-200 bg-red-50/70 text-slate-900 text-sm font-semibold leading-relaxed shadow-sm">
+                        <p class="whitespace-pre-wrap" x-text="note"></p>
+                    </div>
+                </div>
+
+                <!-- Info Petunjuk Revisi -->
+                <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2">
+                    <span class="text-sm">💡</span>
+                    <span>Silakan perbaiki atau unggah ulang dokumen yang sesuai dengan catatan di atas melalui panel <strong>Unggah Dokumen SPJ Baru</strong>.</span>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex justify-end">
+                <button type="button" @click="open = false"
+                        class="sakdi-btn sakdi-btn-secondary px-5 py-2 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-200">
+                    Mengerti &amp; Tutup
+                </button>
             </div>
         </div>
     </div>
