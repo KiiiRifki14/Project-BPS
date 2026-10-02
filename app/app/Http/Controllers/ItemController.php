@@ -119,14 +119,25 @@ class ItemController extends Controller
             'rejection_note'      => $validated['action'] === 'REJECTED' ? $validated['rejection_note'] : null,
         ]);
 
-        // Catat Audit Log
+        // Catat Audit Log dengan detail dokumen
+        $docNames = $item->documents->pluck('file_name')->map(fn($n) => "\"$n\"")->implode(', ');
+        $checkedNames = $item->documents->where('is_checked', true)->pluck('file_name')->map(fn($n) => "\"$n\"")->implode(', ');
+        $uncheckedNames = $item->documents->where('is_checked', false)->pluck('file_name')->map(fn($n) => "\"$n\"")->implode(', ');
+
+        if ($validated['action'] === 'APPROVED') {
+            $logDesc = "Pencairan disetujui oleh {$user->name}. Dokumen terverifikasi: {$checkedNames}.";
+        } else {
+            $logDesc = "Pencairan ditolak oleh {$user->name}. Alasan: \"{$validated['rejection_note']}\".";
+            if ($uncheckedNames) {
+                $logDesc .= " Dokumen yang belum lolos: {$uncheckedNames}.";
+            }
+        }
+
         ActivityLog::create([
             'item_id'     => $item->id,
             'user_id'     => auth()->id(),
             'action'      => $validated['action'] === 'APPROVED' ? 'VERIFY_APPROVED' : 'VERIFY_REJECTED',
-            'description' => $validated['action'] === 'APPROVED'
-                ? "Pencairan disetujui oleh {$user->name}."
-                : "Pencairan ditolak. Alasan: \"{$validated['rejection_note']}\".",
+            'description' => $logDesc,
         ]);
 
         $statusLabel = $validated['action'] === 'APPROVED' ? 'Disetujui (Siap Cair)' : 'Ditolak';

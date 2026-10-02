@@ -47,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
     // 3. Verifikasi Pencairan & Centang Check (Bendahara & Admin)
     Route::middleware(['role:BENDAHARA,ADMIN'])->group(function () {
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
+        Route::get('/verification/items/{item}/summary', [VerificationController::class, 'itemSummary'])->name('verification.item-summary');
         Route::patch('/items/{item}/verify', [ItemController::class, 'verify'])->name('items.verify');
         Route::patch('/documents/{document}/check', [DocumentController::class, 'toggleCheck'])
             ->middleware('throttle:60,1')

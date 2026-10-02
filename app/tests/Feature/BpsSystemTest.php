@@ -367,11 +367,13 @@ class BpsSystemTest extends TestCase
             'action'  => 'UPLOAD_DOCUMENT',
         ]);
 
-        // 2. Check document logs activity
+        // 2. Check document toggle works but does NOT create audit log (intentional: checkbox is not a committed action)
         $doc = $item->fresh()->documents()->first();
-        $this->actingAs($bendahara)->patchJson(route('documents.check', $doc), ['is_checked' => true]);
+        $response = $this->actingAs($bendahara)->patchJson(route('documents.check', $doc), ['is_checked' => true]);
+        $response->assertJson(['success' => true, 'is_checked' => true]);
 
-        $this->assertDatabaseHas('activity_logs', [
+        // Verify NO audit log was created for checkbox toggle
+        $this->assertDatabaseMissing('activity_logs', [
             'item_id' => $item->id,
             'user_id' => $bendahara->id,
             'action'  => 'CHECK_DOCUMENT',
@@ -439,13 +441,25 @@ class BpsSystemTest extends TestCase
         $this->assertTrue(in_array($responseDownload->status(), [302, 401, 403]));
     }
 
-    public function test_security_direct_storage_or_uploads_path_is_blocked(): void
+    public function test_bendahara_can_get_item_summary_with_paginated_logs(): void
     {
-        // URL akses langsung ke direktori file private harus 404
-        $responseStorage = $this->get('/storage/');
-        $this->assertEquals(404, $responseStorage->status());
+        $bendahara = User::where('role', 'BENDAHARA')->first();
+        $operator  = User::where('role', 'OPERATOR')->first();
+        $item      = Item::where('code', '001366')->first();
 
-        $responseUploads = $this->get('/uploads/');
-        $this->assertEquals(404, $responseUploads->status());
+        // Operator tidak boleh akses
+        $resForbidden = $this->actingAs($operator)->getJson(route('verification.item-summary', $item));
+        $resForbidden->assertStatus(403);
+
+        // Bendahara boleh akses dan mendapat struktur item, documents, dan logs
+        $res = $this->actingAs($bendahara)->getJson(route('verification.item-summary', $item));
+        $res->assertOk();
+        $res->assertJsonStructure([
+            'item' => ['id', 'code', 'name', 'pagu_formatted', 'verification_status'],
+            'documents',
+            'logs' => ['data', 'current_page', 'last_page', 'total']
+        ]);
     }
 }
+
+

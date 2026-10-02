@@ -178,99 +178,129 @@
 
     </div>
 
-    {{-- ── EDIT USER MODAL ── --}}
-    <div x-show="showEditModal"
-         class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-         style="display:none;"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
-         x-cloak>
-        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showEditModal = false"></div>
-        <div class="sakdi-card max-w-md w-full p-6 relative z-10 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b pb-3" style="border-color: var(--color-neutral-300);">
-                <h3 class="text-base font-extrabold flex items-center gap-2" style="color: var(--color-neutral-900);">
-                    <span>✏️ Edit Data Pengguna</span>
-                </h3>
-                <button type="button" @click="showEditModal = false" class="text-gray-400 hover:text-gray-600 text-lg font-bold">✕</button>
+    {{-- ── EDIT USER MODAL (TELEPORTED) ── --}}
+    <template x-teleport="body">
+        <div x-show="showEditModal"
+             @keydown.escape.window="showEditModal = false"
+             class="fixed inset-0 flex items-center justify-center p-3 sm:p-6"
+             style="display:none; position: fixed; inset: 0; z-index: 99999;"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             x-cloak>
+            <div class="fixed inset-0"
+                 style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 99999;"
+                 @click="showEditModal = false"></div>
+
+            <div class="relative flex flex-col overflow-hidden"
+                 style="z-index: 100000; width: 100%; max-width: 480px; background: #ffffff; border-radius: 20px; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0,0,0,0.06);"
+                 @click.stop>
+                <div class="px-6 py-4 flex items-center justify-between"
+                     style="background: linear-gradient(135deg, #002D5C 0%, #0057A8 100%);">
+                    <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+                        <span>✏️ Edit Data Pengguna</span>
+                    </h3>
+                    <button type="button" @click="showEditModal = false"
+                            class="p-1.5 rounded-lg transition-colors text-white/80 hover:text-white"
+                            style="background: rgba(255,255,255,0.12);"
+                            title="Tutup (Esc)">✕</button>
+                </div>
+
+                <form :action="'/users/' + editUser.id" method="POST" class="p-6 space-y-4">
+                    @csrf
+                    @method('PATCH')
+
+                    <div>
+                        <label class="sakdi-label sakdi-label-required font-bold">Nama Lengkap</label>
+                        <input type="text" name="name" class="sakdi-input w-full" required x-model="editUser.name">
+                    </div>
+
+                    <div>
+                        <label class="sakdi-label sakdi-label-required font-bold">Hak Akses / Peran (RBAC)</label>
+                        <select name="role" class="sakdi-select w-full" required x-model="editUser.role">
+                            <option value="OPERATOR">🟢 OPERATOR — Upload SPJ & Dokumen</option>
+                            <option value="BENDAHARA">🟡 BENDAHARA — Verifikasi & Persetujuan Pencairan</option>
+                            <option value="SUPERVISOR">🔵 SUPERVISOR — Kelola Master POK & Monitoring</option>
+                            <option value="ADMIN">🔴 ADMIN — Akses Penuh Sistem</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-3 border-t" style="border-color: var(--color-neutral-200);">
+                        <button type="button" @click="showEditModal = false" class="sakdi-btn sakdi-btn-secondary">
+                            Batal
+                        </button>
+                        <button type="submit" class="sakdi-btn sakdi-btn-primary font-bold">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <form :action="'/users/' + editUser.id" method="POST" class="space-y-4">
-                @csrf
-                @method('PATCH')
-
-                <div>
-                    <label class="sakdi-label sakdi-label-required">Nama Lengkap</label>
-                    <input type="text" name="name" class="sakdi-input" required x-model="editUser.name">
-                </div>
-
-                <div>
-                    <label class="sakdi-label sakdi-label-required">Hak Akses / Peran (RBAC)</label>
-                    <select name="role" class="sakdi-select" required x-model="editUser.role">
-                        <option value="OPERATOR">🟢 OPERATOR — Upload SPJ & Dokumen</option>
-                        <option value="BENDAHARA">🟡 BENDAHARA — Verifikasi & Persetujuan Pencairan</option>
-                        <option value="SUPERVISOR">🔵 SUPERVISOR — Kelola Master POK & Monitoring</option>
-                        <option value="ADMIN">🔴 ADMIN — Akses Penuh Sistem</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center justify-end gap-3 pt-3 border-t" style="border-color: var(--color-neutral-300);">
-                    <button type="button" @click="showEditModal = false" class="sakdi-btn sakdi-btn-secondary">
-                        Batal
-                    </button>
-                    <button type="submit" class="sakdi-btn sakdi-btn-primary">
-                        Simpan Perubahan
-                    </button>
-                </div>
-            </form>
         </div>
-    </div>
+    </template>
 
-    {{-- ── RESET PASSWORD MODAL ── --}}
-    <div x-show="showResetModal"
-         class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-         style="display:none;"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
-         x-cloak>
-        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showResetModal = false"></div>
-        <div class="sakdi-card max-w-md w-full p-6 relative z-10 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b pb-3" style="border-color: var(--color-neutral-300);">
-                <h3 class="text-base font-extrabold flex items-center gap-2" style="color: var(--color-neutral-900);">
-                    <span>🔑 Reset Password Pengguna</span>
-                </h3>
-                <button type="button" @click="showResetModal = false" class="text-gray-400 hover:text-gray-600 text-lg font-bold">✕</button>
+    {{-- ── RESET PASSWORD MODAL (TELEPORTED) ── --}}
+    <template x-teleport="body">
+        <div x-show="showResetModal"
+             @keydown.escape.window="showResetModal = false"
+             class="fixed inset-0 flex items-center justify-center p-3 sm:p-6"
+             style="display:none; position: fixed; inset: 0; z-index: 99999;"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             x-cloak>
+            <div class="fixed inset-0"
+                 style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 99999;"
+                 @click="showResetModal = false"></div>
+
+            <div class="relative flex flex-col overflow-hidden"
+                 style="z-index: 100000; width: 100%; max-width: 480px; background: #ffffff; border-radius: 20px; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0,0,0,0.06);"
+                 @click.stop>
+                <div class="px-6 py-4 flex items-center justify-between"
+                     style="background: linear-gradient(135deg, #002D5C 0%, #0057A8 100%);">
+                    <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+                        <span>🔑 Reset Password Pengguna</span>
+                    </h3>
+                    <button type="button" @click="showResetModal = false"
+                            class="p-1.5 rounded-lg transition-colors text-white/80 hover:text-white"
+                            style="background: rgba(255,255,255,0.12);"
+                            title="Tutup (Esc)">✕</button>
+                </div>
+
+                <form :action="'/users/' + resetUser.id + '/reset-password'" method="POST" class="p-6 space-y-4">
+                    @csrf
+
+                    <p class="text-xs" style="color: var(--color-neutral-600);">
+                        Reset kata sandi untuk pengguna <strong x-text="resetUser.name" class="font-extrabold" style="color: var(--color-neutral-900);"></strong>.
+                    </p>
+
+                    <div>
+                        <label class="sakdi-label sakdi-label-required font-bold">Password Baru</label>
+                        <input type="password" name="password" class="sakdi-input w-full" placeholder="••••••••" required minlength="6">
+                    </div>
+
+                    <div>
+                        <label class="sakdi-label sakdi-label-required font-bold">Konfirmasi Password Baru</label>
+                        <input type="password" name="password_confirmation" class="sakdi-input w-full" placeholder="••••••••" required minlength="6">
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-3 border-t" style="border-color: var(--color-neutral-200);">
+                        <button type="button" @click="showResetModal = false" class="sakdi-btn sakdi-btn-secondary">
+                            Batal
+                        </button>
+                        <button type="submit" class="sakdi-btn sakdi-btn-danger font-bold">
+                            🔑 Reset Password
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <p class="text-xs" style="color: var(--color-neutral-600);">
-                Reset password untuk pengguna <strong x-text="resetUser.name" class="font-extrabold text-slate-900"></strong>.
-            </p>
-
-            <form :action="'/users/' + resetUser.id + '/reset-password'" method="POST" class="space-y-4">
-                @csrf
-
-                <div>
-                    <label class="sakdi-label sakdi-label-required">Password Baru</label>
-                    <input type="password" name="password" class="sakdi-input" placeholder="••••••••" required minlength="6">
-                </div>
-
-                <div>
-                    <label class="sakdi-label sakdi-label-required">Konfirmasi Password Baru</label>
-                    <input type="password" name="password_confirmation" class="sakdi-input" placeholder="••••••••" required minlength="6">
-                </div>
-
-                <div class="flex items-center justify-end gap-3 pt-3 border-t" style="border-color: var(--color-neutral-300);">
-                    <button type="button" @click="showResetModal = false" class="sakdi-btn sakdi-btn-secondary">
-                        Batal
-                    </button>
-                    <button type="submit" class="sakdi-btn sakdi-btn-danger">
-                        🔑 Reset Password
-                    </button>
-                </div>
-            </form>
         </div>
-    </div>
+    </template>
 
 </div>
 @endsection

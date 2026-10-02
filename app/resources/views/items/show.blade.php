@@ -221,27 +221,43 @@
                 @endif
             </div>
             @else
-            {{-- Panel Panduan Ruang Kerja Verifikasi Bendahara --}}
-            <div class="sakdi-card p-6" style="border-left: 4px solid var(--color-primary);">
-                <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+            {{-- Panel Panduan Ruang Kerja Verifikasi Bendahara (Compact with Tooltip) --}}
+            <div class="sakdi-card p-5" style="border-left: 4px solid var(--color-primary);" x-data="{ showGuide: false }">
+                <div class="flex items-center justify-between flex-wrap gap-3">
                     <div class="flex items-center gap-2.5">
                         <span class="text-xl">📋</span>
                         <div>
                             <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">
-                                Ruang Kerja Verifikasi SPJ (Bendahara Pengeluaran)
+                                Ruang Kerja Verifikasi SPJ
                             </h2>
                             <p class="text-xs font-medium" style="color: var(--color-neutral-500);">
-                                Tinjau keabsahan berkas fisik, kuitansi, &amp; BAPP honor sebelum menetapkan persetujuan.
+                                Tinjau keabsahan berkas fisik sebelum menetapkan persetujuan.
                             </p>
                         </div>
                     </div>
-                    <span class="sakdi-badge sakdi-badge-warning text-xs font-bold">
-                        Mode Pemeriksaan
-                    </span>
-                </div>
-                <div class="p-3.5 rounded-xl border text-xs leading-relaxed"
-                     style="background: var(--color-neutral-50); border-color: var(--color-neutral-300); color: var(--color-neutral-700);">
-                    💡 <strong>Panduan Verifikasi:</strong> Buka dan telaah setiap dokumen pada tabel di bawah menggunakan tombol <strong>Pratinjau (👁️)</strong>. Lakukan pengecekan tanda tangan, kuitansi, dan nominal pagu. Berikan centang pada <strong>Panel Verifikasi Berkas</strong> di sebelah kanan untuk setiap dokumen yang sah.
+                    <div class="flex items-center gap-2">
+                        <span class="sakdi-badge sakdi-badge-warning text-xs font-bold">
+                            Mode Pemeriksaan
+                        </span>
+                        {{-- Info Tooltip --}}
+                        <div class="relative">
+                            <button type="button" @click="showGuide = !showGuide" @click.outside="showGuide = false"
+                                    class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all"
+                                    :style="showGuide ? 'background: var(--color-primary); color: white;' : 'background: var(--color-primary-50); color: var(--color-primary); border: 1.5px solid var(--color-primary-200);'"
+                                    title="Panduan Verifikasi">
+                                ℹ️
+                            </button>
+                            <div x-show="showGuide" x-transition
+                                 class="absolute right-0 top-full mt-2 w-80 p-4 rounded-xl shadow-xl z-50 text-xs leading-relaxed"
+                                 style="background: var(--color-white); border: 1px solid var(--color-neutral-300); color: var(--color-neutral-700);">
+                                <div class="font-extrabold text-sm mb-2" style="color: var(--color-neutral-900);">💡 Panduan Verifikasi</div>
+                                <p>Buka dan telaah setiap dokumen pada tabel di bawah menggunakan tombol <strong>Pratinjau (👁️)</strong>. Lakukan pengecekan tanda tangan, kuitansi, dan nominal pagu. Berikan centang pada <strong>Panel Verifikasi Berkas</strong> di sebelah kanan untuk setiap dokumen yang sah.</p>
+                                <div class="mt-3 p-2 rounded-lg text-[11px]" style="background: var(--color-primary-50); color: var(--color-primary-900);">
+                                    Dokumen diverifikasi satu per satu. Status pencairan aktif setelah seluruh berkas tercentang 100%.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             @endif
@@ -302,12 +318,16 @@
                                 <td class="text-xs whitespace-nowrap" style="color: var(--color-neutral-700);">{{ $doc->uploadedBy->name }}</td>
                                 <td class="text-center whitespace-nowrap">
                                     @if($doc->is_checked)
-                                        <span class="sakdi-badge sakdi-badge-success text-xs" title="Dicentang oleh {{ $doc->checkedBy->name ?? 'Bendahara' }} pada {{ $doc->checked_at ? $doc->checked_at->format('d/m/Y H:i') : '' }}">
-                                            ✓ Verified
+                                        <span class="sakdi-badge sakdi-badge-success text-xs font-bold" title="Dicentang oleh {{ $doc->checkedBy->name ?? 'Bendahara' }} pada {{ $doc->checked_at ? $doc->checked_at->format('d/m/Y H:i') : '' }}">
+                                            ✓ Lolos
+                                        </span>
+                                    @elseif($item->verification_status === 'REJECTED')
+                                        <span class="sakdi-badge sakdi-badge-error text-xs font-bold" title="Dokumen ini belum lolos verifikasi atau memerlukan revisi">
+                                            ✕ Perlu Revisi
                                         </span>
                                     @else
-                                        <span class="sakdi-badge sakdi-badge-warning text-xs">
-                                            ⏳ Belum Dicentang
+                                        <span class="sakdi-badge sakdi-badge-warning text-xs font-semibold">
+                                            ⏳ Belum Dicek
                                         </span>
                                     @endif
                                 </td>
@@ -360,12 +380,23 @@
             @if(auth()->user()->role === 'BENDAHARA' || auth()->user()->role === 'ADMIN')
                 <div x-data="{
                     checkedDocs: {{ json_encode($item->documents->pluck('is_checked', 'id')->map(fn($v) => (bool)$v)) }},
+                    docsInfo: {{ json_encode($item->documents->map(fn($d) => ['id' => (string)$d->id, 'file_name' => $d->file_name, 'label' => $d->label ?? 'Dokumen'])) }},
                     totalDocs: {{ $item->documents->count() }},
+                    rejectionNote: '',
                     get checkedCount() {
                         return Object.values(this.checkedDocs).filter(Boolean).length;
                     },
                     get canApprove() {
                         return this.totalDocs > 0 && this.checkedCount === this.totalDocs;
+                    },
+                    get uncheckedDocs() {
+                        return this.docsInfo.filter(d => !this.checkedDocs[d.id]);
+                    },
+                    fillUncheckedNote() {
+                        if (this.uncheckedDocs.length > 0) {
+                            const names = this.uncheckedDocs.map(d => d.file_name + ' (' + d.label + ')').join(', ');
+                            this.rejectionNote = 'Berkas berikut belum sesuai / belum lengkap: ' + names + '. Mohon diperbaiki dan diunggah ulang.';
+                        }
                     },
                     showRejectModal: false,
                     async toggleDocCheck(docId, event) {
@@ -405,7 +436,7 @@
                     @if($item->verification_status === 'APPROVED')
                         <div class="sakdi-alert sakdi-alert-success text-xs font-semibold">
                             <svg class="sakdi-alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span>Item ini telah disetujui oleh Bendahara. Status terkunci.</span>
+                            <span>Item ini telah disetujui oleh Bendahara. Status terkunci &amp; siap cair.</span>
                         </div>
                     @else
                         <!-- Box Ceklis Dokumen -->
@@ -420,27 +451,44 @@
 
                             <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                                 @forelse($item->documents as $doc)
-                                    <label class="flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-colors"
+                                    <label class="flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs transition-colors hover:border-blue-400"
                                            style="background: var(--color-white); border-color: var(--color-neutral-300);">
                                         <input
                                             type="checkbox"
                                             :checked="checkedDocs['{{ $doc->id }}']"
                                             @change="toggleDocCheck('{{ $doc->id }}', $event)"
                                             @if($item->verification_status === 'APPROVED') disabled @endif
-                                            class="rounded border-slate-300 w-4 h-4 disabled:opacity-75 disabled:cursor-not-allowed"
+                                            class="rounded border-slate-300 w-4 h-4 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                                             style="accent-color: var(--color-primary);"
                                         >
                                         <span class="font-bold truncate flex-1" style="color: var(--color-neutral-900);">{{ $doc->file_name }}</span>
                                         <span class="sakdi-badge sakdi-badge-neutral text-[10px] mr-1">{{ $doc->label ?? 'Dokumen' }}</span>
                                         <button type="button"
                                                 @click.stop="$dispatch('open-preview-modal', { url: '{{ route('documents.stream', $doc) }}', title: '{{ addslashes($doc->file_name) }}', type: '{{ $doc->file_type }}' })"
-                                                class="p-1 hover:underline" style="color: var(--color-primary);">
+                                                class="p-1 hover:underline text-xs" style="color: var(--color-primary);" title="Pratinjau Dokumen">
                                             👁️
                                         </button>
                                     </label>
                                 @empty
                                     <p class="text-xs italic p-2 text-center" style="color: var(--color-neutral-500);">Belum ada dokumen terunggah.</p>
                                 @endforelse
+                            </div>
+
+                            {{-- Petunjuk Alur Verifikasi --}}
+                            <div class="p-2.5 rounded-lg text-xs leading-relaxed"
+                                 :style="canApprove ? 'background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46;' : 'background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF;'">
+                                <template x-if="canApprove">
+                                    <div class="flex items-start gap-1.5">
+                                        <span>✅</span>
+                                        <span><strong>Semua berkas sah (100%):</strong> Anda dapat menekan tombol <strong>Setujui Pencairan</strong> di bawah.</span>
+                                    </div>
+                                </template>
+                                <template x-if="!canApprove">
+                                    <div class="flex items-start gap-1.5">
+                                        <span>ℹ️</span>
+                                        <span>Periksa dokumen satu per satu. Jika ada dokumen yang <strong>salah / ditolak</strong>, biarkan tidak dicentang lalu klik <strong>Tolak / Minta Revisi</strong>.</span>
+                                    </div>
+                                </template>
                             </div>
                         </div>
 
@@ -453,7 +501,7 @@
                             <button
                                 type="submit"
                                 :disabled="!canApprove"
-                                :class="canApprove ? 'sakdi-btn sakdi-btn-success w-full' : 'sakdi-btn sakdi-btn-secondary w-full opacity-60 cursor-not-allowed'"
+                                :class="canApprove ? 'sakdi-btn sakdi-btn-success w-full font-bold' : 'sakdi-btn sakdi-btn-secondary w-full opacity-60 cursor-not-allowed'"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 <span>Setujui Pencairan (Approved)</span>
@@ -464,59 +512,137 @@
                         <button
                             type="button"
                             @click="showRejectModal = true"
-                            class="sakdi-btn sakdi-btn-danger w-full"
+                            class="sakdi-btn sakdi-btn-danger w-full font-bold"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span>Tolak / Minta Revisi</span>
+                            <span>Tolak / Minta Revisi Berkas</span>
                         </button>
 
-                        {{-- Rejection Modal --}}
-                        <div x-show="showRejectModal"
-                             class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-                             style="display:none;"
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 scale-95"
-                             x-transition:enter-end="opacity-100 scale-100">
-                            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showRejectModal = false"></div>
-                            <div class="sakdi-card max-w-lg w-full p-6 relative z-10 space-y-4">
-                                <h3 class="text-base font-black flex items-center gap-2" style="color: var(--color-error);">
-                                    <span>❌ Tolak &amp; Minta Revisi Berkas</span>
-                                </h3>
-                                <p class="text-xs" style="color: var(--color-neutral-500);">
-                                    Masukkan alasan atau catatan penolakan secara spesifik agar Operator dapat memperbaiki berkas SPJ.
-                                </p>
-                                <form action="{{ route('items.verify', $item) }}" method="POST" class="space-y-4">
-                                    @csrf
-                                    @method('PATCH')
-                                    <input type="hidden" name="action" value="REJECTED">
+                        {{-- Rejection Modal (Teleported to Body) --}}
+                        <template x-teleport="body">
+                            <div x-show="showRejectModal"
+                                 @keydown.escape.window="showRejectModal = false"
+                                 class="fixed inset-0 flex items-center justify-center p-3 sm:p-6"
+                                 style="display:none; position: fixed; inset: 0; z-index: 99999;"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 x-cloak>
+                                {{-- Dark Backdrop --}}
+                                <div class="fixed inset-0"
+                                     style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 99999;"
+                                     @click="showRejectModal = false"></div>
 
-                                    <div>
-                                        <label class="sakdi-label">Catatan Penolakan / Catatan Revisi (Wajib)</label>
-                                        <textarea name="rejection_note" required rows="4"
-                                                  placeholder="Contoh: Lampiran Kuitansi honor belum ditandatangani oleh penerima..."
-                                                  class="sakdi-input w-full text-xs" style="min-height: 100px;"></textarea>
+                                {{-- Dialog Box --}}
+                                <div class="relative flex flex-col overflow-hidden"
+                                     style="z-index: 100000; width: 100%; max-width: 560px; max-height: 88vh; background: #ffffff; border-radius: 20px; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0,0,0,0.06);"
+                                     @click.stop>
+
+                                    {{-- Modal Header --}}
+                                    <div class="px-6 py-4 shrink-0 flex items-center justify-between"
+                                         style="background: linear-gradient(135deg, #7F1D1D 0%, #DC2626 100%);">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                                                 style="background: rgba(255,255,255,0.2);">
+                                                <span class="text-white text-xl">⚠️</span>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h3 class="text-base font-extrabold text-white truncate">Tolak &amp; Minta Revisi Berkas</h3>
+                                                <p class="text-xs" style="color: rgba(255,255,255,0.85);">Beri instruksi revisi yang spesifik untuk Operator</p>
+                                            </div>
+                                        </div>
+                                        <button type="button" @click="showRejectModal = false"
+                                                class="p-2 rounded-lg transition-colors"
+                                                style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15);"
+                                                onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+                                                onmouseout="this.style.background='rgba(255,255,255,0.15)'"
+                                                title="Tutup (Esc)">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
                                     </div>
 
-                                    <div class="flex items-center justify-end gap-3 pt-2">
-                                        <button type="button" @click="showRejectModal = false" class="sakdi-btn sakdi-btn-secondary">
-                                            Batal
-                                        </button>
-                                        <button type="submit" class="sakdi-btn sakdi-btn-danger">
-                                            Kirim Penolakan
-                                        </button>
+                                    {{-- Modal Body --}}
+                                    <div class="p-6 space-y-4 overflow-y-auto flex-1">
+                                        {{-- Daftar Berkas yang Belum Dicentang --}}
+                                        <template x-if="uncheckedDocs.length > 0">
+                                            <div class="p-3.5 rounded-xl border" style="background: #FEF2F2; border-color: #FECACA;">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <span class="text-xs font-bold" style="color: #991B1B;">
+                                                        📑 Berkas Belum Tercentang (<span x-text="uncheckedDocs.length"></span> berkas):
+                                                    </span>
+                                                    <button type="button" @click="fillUncheckedNote()"
+                                                            class="text-[11px] font-bold px-2 py-0.5 rounded transition-colors"
+                                                            style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5;">
+                                                        ⚡ Isi Otomatis ke Catatan
+                                                    </button>
+                                                </div>
+                                                <ul class="text-xs space-y-1" style="color: #7F1D1D;">
+                                                    <template x-for="doc in uncheckedDocs" :key="doc.id">
+                                                        <li class="flex items-center gap-1.5 font-medium">
+                                                            <span class="text-red-500 font-bold">✕</span>
+                                                            <span class="font-bold truncate" x-text="doc.file_name"></span>
+                                                            <span class="text-[10px] opacity-75" x-text="'(' + doc.label + ')'"></span>
+                                                        </li>
+                                                    </template>
+                                                </ul>
+                                            </div>
+                                        </template>
+
+                                        <form action="{{ route('items.verify', $item) }}" method="POST" class="space-y-4">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="action" value="REJECTED">
+
+                                            <div>
+                                                <label class="sakdi-label sakdi-label-required font-bold">Catatan Penolakan / Revisi</label>
+                                                <textarea name="rejection_note" required rows="4" x-model="rejectionNote"
+                                                          placeholder="Contoh: Lampiran Kuitansi honor belum ditandatangani, nominal berbeda dengan pagu..."
+                                                          class="sakdi-input w-full text-xs" style="min-height: 110px;"></textarea>
+                                                <p class="text-[11px] mt-1" style="color: var(--color-neutral-500);">
+                                                    Catatan ini akan langsung tampil di dashboard &amp; halaman detail Operator agar dapat segera diperbaiki.
+                                                </p>
+                                            </div>
+
+                                            <div class="flex items-center justify-end gap-3 pt-3 border-t" style="border-color: var(--color-neutral-200);">
+                                                <button type="button" @click="showRejectModal = false" class="sakdi-btn sakdi-btn-secondary">
+                                                    Batal
+                                                </button>
+                                                <button type="submit" class="sakdi-btn sakdi-btn-danger font-bold">
+                                                    ✕ Kirim Penolakan
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
-                                </form>
+                                </div>
                             </div>
-                        </div>
+                        </template>
                     @endif
                 </div>
             @else
                 {{-- Panel Status & Ceklis Berkas (Tampilan Operator & Supervisor) --}}
-                <div class="sakdi-card p-6 space-y-4">
-                    <h3 class="font-extrabold text-sm flex items-center gap-2" style="color: var(--color-neutral-900);">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--color-primary);" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                        <span>Status &amp; Verifikasi Berkas SPJ</span>
-                    </h3>
+                <div class="sakdi-card p-6 space-y-4" x-data="{ showInfoTip: false }">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-extrabold text-sm flex items-center gap-2" style="color: var(--color-neutral-900);">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--color-primary);" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                            <span>Status &amp; Verifikasi Berkas SPJ</span>
+                        </h3>
+                        <div class="relative">
+                            <button type="button" @click="showInfoTip = !showInfoTip" @click.outside="showInfoTip = false"
+                                    class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black"
+                                    style="background: var(--color-primary-50); color: var(--color-primary); border: 1.5px solid var(--color-primary-200);"
+                                    title="Info Verifikasi">
+                                ℹ️
+                            </button>
+                            <div x-show="showInfoTip" x-transition
+                                 class="absolute right-0 top-full mt-2 w-64 p-3 rounded-xl shadow-xl z-50 text-[11px] leading-relaxed"
+                                 style="background: var(--color-white); border: 1px solid var(--color-neutral-300); color: var(--color-neutral-700);">
+                                ℹ️ <strong>Informasi Verifikasi:</strong> Dokumen diverifikasi satu per satu oleh Bendahara Pengeluaran. Status pencairan akan aktif setelah seluruh berkas tercentang lengkap (100%).
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Status Item Saat Ini -->
                     @if($item->verification_status === 'APPROVED')
@@ -576,10 +702,7 @@
                         </div>
                     </div>
 
-                    <div class="p-3 rounded-lg border text-[11px] font-medium"
-                         style="background: var(--color-primary-50); border-color: var(--color-primary-100); color: var(--color-primary-900);">
-                        ℹ️ <strong>Informasi Verifikasi:</strong> Dokumen diverifikasi satu per satu oleh Bendahara Pengeluaran. Status pencairan akan aktif setelah seluruh berkas tercentang lengkap (100%).
-                    </div>
+
                 </div>
             @endif
 
@@ -619,56 +742,93 @@
 </div>
 
 {{-- ── INLINE DOCUMENT STREAM PREVIEW MODAL ── --}}
-<div x-data="{
-        open: false,
-        url: '',
-        title: '',
-        type: '',
-        init() {
-            window.addEventListener('open-preview-modal', (e) => {
-                this.url   = e.detail.url;
-                this.title = e.detail.title;
-                this.type  = e.detail.type;
-                this.open  = true;
-            });
-        }
-    }"
-    x-show="open"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-    style="display:none;"
-    x-transition:enter="transition ease-out duration-200"
-    x-transition:enter-start="opacity-0 scale-95"
-    x-transition:enter-end="opacity-100 scale-100"
-    x-cloak>
-    <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm" @click="open = false"></div>
+{{-- ── INLINE DOCUMENT STREAM PREVIEW MODAL (TELEPORTED) ── --}}
+<template x-teleport="body">
+    <div x-data="{
+            open: false,
+            url: '',
+            title: '',
+            type: '',
+            init() {
+                window.addEventListener('open-preview-modal', (e) => {
+                    this.url   = e.detail.url;
+                    this.title = e.detail.title;
+                    this.type  = e.detail.type;
+                    this.open  = true;
+                });
+            }
+        }"
+        x-show="open"
+        @keydown.escape.window="open = false"
+        class="fixed inset-0 flex items-center justify-center p-3 sm:p-6"
+        style="display:none; position: fixed; inset: 0; z-index: 99999;"
+        x-transition:enter="transition ease-out duration-250"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        x-cloak>
 
-    <div class="sakdi-card w-full max-w-5xl h-[85vh] flex flex-col relative z-10 p-0 overflow-hidden shadow-2xl">
-        <div class="px-6 py-4 border-b flex items-center justify-between"
-             style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">
-            <div class="flex items-center gap-3 min-w-0">
-                <span class="text-xl">📄</span>
-                <div class="min-w-0">
-                    <h3 class="text-sm font-extrabold truncate" style="color: var(--color-neutral-900);" x-text="title"></h3>
-                    <p class="text-[10px] num-mono uppercase" style="color: var(--color-neutral-500);" x-text="'Pratinjau Langsung • ' + type"></p>
+        {{-- Full Dark Glass Backdrop --}}
+        <div class="fixed inset-0"
+             style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 99999;"
+             @click="open = false"></div>
+
+        <div class="relative flex flex-col overflow-hidden"
+             style="z-index: 100000; width: 95%; max-width: 1040px; height: 90vh; background: #ffffff; border-radius: 20px; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0,0,0,0.08);"
+             @click.stop>
+
+            {{-- Header Bar --}}
+            <div class="px-5 py-3.5 flex items-center justify-between shrink-0"
+                 style="background: linear-gradient(135deg, #002D5C 0%, #0057A8 100%); border-bottom: 1px solid rgba(255,255,255,0.12);">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                         style="background: rgba(255,255,255,0.15);">
+                        <span class="text-white text-lg" x-text="type === 'pdf' ? '📄' : '🖼️'"></span>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="text-sm font-extrabold truncate text-white" x-text="title"></h3>
+                        <p class="text-[10px] num-mono uppercase" style="color: rgba(255,255,255,0.7);" x-text="'Pratinjau Langsung Dokumen • ' + type.toUpperCase()"></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a :href="url" target="_blank"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                       style="color: #ffffff; background: rgba(255,255,255,0.15);"
+                       onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                       onmouseout="this.style.background='rgba(255,255,255,0.15)'"
+                       title="Buka di Tab Baru">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        <span class="hidden sm:inline">Tab Baru</span>
+                    </a>
+                    <button type="button" @click="open = false"
+                            class="p-2 rounded-lg transition-colors"
+                            style="color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.15);"
+                            onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+                            onmouseout="this.style.background='rgba(255,255,255,0.15)'"
+                            title="Tutup (Esc)">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
             </div>
-            <button type="button" @click="open = false" class="p-2 rounded-lg hover:bg-slate-200" style="color: var(--color-neutral-700);">
-                ✕
-            </button>
-        </div>
 
-        <div class="flex-1 bg-slate-900 relative">
-            <template x-if="type === 'pdf'">
-                <iframe :src="url" class="w-full h-full border-none"></iframe>
-            </template>
-            <template x-if="type !== 'pdf'">
-                <div class="w-full h-full flex items-center justify-center p-4 overflow-auto">
-                    <img :src="url" :alt="title" class="max-w-full max-h-full object-contain rounded shadow-md">
-                </div>
-            </template>
+            {{-- Content Area --}}
+            <div class="flex-1 relative overflow-hidden" style="background: #0f172a;">
+                <template x-if="type === 'pdf'">
+                    <iframe :src="url" class="w-full h-full border-none" style="background: white;"></iframe>
+                </template>
+                <template x-if="type !== 'pdf'">
+                    <div class="w-full h-full flex items-center justify-center p-6 overflow-auto"
+                         style="background: repeating-conic-gradient(#cbd5e1 0% 25%, #f1f5f9 0% 50%) 50% / 20px 20px;">
+                        <img :src="url" :alt="title" class="max-w-full max-h-full object-contain"
+                             style="border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    </div>
+                </template>
+            </div>
         </div>
     </div>
-</div>
+</template>
 
 <script>
 function fileUploader() {

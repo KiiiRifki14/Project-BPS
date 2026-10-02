@@ -135,15 +135,6 @@ class DocumentController extends Controller
         $checkedCount = $item->documents()->where('is_checked', true)->count();
         $canApprove   = $totalDocs > 0 && $checkedCount === $totalDocs;
 
-        ActivityLog::create([
-            'item_id'     => $document->item_id,
-            'user_id'     => $user->id,
-            'action'      => $isChecked ? 'CHECK_DOCUMENT' : 'UNCHECK_DOCUMENT',
-            'description' => $isChecked 
-                ? "Berkas \"{$document->file_name}\" ({$document->label}) diperiksa & dicentang oleh {$user->name}."
-                : "Centang berkas \"{$document->file_name}\" dibatalkan oleh {$user->name}.",
-        ]);
-
         return response()->json([
             'success'       => true,
             'is_checked'    => $document->is_checked,
