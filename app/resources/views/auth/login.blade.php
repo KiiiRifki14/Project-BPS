@@ -529,12 +529,13 @@
                     <label class="form-label" for="password">Password</label>
                     <div class="input-relative">
                         <span class="input-icon-left">
-                            <svg width="16" height="16" fill="none" stroke="currentColor"
-                                stroke-width="2" viewBox="0 0 24 24">
-                                <path
-                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                        </span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            viewBox="0 0 24 24">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                    </span>
                         <input type="password" id="password" name="password"
                             class="form-input {{ $errors->has('password') ? 'input-error' : '' }}"
                             placeholder="••••••••" autocomplete="current-password" required>

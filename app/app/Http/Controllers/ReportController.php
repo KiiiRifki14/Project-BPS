@@ -72,7 +72,7 @@ class ReportController extends Controller
     /**
      * Export rekapitulasi data to CSV (Excel compatible).
      */
-    public function exportCsv(Request $request)
+        public function exportCsv(Request $request)
     {
         $year  = $request->input('year', date('Y'));
         $month = $request->input('month');
@@ -116,15 +116,28 @@ class ReportController extends Controller
 
         $callback = function () use ($subOutputs, $periodeText) {
             $file = fopen('php://output', 'w');
-            // Write UTF-8 BOM for Microsoft Excel compatibility
+            // BOM UTF-8 untuk Excel
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            // ⭐ MAGIC LINE: beri tahu Excel delimiter-nya titik-koma (;)
+            fwrite($file, "sep=;\n");
 
-            fputcsv($file, ['SISTEM DATA DIGITAL ARSIP KEUANGAN BPS KABUPATEN SUBANG']);
-            fputcsv($file, ['REKAPITULASI DAYA SERAP ANGGARAN POK']);
-            fputcsv($file, ['Periode:', $periodeText]);
-            fputcsv($file, []);
+            // Helper: tulis baris dengan delimiter ;
+            $writeRow = function ($row) use ($file) {
+                // Bungkus setiap sel dengan quote agar aman dari koma/titik-koma
+                $escaped = array_map(function ($cell) {
+                    $cell = (string) $cell;
+                    return '"' . str_replace('"', '""', $cell) . '"';
+                }, $row);
+                fwrite($file, implode(';', $escaped) . "\r\n");
+            };
 
-            fputcsv($file, [
+            $writeRow(['SISTEM DATA DIGITAL ARSIP KEUANGAN BPS KABUPATEN SUBANG']);
+            $writeRow(['REKAPITULASI DAYA SERAP ANGGARAN POK']);
+            $writeRow(['Periode:', $periodeText]);
+            $writeRow([]);
+
+            // Header tabel
+            $writeRow([
                 'No',
                 'Kode Sub-Output',
                 'Nama Sub-Output',
@@ -168,24 +181,24 @@ class ReportController extends Controller
                 $grandApprovedPagu += $approvedPagu;
                 $grandItems += $totalItemsCount;
 
-                fputcsv($file, [
+                $writeRow([
                     $no++,
                     $so->code,
                     $so->name,
                     ($so->output->program->code ?? '') . ' / ' . ($so->output->code ?? ''),
                     $totalItemsCount,
-                    number_format($totalPagu, 0, ',', '.'),
+                    number_format($totalPagu, 0, ',', '.'),          // ⭐ tanpa desimal
                     $approvedCount,
                     number_format($approvedPagu, 0, ',', '.'),
                     $pendingCount,
                     $rejectedCount,
-                    $percent . '%'
+                    number_format($percent, 2, ',', '.') . '%'       // ⭐ pakai koma untuk desimal
                 ]);
             }
 
-            fputcsv($file, []);
+            $writeRow([]);
             $totalPercent = $grandTotalPagu > 0 ? round(($grandApprovedPagu / $grandTotalPagu) * 100, 2) : 0;
-            fputcsv($file, [
+            $writeRow([
                 '',
                 'TOTAL KESELURUHAN',
                 '',
@@ -196,7 +209,7 @@ class ReportController extends Controller
                 number_format($grandApprovedPagu, 0, ',', '.'),
                 '',
                 '',
-                $totalPercent . '%'
+                number_format($totalPercent, 2, ',', '.') . '%'
             ]);
 
             fclose($file);

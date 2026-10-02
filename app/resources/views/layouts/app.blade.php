@@ -56,10 +56,11 @@
 
             {{-- Brand --}}
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-primary-900 flex items-center justify-center text-white font-black text-xs shadow-sm flex-shrink-0"
-                     style="background-color: var(--color-primary-900);">
-                    BPS
-                </div>
+                <div class="w-9 h-9 flex items-center justify-center flex-shrink-0">
+                    <img src="{{ asset('images/Icon BPS.png') }}"
+                         alt="Icon BPS"
+                         class="w-full h-full object-contain">
+               </div>
                 <div>
                     <p class="text-sm font-extrabold text-slate-900 tracking-tight leading-none"
                        style="color: var(--color-neutral-900);">
@@ -82,39 +83,44 @@
                       style="color:var(--color-accent-700);">DIPA 2026</span>
             </div>
 
-            {{-- User info + logout --}}
+           {{-- User info + logout --}}
             <div class="flex items-center gap-3 pl-3 border-l"
-                 style="border-color: var(--color-neutral-300);">
-                <div class="text-right hidden sm:block">
+                style="border-color: var(--color-neutral-300);">
+
+                @php
+                    $roleBadge = match(auth()->user()->role) {
+                        'ADMIN'      => 'sakdi-badge-error',
+                        'SUPERVISOR' => 'sakdi-badge-primary',
+                        'BENDAHARA'  => 'sakdi-badge-warning',
+                        default      => 'sakdi-badge-success',
+                    };
+                @endphp
+
+                {{-- User info (stack vertikal: badge di atas, nama di bawah) --}}
+                <div class="text-right hidden sm:flex flex-col items-end gap-1">
+                    {{-- Role badge di atas --}}
+                    <span class="sakdi-badge {{ $roleBadge }} text-[10px] font-bold uppercase tracking-wider"
+                    style="width: fit-content; align-self: flex-end;">
+                        {{ auth()->user()->role }}
+                    </span>
+
+                    {{-- Nama lengkap di bawah --}}
                     <div class="text-xs font-extrabold leading-snug"
-                         style="color: var(--color-neutral-900);">
+                        style="color: var(--color-neutral-900);">
                         {{ auth()->user()->name }}
                     </div>
-                    @php
-                        $roleBadge = match(auth()->user()->role) {
-                            'ADMIN'      => 'sakdi-badge-error',
-                            'SUPERVISOR' => 'sakdi-badge-primary',
-                            'BENDAHARA'  => 'sakdi-badge-warning',
-                            default      => 'sakdi-badge-success',
-                        };
-                    @endphp
-                    <div class="mt-0.5">
-                        <span class="sakdi-badge {{ $roleBadge }} text-[10px] font-bold uppercase tracking-wider">
-                            {{ auth()->user()->role }}
-                        </span>
-                    </div>
                 </div>
+
                 <form method="POST" action="{{ route('logout') }}" data-turbo="false">
                     @csrf
                     <button type="submit"
                             class="sakdi-btn sakdi-btn-ghost sakdi-btn-sm"
                             style="border: 1.5px solid var(--color-neutral-300);"
                             onmouseover="this.style.borderColor='#fca5a5';this.style.backgroundColor='#fff1f2';this.style.color='#b91c1c';"
-                            onmouseout="this.style.borderColor='var(--color-neutral-300)';this.style.backgroundColor='';this.style.color='';"
-                            title="Keluar dari Sistem">
+                            onmouseout="this.style.borderColor='var(--color-neutral-300)';this.style.backgroundColor='';this.style.color='';">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
                         <span class="hidden md:inline">Keluar</span>
                     </button>
