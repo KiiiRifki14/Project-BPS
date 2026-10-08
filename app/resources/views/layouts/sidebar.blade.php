@@ -146,12 +146,16 @@
         <div class="nav-section-label mt-6">SHORTCUTS KEGIATAN</div>
 
         @php
-            $bma006SubOutput = \App\Models\SubOutput::where('code', 'BMA.006')->first();
-            $item001366 = \App\Models\Item::where('code', '001366')->first();
+            $bma006SubOutputId = \Illuminate\Support\Facades\Cache::rememberForever('sidebar_bma006_id', function () {
+                return \App\Models\SubOutput::where('code', 'BMA.006')->value('id');
+            });
+            $item001366Id = \Illuminate\Support\Facades\Cache::rememberForever('sidebar_001366_id', function () {
+                return \App\Models\Item::where('code', '001366')->value('id');
+            });
         @endphp
 
-        @if($bma006SubOutput)
-        <a href="{{ route('items.index', ['sub_output_id' => $bma006SubOutput->id]) }}"
+        @if($bma006SubOutputId)
+        <a href="{{ route('items.index', ['sub_output_id' => $bma006SubOutputId]) }}"
            class="block p-3 rounded-xl transition-all no-underline mb-2"
            style="border: 1px solid rgba(251,208,99,0.3); background: rgba(251,208,99,0.1);"
            onmouseover="this.style.background='rgba(251,208,99,0.2)'"
@@ -165,8 +169,8 @@
         </a>
         @endif
 
-        @if($item001366)
-        <a href="{{ route('items.show', $item001366) }}"
+        @if($item001366Id)
+        <a href="{{ route('items.show', $item001366Id) }}"
            class="block p-3 rounded-xl transition-all no-underline"
            style="border: 1px solid rgba(61,184,107,0.3); background: rgba(61,184,107,0.1);"
            onmouseover="this.style.background='rgba(61,184,107,0.2)'"

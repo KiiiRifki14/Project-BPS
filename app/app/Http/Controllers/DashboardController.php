@@ -41,6 +41,8 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        return view('dashboard', compact('stats', 'recentItems', 'fy'));
+        $bma006 = \App\Models\SubOutput::where('code', 'BMA.006')->first();
+
+        return view('dashboard', compact('stats', 'recentItems', 'fy', 'bma006'));
     }
 }

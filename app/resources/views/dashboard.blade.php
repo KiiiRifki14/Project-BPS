@@ -5,10 +5,7 @@
 <div class="space-y-8">
 
     {{-- ── HERO MVP BANNER (BMA.006 SENSUS EKONOMI 2026) ── --}}
-    @php
-        $bma006 = \App\Models\SubOutput::where('code', 'BMA.006')->first();
-    @endphp
-    @if($bma006)
+    @if(isset($bma006) && $bma006)
     <div class="relative overflow-hidden rounded-2xl p-8 text-white shadow-lg"
          style="background: var(--color-primary-900);">
         {{-- Decorative radial glow --}}
