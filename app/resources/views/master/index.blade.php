@@ -146,14 +146,109 @@
                         <input type="hidden" name="_method" value="PATCH">
                     </template>
 
-                    <div>
+                    {{-- SEARCHABLE AKUN POK DROPDOWN --}}
+                    <div x-data="{
+                        open: false,
+                        search: '',
+                        selectedId: editItem ? editItem.account_id : '',
+                        accounts: {{ Js::from($allAccountsList ?? []) }},
+                        get selectedAccount() {
+                            return this.accounts.find(a => a.id == this.selectedId);
+                        },
+                        get filteredAccounts() {
+                            if (!this.search.trim()) return this.accounts;
+                            const q = this.search.toLowerCase();
+                            return this.accounts.filter(a => 
+                                a.code.toLowerCase().includes(q) || 
+                                a.name.toLowerCase().includes(q) || 
+                                a.sub_output.toLowerCase().includes(q) ||
+                                a.label.toLowerCase().includes(q)
+                            );
+                        },
+                        select(acc) {
+                            this.selectedId = acc.id;
+                            if (editItem) { editItem.account_id = acc.id; }
+                            this.search = '';
+                            this.open = false;
+                        },
+                        clear() {
+                            this.selectedId = '';
+                            if (editItem) { editItem.account_id = ''; }
+                            this.search = '';
+                        }
+                    }"
+                    @open-edit-item.window="selectedId = $event.detail ? $event.detail.account_id : ''"
+                    @click.away="open = false"
+                    class="relative">
                         <label class="sakdi-label sakdi-label-required">Akun POK</label>
-                        <select name="account_id" class="sakdi-select" required x-model="editItem ? editItem.account_id : ''">
-                            <option value="" disabled selected>-- Pilih Akun --</option>
-                            @foreach($accounts as $acc)
-                                <option value="{{ $acc->id }}">[{{ $acc->code }}] {{ Str::limit($acc->name, 35) }}</option>
-                            @endforeach
-                        </select>
+                        
+                        {{-- Hidden real form input for Laravel --}}
+                        <input type="hidden" name="account_id" :value="selectedId" required>
+
+                        {{-- Trigger button / Display box --}}
+                        <div @click="open = !open; if(open) $nextTick(() => $refs.searchInput.focus())"
+                             class="sakdi-input flex items-center justify-between cursor-pointer border rounded-xl py-2.5 px-3 min-h-[44px]"
+                             :class="open ? 'ring-2 ring-blue-500 border-blue-500' : ''"
+                             style="background: var(--color-neutral-50);">
+                            <div class="flex items-center gap-2 truncate pr-2">
+                                <template x-if="selectedAccount">
+                                    <div class="flex items-center gap-2 truncate">
+                                        <span class="num-mono text-xs font-black px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200" x-text="'[' + selectedAccount.code + ']'"></span>
+                                        <span class="text-xs font-bold truncate text-slate-800" x-text="selectedAccount.name"></span>
+                                    </div>
+                                </template>
+                                <template x-if="!selectedAccount">
+                                    <span class="text-xs font-medium text-slate-400">🔍 Cari & Pilih Kode Akun (cth: 521213 / honor)...</span>
+                                </template>
+                            </div>
+                            <div class="flex items-center gap-1.5 flex-shrink-0">
+                                <button type="button" x-show="selectedId" @click.stop="clear()" class="p-1 text-slate-400 hover:text-red-500 rounded-full" title="Hapus pilihan">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                                <svg class="w-4 h-4 text-slate-400 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                        </div>
+
+                        {{-- Dropdown Menu with Search Input --}}
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute z-50 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-2xl p-2"
+                             style="display: none;">
+                            
+                            {{-- Search input inside dropdown --}}
+                            <div class="relative mb-2">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">🔍</span>
+                                <input type="text"
+                                       x-ref="searchInput"
+                                       x-model="search"
+                                       placeholder="Ketik kode (524113) atau nama akun..."
+                                       class="w-full text-xs font-semibold pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+                            </div>
+
+                            {{-- Filtered Results List --}}
+                            <div class="max-h-56 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                                <template x-for="acc in filteredAccounts" :key="acc.id">
+                                    <div @click="select(acc)"
+                                         class="p-2 rounded-lg cursor-pointer transition-all flex items-center justify-between gap-2 hover:bg-blue-50 border border-transparent hover:border-blue-200"
+                                         :class="selectedId == acc.id ? 'bg-blue-50/80 border-blue-300 font-bold' : ''">
+                                        <div class="flex items-center gap-2 truncate">
+                                            <span class="num-mono text-[11px] font-black px-1.5 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-200 flex-shrink-0" x-text="acc.code"></span>
+                                            <span class="text-xs text-slate-800 truncate" x-text="acc.name"></span>
+                                        </div>
+                                        <span x-show="acc.sub_output" class="text-[10px] font-mono text-slate-400 flex-shrink-0" x-text="acc.sub_output"></span>
+                                    </div>
+                                </template>
+                                
+                                <div x-show="filteredAccounts.length === 0" class="py-4 text-center text-xs text-slate-400">
+                                    Tidak ada Akun POK yang cocok dengan "<span x-text="search" class="font-bold"></span>"
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div>

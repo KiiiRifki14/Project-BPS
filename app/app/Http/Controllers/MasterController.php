@@ -23,11 +23,20 @@ class MasterController extends Controller
         $components  = Component::with('subOutput')->orderBy('code')->get();
         $subComponents = SubComponent::with('component')->orderBy('code')->get();
         $accounts    = Account::with('subComponent.component.subOutput')->orderBy('code')->paginate(10, ['*'], 'accounts_page');
+        $allAccountsList = Account::with('subComponent.component.subOutput')->orderBy('code')->get()->map(function ($a) {
+            return [
+                'id'         => $a->id,
+                'code'       => $a->code,
+                'name'       => $a->name,
+                'sub_output' => $a->subComponent->component->subOutput->code ?? '',
+                'label'      => "[{$a->code}] {$a->name}",
+            ];
+        });
         $items       = Item::with('account.subComponent.component.subOutput')->orderBy('code')->paginate(10, ['*'], 'items_page');
 
         return view('master.index', compact(
             'fiscalYears', 'programs', 'outputs', 'subOutputs',
-            'components', 'subComponents', 'accounts', 'items'
+            'components', 'subComponents', 'accounts', 'allAccountsList', 'items'
         ));
     }
 
