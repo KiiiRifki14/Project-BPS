@@ -12,13 +12,22 @@ class DashboardController extends Controller
     {
         $fy = FiscalYear::where('is_active', true)->first();
 
+        $statsRaw = Item::selectRaw("
+            COUNT(*) as total_items,
+            COALESCE(SUM(pagu), 0) as total_pagu,
+            COUNT(CASE WHEN verification_status = 'APPROVED' THEN 1 END) as approved,
+            COUNT(CASE WHEN verification_status = 'PENDING' THEN 1 END) as pending,
+            COUNT(CASE WHEN verification_status = 'REJECTED' THEN 1 END) as rejected,
+            COALESCE(SUM(CASE WHEN verification_status = 'APPROVED' THEN pagu ELSE 0 END), 0) as pagu_approved
+        ")->first();
+
         $stats = [
-            'total_items'    => Item::count(),
-            'total_pagu'     => Item::sum('pagu'),
-            'approved'       => Item::where('verification_status', 'APPROVED')->count(),
-            'pending'        => Item::where('verification_status', 'PENDING')->count(),
-            'rejected'       => Item::where('verification_status', 'REJECTED')->count(),
-            'pagu_approved'  => Item::where('verification_status', 'APPROVED')->sum('pagu'),
+            'total_items'    => (int) ($statsRaw->total_items ?? 0),
+            'total_pagu'     => (float) ($statsRaw->total_pagu ?? 0),
+            'approved'       => (int) ($statsRaw->approved ?? 0),
+            'pending'        => (int) ($statsRaw->pending ?? 0),
+            'rejected'       => (int) ($statsRaw->rejected ?? 0),
+            'pagu_approved'  => (float) ($statsRaw->pagu_approved ?? 0),
         ];
 
         // Recent items for BMA.006 — MVP focus
