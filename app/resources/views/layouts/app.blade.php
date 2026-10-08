@@ -34,6 +34,7 @@
               if (saved !== null) this.sidebarCollapsed = saved === 'true';
           }
       }"
+      @keydown.escape.window="sidebarOpen = false"
       x-init="initSidebarState()">
 
 {{-- ── SIDEBAR NAVIGATION ── --}}
@@ -44,9 +45,9 @@
 
     {{-- Topbar Header --}}
     <header class="sakdi-topbar">
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
             {{-- Mobile hamburger --}}
-            <button class="lg:hidden sakdi-btn sakdi-btn-ghost sakdi-btn-sm p-2 min-h-0 h-10 w-10"
+            <button class="lg:hidden sakdi-btn sakdi-btn-ghost sakdi-btn-sm p-1.5 min-h-0 h-9 w-9 flex-shrink-0"
                     @click="sidebarOpen = !sidebarOpen"
                     aria-label="Buka menu navigasi">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -55,36 +56,36 @@
             </button>
 
             {{-- Brand --}}
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 flex items-center justify-center flex-shrink-0">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center flex-shrink-0">
                     <img src="{{ asset('images/Icon BPS.png') }}"
                          alt="Icon BPS"
                          class="w-full h-full object-contain">
                </div>
-                <div>
-                    <p class="text-sm font-extrabold text-slate-900 tracking-tight leading-none"
+                <div class="min-w-0">
+                    <p class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight leading-tight truncate"
                        style="color: var(--color-neutral-900);">
-                        Sistem Data Digital Arsip Keuangan
-
+                        <span class="sm:hidden">Arsip Keuangan BPS</span>
+                        <span class="hidden sm:inline">Sistem Data Digital Arsip Keuangan</span>
                     </p>
-                    <span class="text-[11px] font-semibold leading-none"
+                    <span class="text-[10px] sm:text-[11px] font-semibold leading-none truncate block mt-0.5"
                           style="color: var(--color-neutral-500);">
-                        Badan Pusat Statistik Kabupaten Subang
+                        BPS Kabupaten Subang
                     </span>
                 </div>
             </div>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {{-- Fiscal Year Pill --}}
-            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+            <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg border flex-shrink-0"
                  style="background:var(--color-accent-50); border-color:var(--color-accent-200);">
-                <span class="text-xs font-extrabold font-mono"
+                <span class="text-[11px] font-extrabold font-mono"
                       style="color:var(--color-accent-700);">DIPA 2026</span>
             </div>
 
            {{-- User info + logout --}}
-            <div class="flex items-center gap-3 pl-3 border-l"
+            <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l flex-shrink-0"
                 style="border-color: var(--color-neutral-300);">
 
                 @php
@@ -96,33 +97,34 @@
                     };
                 @endphp
 
-                {{-- User info (stack vertikal: badge di atas, nama di bawah) --}}
-                <div class="text-right hidden sm:flex flex-col items-end gap-1">
-                    {{-- Role badge di atas --}}
-                    <span class="sakdi-badge {{ $roleBadge }} text-[10px] font-bold uppercase tracking-wider"
-                    style="width: fit-content; align-self: flex-end;">
+                {{-- User info --}}
+                <div class="text-right flex flex-col items-end gap-0.5">
+                    {{-- Role badge --}}
+                    <span class="sakdi-badge {{ $roleBadge }} text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">
                         {{ auth()->user()->role }}
                     </span>
 
-                    {{-- Nama lengkap di bawah --}}
-                    <div class="text-xs font-extrabold leading-snug"
-                        style="color: var(--color-neutral-900);">
+                    {{-- Nama lengkap di bawah (hanya di layar cukup lebar) --}}
+                    <div class="text-[11px] sm:text-xs font-extrabold leading-tight hidden lg:block truncate max-w-[130px]"
+                        style="color: var(--color-neutral-900);"
+                        title="{{ auth()->user()->name }}">
                         {{ auth()->user()->name }}
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('logout') }}" data-turbo="false">
+                <form method="POST" action="{{ route('logout') }}" data-turbo="false" class="m-0">
                     @csrf
                     <button type="submit"
-                            class="sakdi-btn sakdi-btn-ghost sakdi-btn-sm"
+                            class="sakdi-btn sakdi-btn-ghost sakdi-btn-sm px-2.5 py-1.5 h-8 sm:h-9"
                             style="border: 1.5px solid var(--color-neutral-300);"
+                            title="Keluar dari sistem"
                             onmouseover="this.style.borderColor='#fca5a5';this.style.backgroundColor='#fff1f2';this.style.color='#b91c1c';"
                             onmouseout="this.style.borderColor='var(--color-neutral-300)';this.style.backgroundColor='';this.style.color='';">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
-                        <span class="hidden md:inline">Keluar</span>
+                        <span class="hidden xl:inline text-xs font-bold">Keluar</span>
                     </button>
                 </form>
             </div>
@@ -177,7 +179,7 @@
 {{-- Mobile Overlay --}}
 <div x-show="sidebarOpen"
      @click="sidebarOpen = false"
-     class="fixed inset-0 bg-slate-900/50"
+     class="fixed inset-0 bg-slate-900/60 lg:hidden"
      style="z-index: calc(var(--z-sidebar) - 1);"
      x-transition:enter="transition ease-out duration-200"
      x-transition:enter-start="opacity-0"

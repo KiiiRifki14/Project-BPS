@@ -5,15 +5,15 @@
 <div class="space-y-8" x-data="verificationPage()">
 
     {{-- Header Banner --}}
-    <div class="sakdi-card w-full p-8 flex items-center justify-between flex-wrap gap-6"
+    <div class="sakdi-card w-full p-5 sm:p-7 md:p-8 flex items-center justify-between flex-wrap gap-4 sm:gap-6"
          style="border-left: 4px solid var(--color-primary);">
-        <div>
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-2 text-xs font-extrabold"
+        <div class="min-w-0 flex-1">
+            <div class="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-lg mb-2 text-xs font-extrabold"
                  style="background: var(--color-accent-50); border: 1px solid var(--color-accent-200); color: var(--color-accent-700);">
                 <span>🏦 BENDAHARA INBOX VERIFIKASI</span>
             </div>
-            <div class="flex items-center gap-2">
-                <h1 class="text-2xl font-black tracking-tight" style="color: var(--color-neutral-900);">
+            <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="text-xl sm:text-2xl font-black tracking-tight" style="color: var(--color-neutral-900);">
                     Verifikasi Pencairan Dana Kegiatan
                 </h1>
                 {{-- Info Tooltip Icon --}}
@@ -25,7 +25,7 @@
                         ℹ️
                     </button>
                     <div x-show="showTip" x-transition
-                         class="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-80 p-4 rounded-xl shadow-xl z-50 text-xs leading-relaxed"
+                         class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 top-full mt-2 w-[280px] sm:w-80 p-4 rounded-xl shadow-xl z-50 text-xs leading-relaxed"
                          style="background: var(--color-white); border: 1px solid var(--color-neutral-300); color: var(--color-neutral-700);">
                         <div class="font-extrabold text-sm mb-2" style="color: var(--color-neutral-900);">📋 Panduan Verifikasi</div>
                         <ol class="space-y-1.5 list-decimal list-inside">
@@ -47,21 +47,21 @@
         </div>
 
         {{-- Status Filter Buttons / Tabs --}}
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'PENDING'])) }}"
-               class="sakdi-btn sakdi-btn-sm {{ $status === 'PENDING' ? 'sakdi-btn-accent' : 'sakdi-btn-secondary' }}">
+               class="sakdi-btn sakdi-btn-sm text-xs {{ $status === 'PENDING' ? 'sakdi-btn-accent' : 'sakdi-btn-secondary' }}">
                 ⏳ Antrean Pending ({{ $pendingCount }})
             </a>
             <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'APPROVED'])) }}"
-               class="sakdi-btn sakdi-btn-sm {{ $status === 'APPROVED' ? 'sakdi-btn-success' : 'sakdi-btn-secondary' }}">
+               class="sakdi-btn sakdi-btn-sm text-xs {{ $status === 'APPROVED' ? 'sakdi-btn-success' : 'sakdi-btn-secondary' }}">
                 ✅ Siap Cair ({{ $approvedCount }})
             </a>
             <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'REJECTED'])) }}"
-               class="sakdi-btn sakdi-btn-sm {{ $status === 'REJECTED' ? 'sakdi-btn-danger' : 'sakdi-btn-secondary' }}">
+               class="sakdi-btn sakdi-btn-sm text-xs {{ $status === 'REJECTED' ? 'sakdi-btn-danger' : 'sakdi-btn-secondary' }}">
                 ❌ Ditolak ({{ $rejectedCount }})
             </a>
             <a href="{{ route('verification.index', array_merge(request()->query(), ['status' => 'ALL'])) }}"
-               class="sakdi-btn sakdi-btn-sm {{ $status === 'ALL' ? 'sakdi-btn-primary' : 'sakdi-btn-secondary' }}">
+               class="sakdi-btn sakdi-btn-sm text-xs {{ $status === 'ALL' ? 'sakdi-btn-primary' : 'sakdi-btn-secondary' }}">
                 Semua Status
             </a>
         </div>
@@ -70,7 +70,7 @@
     {{-- Items Verification Table --}}
     <div class="sakdi-table-wrapper w-full">
 
-        <div class="px-6 py-5 flex items-center justify-between flex-wrap gap-4"
+        <div class="px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between flex-wrap gap-4"
              style="background: var(--color-neutral-50); border-bottom: 1px solid var(--color-neutral-300);">
             <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">
                 Daftar Antrean Verifikasi — Filter: <span class="num-mono" style="color: var(--color-primary);">{{ $status }}</span>
@@ -78,26 +78,28 @@
         </div>
 
         {{-- Input Search Box Kode Item / Nama Kegiatan --}}
-        <div class="p-6 border-b" style="border-color: var(--color-neutral-300); background: var(--color-bg-surface);">
-            <form method="GET" action="{{ route('verification.index') }}" class="flex gap-3">
+        <div class="p-4 sm:p-6 border-b" style="border-color: var(--color-neutral-300); background: var(--color-bg-surface);">
+            <form method="GET" action="{{ route('verification.index') }}" class="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
                 <input type="hidden" name="status" value="{{ $status }}">
-                <div class="relative flex-1">
+                <div class="relative flex-1 min-w-0">
                     <input
                         type="text"
                         name="search"
                         value="{{ request('search') }}"
                         placeholder="🔍 Ketik Kode Item (misal: 001366) atau Kata Kunci Kegiatan..."
-                        class="sakdi-input pl-10"
+                        class="sakdi-input pl-10 text-xs sm:text-sm"
                     >
                 </div>
-                <button type="submit" class="sakdi-btn sakdi-btn-primary">
-                    Cari Item
-                </button>
-                @if(request('search'))
-                    <a href="{{ route('verification.index', ['status' => $status]) }}" class="sakdi-btn sakdi-btn-secondary">
-                        Reset
-                    </a>
-                @endif
+                <div class="flex items-center gap-2">
+                    <button type="submit" class="sakdi-btn sakdi-btn-primary text-xs sm:text-sm flex-1 sm:flex-initial">
+                        Cari Item
+                    </button>
+                    @if(request('search'))
+                        <a href="{{ route('verification.index', ['status' => $status]) }}" class="sakdi-btn sakdi-btn-secondary text-xs sm:text-sm">
+                            Reset
+                        </a>
+                    @endif
+                </div>
             </form>
         </div>
 

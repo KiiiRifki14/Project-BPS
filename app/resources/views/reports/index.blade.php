@@ -2,17 +2,17 @@
 @section('title', 'Laporan & Rekapitulasi Digital')
 
 @section('content')
-<div class="space-y-8">
+<div class="space-y-6 sm:space-y-8">
 
     {{-- Page Header --}}
-    <div class="sakdi-card w-full p-8 flex items-center justify-between flex-wrap gap-6"
+    <div class="sakdi-card w-full p-5 sm:p-7 md:p-8 flex items-center justify-between flex-wrap gap-4 sm:gap-6"
          style="border-left: 4px solid var(--color-primary);">
-        <div>
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-2 text-xs font-extrabold"
+        <div class="min-w-0 flex-1">
+            <div class="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-lg mb-2 text-xs font-extrabold"
                  style="background: var(--color-primary-50); border: 1px solid var(--color-primary-100); color: var(--color-primary-900);">
                 <span>📈 LAPORAN DIGITAL SPJ BPS</span>
             </div>
-            <h1 class="text-2xl font-black tracking-tight" style="color: var(--color-neutral-900);">
+            <h1 class="text-xl sm:text-2xl font-black tracking-tight" style="color: var(--color-neutral-900);">
                 Rekapitulasi Kelengkapan Berkas POK
             </h1>
             <p class="text-xs sm:text-sm font-medium mt-1" style="color: var(--color-neutral-500);">
@@ -20,11 +20,11 @@
             </p>
         </div>
 
-        <div class="flex items-center gap-3">
-            <a href="{{ route('reports.export', request()->query()) }}" class="sakdi-btn sakdi-btn-primary font-extrabold shadow-sm">
+        <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+            <a href="{{ route('reports.export', request()->query()) }}" class="sakdi-btn sakdi-btn-primary font-extrabold shadow-sm text-xs sm:text-sm">
                 <span>📊 Export ke Excel (.csv)</span>
             </a>
-            <button onclick="window.print()" class="sakdi-btn sakdi-btn-secondary">
+            <button onclick="window.print()" class="sakdi-btn sakdi-btn-secondary text-xs sm:text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                 <span>Cetak Laporan</span>
             </button>
@@ -32,19 +32,19 @@
     </div>
 
     {{-- FILTER TAHUN, BULAN & MINGGUAN REKAPITULASI --}}
-    <div class="sakdi-card w-full p-6">
-        <form method="GET" action="{{ route('reports.index') }}" class="flex items-center justify-between flex-wrap gap-4">
+    <div class="sakdi-card w-full p-4 sm:p-6">
+        <form method="GET" action="{{ route('reports.index') }}" class="flex flex-col md:flex-row md:items-center justify-between gap-3.5 sm:gap-4">
             <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full" style="background: var(--color-primary);"></span>
-                <h2 class="text-xs font-black uppercase tracking-wider" style="color: var(--color-neutral-700);">FILTER PERIODE LAPORAN (MINGGUAN, BULANAN &amp; TAHUNAN)</h2>
+                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background: var(--color-primary);"></span>
+                <h2 class="text-xs font-black uppercase tracking-wider" style="color: var(--color-neutral-700);">FILTER PERIODE LAPORAN</h2>
             </div>
 
-            <div class="flex items-center gap-3 flex-wrap">
+            <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                 <div>
                     <select name="year" onchange="this.form.submit()" class="sakdi-select text-xs font-bold py-2">
                         @foreach($fiscalYears as $fy)
                             <option value="{{ $fy->year }}" {{ $year == $fy->year ? 'selected' : '' }}>
-                                📅 Tahun Anggaran {{ $fy->year }}
+                                📅 TA {{ $fy->year }}
                             </option>
                         @endforeach
                     </select>
@@ -82,7 +82,7 @@
                 @endif
 
                 @if($month || request('week'))
-                    <a href="{{ route('reports.index', ['year' => $year]) }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm">
+                    <a href="{{ route('reports.index', ['year' => $year]) }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm text-xs">
                         Reset Filter
                     </a>
                 @endif
@@ -91,41 +91,41 @@
     </div>
 
     {{-- KPI Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full">
-        <div class="sakdi-card-stat sakdi-card-stat-neutral p-6">
-            <div class="sakdi-overline mb-2">TOTAL KEGIATAN POK</div>
-            <div class="text-2xl font-black mt-2" style="color: var(--color-neutral-900);">{{ $summary['total_items'] }} Item</div>
-            <div class="text-xs font-mono font-bold mt-1" style="color: var(--color-neutral-500);">Pagu: Rp {{ number_format($summary['total_pagu'], 0, ',', '.') }}</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 md:gap-5 w-full">
+        <div class="sakdi-card-stat sakdi-card-stat-neutral p-4 sm:p-5 md:p-6">
+            <div class="sakdi-overline mb-1.5">TOTAL KEGIATAN POK</div>
+            <div class="text-xl sm:text-2xl font-black mt-1" style="color: var(--color-neutral-900);">{{ $summary['total_items'] }} Item</div>
+            <div class="text-[11px] sm:text-xs font-mono font-bold mt-1" style="color: var(--color-neutral-500);">Pagu: Rp {{ number_format($summary['total_pagu'], 0, ',', '.') }}</div>
         </div>
 
-        <div class="sakdi-card-stat sakdi-card-stat-positive p-6">
-            <div class="sakdi-overline mb-2" style="color: var(--color-positive-700);">✅ APPROVED (SIAP CAIR)</div>
-            <div class="text-2xl font-black mt-2" style="color: var(--color-positive-700);">{{ $summary['approved_items'] }} Item</div>
-            <div class="text-xs font-mono font-bold mt-1" style="color: var(--color-positive-700);">Rp {{ number_format($summary['approved_pagu'], 0, ',', '.') }}</div>
+        <div class="sakdi-card-stat sakdi-card-stat-positive p-4 sm:p-5 md:p-6">
+            <div class="sakdi-overline mb-1.5" style="color: var(--color-positive-700);">✅ APPROVED (SIAP CAIR)</div>
+            <div class="text-xl sm:text-2xl font-black mt-1" style="color: var(--color-positive-700);">{{ $summary['approved_items'] }} Item</div>
+            <div class="text-[11px] sm:text-xs font-mono font-bold mt-1" style="color: var(--color-positive-700);">Rp {{ number_format($summary['approved_pagu'], 0, ',', '.') }}</div>
         </div>
 
-        <div class="sakdi-card-stat sakdi-card-stat-warning p-6">
-            <div class="sakdi-overline mb-2" style="color: var(--color-accent-700);">⏳ PENDING VERIFIKASI</div>
-            <div class="text-2xl font-black mt-2" style="color: var(--color-accent-700);">{{ $summary['pending_items'] }} Item</div>
-            <div class="text-xs font-semibold mt-1" style="color: var(--color-accent);">Butuh pemeriksaan Bendahara</div>
+        <div class="sakdi-card-stat sakdi-card-stat-warning p-4 sm:p-5 md:p-6">
+            <div class="sakdi-overline mb-1.5" style="color: var(--color-accent-700);">⏳ PENDING VERIFIKASI</div>
+            <div class="text-xl sm:text-2xl font-black mt-1" style="color: var(--color-accent-700);">{{ $summary['pending_items'] }} Item</div>
+            <div class="text-[11px] sm:text-xs font-semibold mt-1" style="color: var(--color-accent);">Butuh pemeriksaan Bendahara</div>
         </div>
 
-        <div class="sakdi-card-stat sakdi-card-stat-error p-6">
-            <div class="sakdi-overline mb-2" style="color: var(--color-error);">❌ REJECTED (REVISI)</div>
-            <div class="text-2xl font-black mt-2" style="color: var(--color-error);">{{ $summary['rejected_items'] }} Item</div>
-            <div class="text-xs font-semibold mt-1" style="color: var(--color-error);">Perlu perbaikan berkas Operator</div>
+        <div class="sakdi-card-stat sakdi-card-stat-error p-4 sm:p-5 md:p-6">
+            <div class="sakdi-overline mb-1.5" style="color: var(--color-error);">❌ REJECTED (REVISI)</div>
+            <div class="text-xl sm:text-2xl font-black mt-1" style="color: var(--color-error);">{{ $summary['rejected_items'] }} Item</div>
+            <div class="text-[11px] sm:text-xs font-semibold mt-1" style="color: var(--color-error);">Perlu perbaikan berkas Operator</div>
         </div>
     </div>
 
     {{-- Detailed Sub-Output Breakdown List --}}
     <div class="sakdi-card w-full overflow-hidden p-0">
 
-        <div class="px-6 py-5 border-b flex items-center justify-between flex-wrap gap-4"
+        <div class="px-4 sm:px-6 py-4 sm:py-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3"
              style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">
             <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">
                 Rekapitulasi Berkas per Sub-Output (Periode {{ $month ? $months[(int)$month] : '1 Tahun Full' }} {{ $year }})
             </h2>
-            <span class="sakdi-badge sakdi-badge-neutral font-mono">
+            <span class="sakdi-badge sakdi-badge-neutral font-mono self-start sm:self-auto">
                 Total {{ $subOutputs->total() }} Sub-Output
             </span>
         </div>

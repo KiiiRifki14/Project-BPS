@@ -5,35 +5,35 @@
 <div class="space-y-8">
 
     {{-- ── BREADCRUMB TRAIL & BACK TO VERIFICATION ── --}}
-    <div class="flex items-center justify-between flex-wrap gap-4">
-        <nav class="sakdi-breadcrumb sakdi-card px-5 py-3 flex-1">
-            <a href="{{ route('dashboard') }}" class="hover:underline inline-flex items-center gap-1.5">
+    <div class="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
+        <nav class="sakdi-breadcrumb sakdi-card px-4 sm:px-5 py-2.5 sm:py-3 flex-1 overflow-x-auto whitespace-nowrap text-xs sm:text-sm">
+            <a href="{{ route('dashboard') }}" class="hover:underline inline-flex items-center gap-1.5 flex-shrink-0">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                 <span>Dashboard</span>
             </a>
             <span class="sakdi-breadcrumb-sep">/</span>
-            <span class="num-mono">[{{ $breadcrumb['program']->code }}]</span>
+            <span class="num-mono flex-shrink-0">[{{ $breadcrumb['program']->code }}]</span>
             <span class="sakdi-breadcrumb-sep">/</span>
-            <span class="num-mono">[{{ $breadcrumb['output']->code }}]</span>
+            <span class="num-mono flex-shrink-0">[{{ $breadcrumb['output']->code }}]</span>
             <span class="sakdi-breadcrumb-sep">/</span>
-            <span class="num-mono">[{{ $breadcrumb['sub_output']->code }}]</span>
+            <span class="num-mono flex-shrink-0">[{{ $breadcrumb['sub_output']->code }}]</span>
             <span class="sakdi-breadcrumb-sep">/</span>
-            <span class="num-mono">[{{ $breadcrumb['component']->code }}]</span>
+            <span class="num-mono flex-shrink-0">[{{ $breadcrumb['component']->code }}]</span>
             <span class="sakdi-breadcrumb-sep">/</span>
-            <span class="num-mono">[{{ $breadcrumb['sub_component']->code }}]</span>
+            <span class="num-mono flex-shrink-0">[{{ $breadcrumb['sub_component']->code }}]</span>
             <span class="sakdi-breadcrumb-sep">/</span>
-            <span class="num-mono">[{{ $breadcrumb['account']->code }}]</span>
+            <span class="num-mono flex-shrink-0">[{{ $breadcrumb['account']->code }}]</span>
             <span class="sakdi-breadcrumb-sep">/</span>
-            <span class="num-mono font-bold sakdi-badge sakdi-badge-primary">Item {{ $item->code }}</span>
+            <span class="num-mono font-bold sakdi-badge sakdi-badge-primary flex-shrink-0">Item {{ $item->code }}</span>
         </nav>
 
         @if(request()->query('from') === 'verification' || auth()->user()->isBendahara())
-            <a href="{{ route('verification.index') }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-extrabold inline-flex items-center gap-1.5">
+            <a href="{{ route('verification.index') }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-extrabold inline-flex items-center gap-1.5 flex-shrink-0 text-xs sm:text-sm">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 <span>Kembali ke Inbox Verifikasi</span>
             </a>
         @else
-            <a href="{{ route('items.index') }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-extrabold inline-flex items-center gap-1.5">
+            <a href="{{ route('items.index') }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-extrabold inline-flex items-center gap-1.5 flex-shrink-0 text-xs sm:text-sm">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 <span>Kembali ke Arsip POK</span>
             </a>
@@ -41,7 +41,7 @@
     </div>
 
     {{-- ── ITEM HEADER CARD ── --}}
-    <div class="sakdi-card w-full p-8 relative overflow-hidden">
+    <div class="sakdi-card w-full p-5 sm:p-7 md:p-8 relative overflow-hidden">
 
         {{-- Verifikasi Stepper --}}
         <div class="sakdi-stepper mb-6 pb-6" style="border-bottom: 1px solid var(--color-neutral-300);">

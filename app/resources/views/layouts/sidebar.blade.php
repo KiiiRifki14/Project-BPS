@@ -22,15 +22,14 @@
 
             </div>
         </div>
-        {{-- Tablet collapse toggle button --}}
-        <button class="hidden md:flex lg:hidden items-center justify-center w-8 h-8 rounded-lg ml-auto transition-colors"
-                style="color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.05);"
-                @click.stop="toggleSidebarCollapse()"
-                :title="sidebarCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'"
-                aria-label="Toggle sidebar">
-            <svg class="w-4 h-4 transition-transform" :class="sidebarCollapsed ? 'rotate-180' : ''"
-                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+        {{-- Close button for mobile & split-screen drawer (< 1024px) --}}
+        <button class="flex lg:hidden items-center justify-center w-8 h-8 rounded-lg ml-auto transition-colors"
+                style="color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.08);"
+                @click.stop="sidebarOpen = false"
+                title="Tutup menu"
+                aria-label="Tutup menu">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
         </button>
     </div>

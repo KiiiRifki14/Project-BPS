@@ -2,23 +2,23 @@
 @section('title', 'Dashboard Utama')
 
 @section('content')
-<div class="space-y-8">
+<div class="space-y-6 sm:space-y-8">
 
     {{-- ── HERO MVP BANNER (BMA.006 SENSUS EKONOMI 2026) ── --}}
     @if(isset($bma006) && $bma006)
-    <div class="relative overflow-hidden rounded-2xl p-8 text-white shadow-lg"
+    <div class="relative overflow-hidden rounded-2xl p-5 sm:p-7 md:p-8 text-white shadow-lg"
          style="background: var(--color-primary-900);">
         {{-- Decorative radial glow --}}
         <div class="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none"
              style="background: radial-gradient(circle, rgba(77,158,224,0.18) 0%, transparent 70%); transform: translate(30%, -30%);"></div>
-        <div class="relative z-10 flex items-center justify-between flex-wrap gap-6">
-            <div class="flex-1 min-w-[280px]">
+        <div class="relative z-10 flex items-center justify-between flex-wrap gap-4 sm:gap-6">
+            <div class="flex-1 min-w-[260px]">
 
-                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg mb-3 text-xs font-extrabold"
+                <div class="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-lg mb-2.5 text-xs font-extrabold"
                      style="background: rgba(232,96,28,0.2); border: 1px solid rgba(232,96,28,0.3); color: var(--color-accent-200);">
                     <span>⭐ MODUL UTAMA MVP CORE FOCUS</span>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
                     BMA.006 PUBLIKASI/LAPORAN SENSUS EKONOMI
                 </h1>
                 <p class="text-xs sm:text-sm font-medium mt-2 leading-relaxed" style="color: rgba(255,255,255,0.8);">
@@ -27,10 +27,10 @@
             </div>
 
             <a href="{{ route('items.index', ['sub_output_id' => $bma006->id]) }}"
-               class="sakdi-btn font-extrabold text-sm px-6 py-3.5 shadow-md"
-               style="background: var(--color-accent); color: #fff; border-color: var(--color-accent); min-height: 48px;">
+               class="sakdi-btn font-extrabold text-xs sm:text-sm px-5 sm:px-6 py-3 sm:py-3.5 shadow-md w-full sm:w-auto text-center justify-center"
+               style="background: var(--color-accent); color: #fff; border-color: var(--color-accent); min-height: 44px;">
                 <span>Buka Kegiatan Sensus Ekonomi</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                 </svg>
             </a>
@@ -43,9 +43,9 @@
     <div x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 0)">
 
         {{-- Skeleton state --}}
-        <div x-show="!loaded" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        <div x-show="!loaded" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4 md:gap-5">
             @for($i = 0; $i < 5; $i++)
-            <div class="sakdi-card p-6 space-y-3">
+            <div class="sakdi-card p-4 sm:p-5 md:p-6 space-y-3">
                 <div class="sakdi-skeleton sakdi-skeleton-text" style="width: 60%;"></div>
                 <div class="sakdi-skeleton" style="height: 2rem; width: 80%;"></div>
                 <div class="sakdi-skeleton sakdi-skeleton-text" style="width: 50%;"></div>
@@ -54,67 +54,67 @@
         </div>
 
         {{-- Data state --}}
-        <div x-show="loaded" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        <div x-show="loaded" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4 md:gap-5">
 
             {{-- Card 1: Total Pagu --}}
-            <div class="sakdi-card-stat p-6">
-                <div class="sakdi-overline mb-2">TOTAL PAGU ANGGARAN</div>
-                <div class="text-lg font-black num-mono mt-1 truncate"
+            <div class="sakdi-card-stat p-4 sm:p-5 md:p-6">
+                <div class="sakdi-overline mb-1.5">TOTAL PAGU ANGGARAN</div>
+                <div class="text-base sm:text-lg font-black num-mono mt-1 truncate"
                      style="color: var(--color-neutral-900);">
                     Rp {{ number_format($stats['total_pagu'], 0, ',', '.') }}
                 </div>
-                <div class="text-xs font-semibold mt-1" style="color: var(--color-neutral-500);">Seluruh POK GG.2902</div>
+                <div class="text-[11px] sm:text-xs font-semibold mt-1" style="color: var(--color-neutral-500);">Seluruh POK GG.2902</div>
             </div>
 
             {{-- Card 2: Total Items --}}
-            <div class="sakdi-card-stat sakdi-card-stat-neutral p-6">
-                <div class="sakdi-overline mb-2">TOTAL ITEM KEGIATAN</div>
-                <div class="text-2xl font-black mt-1" style="color: var(--color-neutral-900);">
+            <div class="sakdi-card-stat sakdi-card-stat-neutral p-4 sm:p-5 md:p-6">
+                <div class="sakdi-overline mb-1.5">TOTAL ITEM KEGIATAN</div>
+                <div class="text-xl sm:text-2xl font-black mt-1" style="color: var(--color-neutral-900);">
                     {{ number_format($stats['total_items']) }}
-                    <span class="text-sm font-bold" style="color: var(--color-neutral-500);">Item</span>
+                    <span class="text-xs sm:text-sm font-bold" style="color: var(--color-neutral-500);">Item</span>
                 </div>
-                <div class="text-xs font-semibold mt-1" style="color: var(--color-neutral-500);">Struktur 8-level POK</div>
+                <div class="text-[11px] sm:text-xs font-semibold mt-1" style="color: var(--color-neutral-500);">Struktur 8-level POK</div>
             </div>
 
             {{-- Card 3: Approved --}}
-            <div class="sakdi-card-stat sakdi-card-stat-positive p-6">
-                <div class="sakdi-overline mb-2" style="color: var(--color-positive-700);">✅ SIAP CAIR (APPROVED)</div>
-                <div class="text-2xl font-black mt-1" style="color: var(--color-positive-700);">
+            <div class="sakdi-card-stat sakdi-card-stat-positive p-4 sm:p-5 md:p-6">
+                <div class="sakdi-overline mb-1.5" style="color: var(--color-positive-700);">✅ SIAP CAIR (APPROVED)</div>
+                <div class="text-xl sm:text-2xl font-black mt-1" style="color: var(--color-positive-700);">
                     {{ $stats['approved'] }}
-                    <span class="text-sm font-bold">Item</span>
+                    <span class="text-xs sm:text-sm font-bold">Item</span>
                 </div>
-                <div class="text-xs font-extrabold num-mono mt-1" style="color: var(--color-positive);">
+                <div class="text-[11px] sm:text-xs font-extrabold num-mono mt-1" style="color: var(--color-positive);">
                     Rp {{ number_format($stats['pagu_approved'], 0, ',', '.') }}
                 </div>
             </div>
 
             {{-- Card 4: Pending --}}
-            <div class="sakdi-card-stat sakdi-card-stat-warning p-6">
-                <div class="sakdi-overline mb-2" style="color: var(--color-accent-700);">⏳ PENDING VERIFIKASI</div>
-                <div class="text-2xl font-black mt-1" style="color: var(--color-accent-700);">
+            <div class="sakdi-card-stat sakdi-card-stat-warning p-4 sm:p-5 md:p-6">
+                <div class="sakdi-overline mb-1.5" style="color: var(--color-accent-700);">⏳ PENDING VERIFIKASI</div>
+                <div class="text-xl sm:text-2xl font-black mt-1" style="color: var(--color-accent-700);">
                     {{ $stats['pending'] }}
-                    <span class="text-sm font-bold">Item</span>
+                    <span class="text-xs sm:text-sm font-bold">Item</span>
                 </div>
-                <div class="text-xs font-semibold mt-1" style="color: var(--color-accent);">Menunggu review Bendahara</div>
+                <div class="text-[11px] sm:text-xs font-semibold mt-1" style="color: var(--color-accent);">Menunggu review Bendahara</div>
             </div>
 
             {{-- Card 5: Rejected --}}
-            <div class="sakdi-card-stat sakdi-card-stat-error p-6">
-                <div class="sakdi-overline mb-2" style="color: var(--color-error);">❌ DITOLAK / REVISI</div>
-                <div class="text-2xl font-black mt-1" style="color: var(--color-error);">
+            <div class="sakdi-card-stat sakdi-card-stat-error p-4 sm:p-5 md:p-6">
+                <div class="sakdi-overline mb-1.5" style="color: var(--color-error);">❌ DITOLAK / REVISI</div>
+                <div class="text-xl sm:text-2xl font-black mt-1" style="color: var(--color-error);">
                     {{ $stats['rejected'] }}
-                    <span class="text-sm font-bold">Item</span>
+                    <span class="text-xs sm:text-sm font-bold">Item</span>
                 </div>
-                <div class="text-xs font-semibold mt-1" style="color: var(--color-error);">Perlu perbaikan operator</div>
+                <div class="text-[11px] sm:text-xs font-semibold mt-1" style="color: var(--color-error);">Perlu perbaikan operator</div>
             </div>
         </div>
     </div>
 
     {{-- ── RECENT ITEMS TABLE ── --}}
     <div class="sakdi-table-wrapper">
-        <div class="px-6 py-5 flex items-center justify-between"
+        <div class="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
              style="background: var(--color-neutral-50); border-bottom: 1px solid var(--color-neutral-300);">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900); font-size: var(--text-sm);">
                     Item Kegiatan Terbaru
                 </h2>
@@ -123,7 +123,7 @@
                 </span>
             </div>
             <a href="{{ route('items.index') }}"
-               class="text-xs font-extrabold flex items-center gap-1"
+               class="text-xs font-extrabold flex items-center gap-1 self-start sm:self-auto"
                style="color: var(--color-primary);">
                 <span>Lihat Semua Directory POK</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
