@@ -1,0 +1,82 @@
+# ==========================================
+# 🤖 AI Agent, Skills & Local Customizations
+# ==========================================
+.agents/
+*/.agents/
+skills/
+*/skills/
+.skill-lock.json
+*/.skill-lock.json
+temp_skill_output.txt
+*temp_skill*
+.gemini/
+*/.gemini/
+.claude/
+*/.claude/
+
+# ==========================================
+# 📄 Internal Documentation & Notes
+# ==========================================
+README/
+
+# ==========================================
+# 🔑 Environment & Credentials
+# ==========================================
+.env
+.env.*
+!.env.example
+auth.json
+Homestead.json
+Homestead.yaml
+
+# ==========================================
+# 📦 Dependencies & Package Managers
+# ==========================================
+/vendor/
+app/vendor/
+/node_modules/
+app/node_modules/
+npm-debug.log
+yarn-error.log
+
+# ==========================================
+# 📂 Laravel Storage, Cache & Uploads
+# ==========================================
+app/storage/app/private/uploads/*
+!app/storage/app/private/uploads/.gitkeep
+app/storage/app/public/*
+!app/storage/app/public/.gitkeep
+app/storage/framework/cache/data/*
+app/storage/framework/sessions/*
+app/storage/framework/views/*
+app/storage/framework/testing/*
+app/storage/logs/*.log
+app/storage/*.key
+app/storage/pail
+app/public/storage
+app/public/hot
+app/public/build
+*.log
+
+# ==========================================
+# 💻 IDE, Editor & OS Specific Files
+# ==========================================
+.vscode/
+.idea/
+.fleet/
+.nova/
+.zed/
+.DS_Store
+Thumbs.db
+desktop.ini
+.phpactor.json
+.phpunit.result.cache
+.phpunit.cache
+
+# ==========================================
+# 🗑️ Temporary & Scratch Files
+# ==========================================
+*.tmp
+*.temp
+scratch/
+temp/

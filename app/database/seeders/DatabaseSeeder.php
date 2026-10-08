@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Account;
 use App\Models\Component;
-use App\Models\Document;
 use App\Models\FiscalYear;
 use App\Models\Item;
 use App\Models\Output;
@@ -70,24 +69,19 @@ class DatabaseSeeder extends Seeder
             ['component_id' => $comp005_004->id, 'code' => '005.0A'],
             ['name' => 'TANPA SUB KOMPONEN']
         );
-        // Akun 521213 – BMA.004/005/005.0A
         $acc521213_a = Account::updateOrCreate(
             ['sub_component_id' => $sc005_0A_004->id, 'code' => '521213'],
             ['name' => 'Belanja Honor Output Kegiatan']
         );
         Item::updateOrCreate(['account_id' => $acc521213_a->id, 'code' => '000733'],
             ['name' => 'Honor petugas pendataan lapangan Survei Jasa BPS Kab/Kota', 'pagu' => 15600000]);
-        Item::updateOrCreate(['account_id' => $acc521213_a->id, 'code' => '001204'],
-            ['name' => 'Honor pelaksanaan SPUNP', 'pagu' => 12400000]);
-        // Akun 524113 – BMA.004/005/005.0A
+
         $acc524113_a = Account::updateOrCreate(
             ['sub_component_id' => $sc005_0A_004->id, 'code' => '524113'],
             ['name' => 'Belanja Perjalanan Dinas Dalam Kota']
         );
         Item::updateOrCreate(['account_id' => $acc524113_a->id, 'code' => '000734'],
             ['name' => 'Transport lokal petugas pemeriksaan lapangan Survei Jasa BPS Kab/Kota', 'pagu' => 8000000]);
-        Item::updateOrCreate(['account_id' => $acc524113_a->id, 'code' => '001359'],
-            ['name' => 'Transport lokal petugas pendataan lapangan SPUNP', 'pagu' => 6000000]);
 
         // BMA.004 → Komponen 051 PERSIAPAN
         $comp051_004 = Component::updateOrCreate(
@@ -104,8 +98,6 @@ class DatabaseSeeder extends Seeder
         );
         Item::updateOrCreate(['account_id' => $acc521211_051->id, 'code' => '001363'],
             ['name' => 'Bahan habis pakai kegiatan statistik distribusi', 'pagu' => 5000000]);
-        Item::updateOrCreate(['account_id' => $acc521211_051->id, 'code' => '001364'],
-            ['name' => 'Bahan habis pakai persiapan pendataan', 'pagu' => 4500000]);
         $acc524113_051 = Account::updateOrCreate(
             ['sub_component_id' => $sc051_0A_004->id, 'code' => '524113'],
             ['name' => 'Belanja Perjalanan Dinas Dalam Kota']
@@ -128,10 +120,6 @@ class DatabaseSeeder extends Seeder
         );
         Item::updateOrCreate(['account_id' => $acc521211_052->id, 'code' => '000742'],
             ['name' => 'Bahan habis pakai pengumpulan data statistik distribusi', 'pagu' => 7200000]);
-        Item::updateOrCreate(['account_id' => $acc521211_052->id, 'code' => '001361'],
-            ['name' => 'Bahan pendataan survei konsumen', 'pagu' => 6100000]);
-        Item::updateOrCreate(['account_id' => $acc521211_052->id, 'code' => '001362'],
-            ['name' => 'Bahan pendataan survei harga produsen', 'pagu' => 5800000]);
 
         // ─────────────────────────────────────────────
         // 5b. SUB-OUTPUT BMA.006 — MVP CORE FOCUS
@@ -181,8 +169,6 @@ class DatabaseSeeder extends Seeder
         // ★ ITEM FOKUS MVP ★
         Item::updateOrCreate(['account_id' => $acc521213_005_0B->id, 'code' => '001211'],
             ['name' => 'Honor petugas lapangan sensus ekonomi', 'pagu' => 756000000]);
-        Item::updateOrCreate(['account_id' => $acc521213_005_0B->id, 'code' => '001508'],
-            ['name' => 'Honor pemeriksa lapangan sensus (PML)', 'pagu' => 234000000]);
 
         // ── BMA.006 → [523] Publisitas SE2026 ──
         $comp523 = Component::updateOrCreate(
@@ -198,8 +184,6 @@ class DatabaseSeeder extends Seeder
         $acc522191_523 = Account::updateOrCreate(['sub_component_id' => $sc523_0A->id, 'code' => '522191'], ['name' => 'Belanja Jasa Lainnya']);
         Item::updateOrCreate(['account_id' => $acc522191_523->id, 'code' => '000699'], ['name' => 'Jasa desain materi publisitas SE2026', 'pagu' => 25000000]);
         Item::updateOrCreate(['account_id' => $acc522191_523->id, 'code' => '000700'], ['name' => 'Jasa percetakan materi publisitas SE2026', 'pagu' => 32000000]);
-        $acc524111_523 = Account::updateOrCreate(['sub_component_id' => $sc523_0A->id, 'code' => '524111'], ['name' => 'Belanja Perjalanan Dinas Biasa']);
-        Item::updateOrCreate(['account_id' => $acc524111_523->id, 'code' => '001123'], ['name' => 'Perjalanan dinas luar kota kegiatan publisitas SE2026', 'pagu' => 15600000]);
 
         // ── BMA.006 → [524] Penetapan Kerangka Geospasial dan Muatan Wilkerstat ──
         $comp524 = Component::updateOrCreate(
@@ -209,27 +193,20 @@ class DatabaseSeeder extends Seeder
         $sc524_0A = SubComponent::updateOrCreate(['component_id' => $comp524->id, 'code' => '524.0A'], ['name' => 'TANPA SUB KOMPONEN']);
         $acc521211_524 = Account::updateOrCreate(['sub_component_id' => $sc524_0A->id, 'code' => '521211'], ['name' => 'Belanja Bahan']);
         Item::updateOrCreate(['account_id' => $acc521211_524->id, 'code' => '000701'], ['name' => 'Bahan habis pakai kerangka geospasial SE2026', 'pagu' => 8500000]);
-        Item::updateOrCreate(['account_id' => $acc521211_524->id, 'code' => '000702'], ['name' => 'Bahan peta Wilkerstat SE2026', 'pagu' => 7200000]);
         $acc521213_524 = Account::updateOrCreate(['sub_component_id' => $sc524_0A->id, 'code' => '521213'], ['name' => 'Belanja Honor Output Kegiatan']);
         Item::updateOrCreate(['account_id' => $acc521213_524->id, 'code' => '001340'], ['name' => 'Honor petugas pengolahan peta Wilkerstat SE2026', 'pagu' => 48000000]);
-        $acc521219_524 = Account::updateOrCreate(['sub_component_id' => $sc524_0A->id, 'code' => '521219'], ['name' => 'Belanja Barang Non Operasional Lainnya']);
-        Item::updateOrCreate(['account_id' => $acc521219_524->id, 'code' => '000704'], ['name' => 'Barang non operasional kerangka geospasial SE2026', 'pagu' => 12000000]);
         $acc521811_524 = Account::updateOrCreate(['sub_component_id' => $sc524_0A->id, 'code' => '521811'], ['name' => 'Belanja Barang Persediaan Barang Konsumsi']);
         Item::updateOrCreate(['account_id' => $acc521811_524->id, 'code' => '000705'], ['name' => 'ATK kegiatan kerangka geospasial SE2026', 'pagu' => 9600000]);
-        Item::updateOrCreate(['account_id' => $acc521811_524->id, 'code' => '000706'], ['name' => 'Konsumsi rapat koordinasi Wilkerstat SE2026', 'pagu' => 7800000]);
         $acc524113_524 = Account::updateOrCreate(['sub_component_id' => $sc524_0A->id, 'code' => '524113'], ['name' => 'Belanja Perjalanan Dinas Dalam Kota']);
         Item::updateOrCreate(['account_id' => $acc524113_524->id, 'code' => '000707'], ['name' => 'Transport lokal petugas kerangka geospasial SE2026', 'pagu' => 18000000]);
-        Item::updateOrCreate(['account_id' => $acc524113_524->id, 'code' => '000708'], ['name' => 'Transport lokal supervisi peta Wilkerstat SE2026', 'pagu' => 12000000]);
 
         // ── BMA.006 → [529] Penerapan Prelist SBR ──
         $comp529 = Component::updateOrCreate(['sub_output_id' => $so006->id, 'code' => '529'], ['name' => 'Penerapan Prelist SBR Untuk SE2026']);
         $sc529_0A = SubComponent::updateOrCreate(['component_id' => $comp529->id, 'code' => '529.0A'], ['name' => 'TANPA SUB KOMPONEN']);
         $acc521811_529 = Account::updateOrCreate(['sub_component_id' => $sc529_0A->id, 'code' => '521811'], ['name' => 'Belanja Barang Persediaan Barang Konsumsi']);
         Item::updateOrCreate(['account_id' => $acc521811_529->id, 'code' => '000709'], ['name' => 'ATK penerapan prelist SBR SE2026', 'pagu' => 6400000]);
-        Item::updateOrCreate(['account_id' => $acc521811_529->id, 'code' => '000710'], ['name' => 'Konsumsi kegiatan prelist SBR SE2026', 'pagu' => 5200000]);
         $acc524113_529 = Account::updateOrCreate(['sub_component_id' => $sc529_0A->id, 'code' => '524113'], ['name' => 'Belanja Perjalanan Dinas Dalam Kota']);
         Item::updateOrCreate(['account_id' => $acc524113_529->id, 'code' => '000711'], ['name' => 'Transport lokal petugas prelist SBR SE2026', 'pagu' => 9600000]);
-        Item::updateOrCreate(['account_id' => $acc524113_529->id, 'code' => '000712'], ['name' => 'Transport lokal supervisi prelist SBR SE2026', 'pagu' => 7200000]);
 
         // ── BMA.006 → [530] Pelaksanaan SE2026 ──
         $comp530 = Component::updateOrCreate(['sub_output_id' => $so006->id, 'code' => '530'], ['name' => 'Pelaksanaan SE2026']);
@@ -237,31 +214,19 @@ class DatabaseSeeder extends Seeder
         $sc530_0A = SubComponent::updateOrCreate(['component_id' => $comp530->id, 'code' => '530.0A'], ['name' => 'TANPA SUB KOMPONEN']);
         $acc521213_530_0A = Account::updateOrCreate(['sub_component_id' => $sc530_0A->id, 'code' => '521213'], ['name' => 'Belanja Honor Output Kegiatan']);
         Item::updateOrCreate(['account_id' => $acc521213_530_0A->id, 'code' => '001511'], ['name' => 'Honor koordinator wilayah pelaksanaan SE2026', 'pagu' => 96000000]);
-        Item::updateOrCreate(['account_id' => $acc521213_530_0A->id, 'code' => '001512'], ['name' => 'Honor pengawas lapangan pelaksanaan SE2026', 'pagu' => 72000000]);
+
         // [530.0B] PENDATAAN LENGKAP
         $sc530_0B = SubComponent::updateOrCreate(['component_id' => $comp530->id, 'code' => '530.0B'], ['name' => 'PENDATAAN LENGKAP']);
         $acc521211_530B = Account::updateOrCreate(['sub_component_id' => $sc530_0B->id, 'code' => '521211'], ['name' => 'Belanja Bahan']);
         Item::updateOrCreate(['account_id' => $acc521211_530B->id, 'code' => '001344'], ['name' => 'Bahan habis pakai pendataan lengkap SE2026 (kuesioner)', 'pagu' => 45000000]);
-        Item::updateOrCreate(['account_id' => $acc521211_530B->id, 'code' => '001345'], ['name' => 'Bahan habis pakai pendataan lengkap SE2026 (ATK)', 'pagu' => 28000000]);
-        Item::updateOrCreate(['account_id' => $acc521211_530B->id, 'code' => '001367'], ['name' => 'Bahan habis pakai pendataan lengkap SE2026 (tablet)', 'pagu' => 36000000]);
-        Item::updateOrCreate(['account_id' => $acc521211_530B->id, 'code' => '001509'], ['name' => 'Bahan habis pakai pendataan lengkap SE2026 (lainnya)', 'pagu' => 18000000]);
         $acc521213_530B = Account::updateOrCreate(['sub_component_id' => $sc530_0B->id, 'code' => '521213'], ['name' => 'Belanja Honor Output Kegiatan']);
         Item::updateOrCreate(['account_id' => $acc521213_530B->id, 'code' => '001346'], ['name' => 'Honor enumerator pendataan lengkap SE2026 gelombang 1', 'pagu' => 384000000]);
-        Item::updateOrCreate(['account_id' => $acc521213_530B->id, 'code' => '001347'], ['name' => 'Honor enumerator pendataan lengkap SE2026 gelombang 2', 'pagu' => 312000000]);
-        Item::updateOrCreate(['account_id' => $acc521213_530B->id, 'code' => '001348'], ['name' => 'Honor pengawas lapangan pendataan lengkap SE2026', 'pagu' => 156000000]);
-        Item::updateOrCreate(['account_id' => $acc521213_530B->id, 'code' => '001349'], ['name' => 'Honor koordinator kecamatan pendataan lengkap SE2026', 'pagu' => 96000000]);
         $acc521811_530B = Account::updateOrCreate(['sub_component_id' => $sc530_0B->id, 'code' => '521811'], ['name' => 'Belanja Barang Persediaan Barang Konsumsi']);
         Item::updateOrCreate(['account_id' => $acc521811_530B->id, 'code' => '000724'], ['name' => 'ATK pendataan lengkap SE2026 tim BPS kab/kota', 'pagu' => 15600000]);
-        Item::updateOrCreate(['account_id' => $acc521811_530B->id, 'code' => '000725'], ['name' => 'Konsumsi rapat koordinasi pendataan lengkap SE2026', 'pagu' => 12000000]);
         $acc522151_530B = Account::updateOrCreate(['sub_component_id' => $sc530_0B->id, 'code' => '522151'], ['name' => 'Belanja Jasa Profesi']);
         Item::updateOrCreate(['account_id' => $acc522151_530B->id, 'code' => '000727'], ['name' => 'Jasa narasumber pelatihan enumerator SE2026 sesi 1', 'pagu' => 24000000]);
-        Item::updateOrCreate(['account_id' => $acc522151_530B->id, 'code' => '000728'], ['name' => 'Jasa narasumber pelatihan enumerator SE2026 sesi 2', 'pagu' => 24000000]);
-        Item::updateOrCreate(['account_id' => $acc522151_530B->id, 'code' => '001341'], ['name' => 'Jasa konsultan pengolahan data SE2026', 'pagu' => 36000000]);
         $acc524113_530B = Account::updateOrCreate(['sub_component_id' => $sc530_0B->id, 'code' => '524113'], ['name' => 'Belanja Perjalanan Dinas Dalam Kota']);
         Item::updateOrCreate(['account_id' => $acc524113_530B->id, 'code' => '000729'], ['name' => 'Transport lokal tim BPS kab/kota pendataan lengkap SE2026', 'pagu' => 48000000]);
-        Item::updateOrCreate(['account_id' => $acc524113_530B->id, 'code' => '001342'], ['name' => 'Transport lokal pengawas lapangan pendataan lengkap SE2026', 'pagu' => 36000000]);
-        Item::updateOrCreate(['account_id' => $acc524113_530B->id, 'code' => '001343'], ['name' => 'Transport lokal koordinator kecamatan pendataan lengkap SE2026', 'pagu' => 28800000]);
-        Item::updateOrCreate(['account_id' => $acc524113_530B->id, 'code' => '001368'], ['name' => 'Transport lokal supervisi BPS provinsi pendataan lengkap SE2026', 'pagu' => 24000000]);
 
         // ── BMA.006 → [535] Penyusunan Diseminasi SE2026 ──
         $comp535 = Component::updateOrCreate(['sub_output_id' => $so006->id, 'code' => '535'], ['name' => 'Penyusunan Diseminasi SE2026']);
@@ -292,13 +257,10 @@ class DatabaseSeeder extends Seeder
         // Akun 521213 – FAN.ZZ1
         $acc521213_fan = Account::updateOrCreate(['sub_component_id' => $scFan051_0A->id, 'code' => '521213'], ['name' => 'Belanja Honor Output Kegiatan']);
         Item::updateOrCreate(['account_id' => $acc521213_fan->id, 'code' => '001207'], ['name' => 'Honor petugas lapangan sensus ekonomi (FAN)', 'pagu' => 144000000]);
-        Item::updateOrCreate(['account_id' => $acc521213_fan->id, 'code' => '001208'], ['name' => 'Honor pengolahan peta Wilkerstat (FAN)', 'pagu' => 96000000]);
-        Item::updateOrCreate(['account_id' => $acc521213_fan->id, 'code' => '001350'], ['name' => 'Honor pengolahan peta Wilkerstat lanjutan (FAN)', 'pagu' => 72000000]);
 
         // Akun 521219 – FAN.ZZ1
         $acc521219_fan = Account::updateOrCreate(['sub_component_id' => $scFan051_0A->id, 'code' => '521219'], ['name' => 'Belanja Barang Non Operasional Lainnya']);
         Item::updateOrCreate(['account_id' => $acc521219_fan->id, 'code' => '001353'], ['name' => 'Asuransi petugas pendataan lapangan SE2026 (gelombang 1)', 'pagu' => 28800000]);
-        Item::updateOrCreate(['account_id' => $acc521219_fan->id, 'code' => '001354'], ['name' => 'Asuransi petugas pendataan lapangan SE2026 (gelombang 2)', 'pagu' => 24000000]);
 
         // Akun 524113 – FAN.ZZ1
         $acc524113_fan = Account::updateOrCreate(['sub_component_id' => $scFan051_0A->id, 'code' => '524113'], ['name' => 'Belanja Perjalanan Dinas Dalam Kota']);
@@ -308,8 +270,6 @@ class DatabaseSeeder extends Seeder
         $acc524114_fan = Account::updateOrCreate(['sub_component_id' => $scFan051_0A->id, 'code' => '524114'], ['name' => 'Belanja Perjalanan Dinas Paket Meeting Dalam Kota']);
         Item::updateOrCreate(['account_id' => $acc524114_fan->id, 'code' => '001351'],
             ['name' => 'Paket Meeting Fullboard pelatihan petugas pendataan lapangan SE2026', 'pagu' => 185760000]);
-        Item::updateOrCreate(['account_id' => $acc524114_fan->id, 'code' => '001352'],
-            ['name' => 'Perjalanan Fullboard pelatihan petugas pendataan lapangan SE2026', 'pagu' => 142560000]);
 
         $this->command->info('✅ Database seeded: ' . User::count() . ' users, ' . Item::count() . ' items dalam hirarki POK GG.2902.');
     }
