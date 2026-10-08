@@ -49,15 +49,29 @@ class ItemController extends Controller
         $zipPath = $tempDir . '/' . $zipFileName;
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            $filesAdded = 0;
             foreach ($documents as $index => $doc) {
-                $absolutePath = storage_path('app/' . $doc->file_path);
+                // Check in private disk storage path first, fallback to storage_path
+                $absolutePath = Storage::disk('private')->path($doc->file_path);
+                if (!file_exists($absolutePath)) {
+                    $absolutePath = storage_path('app/' . $doc->file_path);
+                }
+
                 if (file_exists($absolutePath)) {
                     // Prepend index to filename if duplicate names exist
-                    $entryName = ($index + 1) . '_' . $doc->file_name;
+                    $entryName = ($index + 1) . '_' . preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $doc->file_name);
                     $zip->addFile($absolutePath, $entryName);
+                    $filesAdded++;
                 }
             }
             $zip->close();
+
+            if ($filesAdded === 0 || !file_exists($zipPath)) {
+                if (file_exists($zipPath)) {
+                    @unlink($zipPath);
+                }
+                return back()->with('error', 'Berkas fisik dokumen tidak ditemukan pada penyimpanan server untuk dikompresi ZIP.');
+            }
         } else {
             return back()->with('error', 'Gagal membuat berkas terkompresi ZIP.');
         }

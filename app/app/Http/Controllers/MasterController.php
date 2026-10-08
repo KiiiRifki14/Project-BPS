@@ -157,6 +157,12 @@ class MasterController extends Controller
     // ── ITEM ──────────────────────────────────────────
     public function storeItem(Request $request)
     {
+        if ($request->has('pagu')) {
+            $request->merge([
+                'pagu' => (float) preg_replace('/[^0-9]/', '', (string)$request->input('pagu'))
+            ]);
+        }
+
         $request->validate([
             'account_id' => 'required|exists:accounts,id',
             'code'       => 'required|string|max:10',
@@ -169,6 +175,12 @@ class MasterController extends Controller
 
     public function updateItem(Request $request, Item $item)
     {
+        if ($request->has('pagu')) {
+            $request->merge([
+                'pagu' => (float) preg_replace('/[^0-9]/', '', (string)$request->input('pagu'))
+            ]);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'pagu' => 'required|numeric|min:0',

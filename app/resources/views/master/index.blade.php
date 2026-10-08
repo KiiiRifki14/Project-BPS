@@ -121,8 +121,24 @@
 
             {{-- Item Form Column --}}
             <div class="sakdi-card p-6 lg:sticky lg:top-24"
-                 x-data="{ editMode: false, editItem: null }"
-                 @open-edit-item.window="editItem = $event.detail; editMode = true">
+                 x-data="{ 
+                     editMode: false, 
+                     editItem: null,
+                     rawPagu: '',
+                     formatRupiah(val) {
+                         if (!val) return '';
+                         let num = val.toString().replace(/[^0-9]/g, '');
+                         return num ? new Intl.NumberFormat('id-ID').format(num) : '';
+                     },
+                     onPaguInput(e) {
+                         let val = e.target.value.replace(/[^0-9]/g, '');
+                         this.rawPagu = val;
+                         if (this.editItem) {
+                             this.editItem.pagu = val;
+                         }
+                     }
+                 }"
+                 @open-edit-item.window="editItem = $event.detail; editMode = true; rawPagu = editItem ? editItem.pagu : ''">
                 <h3 class="text-sm font-extrabold mb-4" style="color: var(--color-neutral-900);" x-text="editMode ? 'Edit Item Kegiatan' : 'Tambah Item Baru'"></h3>
                 <form :action="editMode ? '/master/items/' + editItem.id : '{{ route('master.items.store') }}'" method="POST" class="space-y-4">
                     @csrf
@@ -152,14 +168,26 @@
 
                     <div>
                         <label class="sakdi-label sakdi-label-required">Pagu Anggaran (Rp)</label>
-                        <input type="number" name="pagu" class="sakdi-input num-mono" placeholder="925600000" step="1" required x-model="editItem ? editItem.pagu : ''">
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black" style="color: var(--color-primary-800);">Rp</span>
+                            <input type="text" 
+                                   name="pagu" 
+                                   class="sakdi-input num-mono pl-10 text-sm font-bold" 
+                                   placeholder="1.000.000" 
+                                   required 
+                                   :value="formatRupiah(editMode && editItem ? editItem.pagu : rawPagu)"
+                                   @input="onPaguInput($event)">
+                        </div>
+                        <p class="text-[11px] mt-1 font-semibold" style="color: var(--color-neutral-600);" x-show="rawPagu || (editMode && editItem && editItem.pagu)">
+                            Nominal: <span class="font-black num-mono" style="color: var(--color-positive-700);" x-text="'Rp ' + formatRupiah(editMode && editItem ? editItem.pagu : rawPagu)"></span>
+                        </p>
                     </div>
 
                     <div class="flex gap-2 pt-2">
                         <button type="submit" class="sakdi-btn sakdi-btn-primary flex-1">
                             <span x-text="editMode ? 'Simpan Perubahan' : 'Tambah Item'"></span>
                         </button>
-                        <button type="button" x-show="editMode" @click="editMode = false; editItem = null" class="sakdi-btn sakdi-btn-secondary">
+                        <button type="button" x-show="editMode" @click="editMode = false; editItem = null; rawPagu = ''" class="sakdi-btn sakdi-btn-secondary">
                             Batal
                         </button>
                     </div>
