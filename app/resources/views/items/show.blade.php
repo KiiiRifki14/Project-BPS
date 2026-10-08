@@ -27,17 +27,10 @@
             <span class="num-mono font-bold sakdi-badge sakdi-badge-primary flex-shrink-0">Item {{ $item->code }}</span>
         </nav>
 
-        @if(request()->query('from') === 'verification' || auth()->user()->isBendahara())
-            <a href="{{ route('verification.index') }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-extrabold inline-flex items-center gap-1.5 flex-shrink-0 text-xs sm:text-sm">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                <span>Kembali ke Inbox Verifikasi</span>
-            </a>
-        @else
-            <a href="{{ route('items.index') }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-extrabold inline-flex items-center gap-1.5 flex-shrink-0 text-xs sm:text-sm">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                <span>Kembali ke Arsip POK</span>
-            </a>
-        @endif
+        <a href="{{ route('items.index') }}" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-extrabold inline-flex items-center gap-1.5 flex-shrink-0 text-xs sm:text-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            <span>{{ auth()->user()->isBendahara() ? 'Kembali ke Verifikasi & Arsip' : 'Kembali ke Arsip POK' }}</span>
+        </a>
     </div>
 
     {{-- ── ITEM HEADER CARD ── --}}

@@ -48,6 +48,19 @@
              style="background: radial-gradient(circle, rgba(61,135,204,0.2) 0%, transparent 70%); transform: translate(30%, -30%);"></div>
         <div class="w-full relative z-10">
 
+            @if(auth()->user()->isBendahara())
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg mb-2 sm:mb-3 text-[11px] sm:text-xs font-extrabold"
+                 style="background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4); color: #FCD34D;">
+                <span>🏦 PORTAL VERIFIKASI &amp; ARSIP BENDAHARA</span>
+            </div>
+
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
+                Verifikasi &amp; Arsip Keuangan POK
+            </h1>
+            <p class="text-xs sm:text-sm font-medium mt-1 mb-4 sm:mb-6 leading-relaxed" style="color: rgba(255,255,255,0.85);">
+                Periksa kelengkapan berkas SPJ kegiatan, gunakan filter cascading POK, dan lakukan verifikasi pencairan anggaran.
+            </p>
+            @else
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg mb-2 sm:mb-3 text-[11px] sm:text-xs font-extrabold"
                  style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.85);">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -62,6 +75,7 @@
             <p class="text-xs sm:text-sm font-medium mt-1 mb-4 sm:mb-6 leading-relaxed" style="color: rgba(255,255,255,0.8);">
                 Temukan cepat dokumen SPJ &amp; kegiatan berdasarkan Kode Item (misal: <span class="num-mono font-bold" style="color: #FBD063;">001366</span>), Kode Akun (<span class="num-mono font-bold" style="color: #FBD063;">521213</span>), atau Kata Kunci Kegiatan.
             </p>
+            @endif
 
             <form method="GET" action="{{ route('items.index') }}" class="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
                 @if($filter) <input type="hidden" name="filter" value="{{ $filter }}"> @endif
@@ -283,10 +297,33 @@
                             @endif
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            <a href="{{ route('items.show', $item) }}" class="sakdi-btn sakdi-btn-primary sakdi-btn-sm">
-                                <span>Workspace</span>
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                            </a>
+                            @if(auth()->user()->isBendahara())
+                                @if($item->verification_status === 'PENDING')
+                                    <a href="{{ route('items.show', $item) }}"
+                                       class="sakdi-btn sakdi-btn-sm font-extrabold shadow-sm"
+                                       style="background: #F59E0B; color: #1C1917; border-color: #F59E0B;">
+                                        <span>🔍 Tinjau & Verifikasi</span>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                    </a>
+                                @elseif($item->verification_status === 'APPROVED')
+                                    <a href="{{ route('items.show', $item) }}"
+                                       class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-bold">
+                                        <span>✓ Berkas Cair</span>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </a>
+                                @else
+                                    <a href="{{ route('items.show', $item) }}"
+                                       class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm font-bold" style="color: #DC2626;">
+                                        <span>✕ Revisi Berkas</span>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </a>
+                                @endif
+                            @else
+                                <a href="{{ route('items.show', $item) }}" class="sakdi-btn sakdi-btn-primary sakdi-btn-sm">
+                                    <span>Workspace</span>
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </a>
+                            @endif
                         </td>
                     </tr>
                     @empty

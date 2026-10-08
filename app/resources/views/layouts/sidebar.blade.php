@@ -59,49 +59,40 @@
             <span class="font-bold">Dashboard Utama</span>
         </a>
 
-        {{-- 2. Arsip Keuangan POK --}}
+        {{-- 2. Arsip & Verifikasi POK (Terpadu dengan Cascading Filter) --}}
         @php
-            $isVerificationActive = request()->routeIs('verification.*') ||
-                (request()->routeIs('items.show') && (request()->query('from') === 'verification' || auth()->user()->isBendahara()));
-
-            $isArsipActive = (request()->routeIs('items.index') || request()->routeIs('arsip.*')) ||
-                (request()->routeIs('items.show') && request()->query('from') !== 'verification' && !auth()->user()->isBendahara());
-
+            $isArsipActive = request()->routeIs('items.*') || request()->routeIs('arsip.*') || request()->routeIs('verification.*');
+            $pendingCount  = \App\Models\Item::where('verification_status', 'PENDING')->count();
             $rejectedCount = \App\Models\Item::where('verification_status', 'REJECTED')->count();
+            $menuLabel     = auth()->user()->isBendahara() ? 'Verifikasi & Arsip POK' : 'Arsip Keuangan POK';
         @endphp
         <a href="{{ route('items.index') }}"
            class="nav-link-v4 {{ $isArsipActive ? 'active' : '' }}"
-           title="Arsip Keuangan POK">
+           title="{{ $menuLabel }}">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                @if(auth()->user()->isBendahara())
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                @else
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                @endif
             </svg>
-            <span class="font-bold flex-1">Arsip Keuangan POK</span>
-            @if(auth()->user()->isOperator() && $rejectedCount > 0)
-                <span class="text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0"
-                      style="background: #EF4444; color: #FFFFFF;" title="Item Perlu Perbaikan">{{ $rejectedCount }} Ditolak</span>
-            @endif
-        </a>
+            <span class="font-bold flex-1">{{ $menuLabel }}</span>
 
-        {{-- 3. Verifikasi Pencairan (BENDAHARA & ADMIN) --}}
-        @if(in_array(auth()->user()->role, ['BENDAHARA', 'ADMIN']))
-        @php
-            $pendingCount = \App\Models\Item::where('verification_status', 'PENDING')->count();
-        @endphp
-        <a href="{{ route('verification.index') }}"
-           class="nav-link-v4 {{ $isVerificationActive ? 'active' : '' }}"
-           title="Verifikasi Pencairan">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span class="font-bold flex-1">Verifikasi Pencairan</span>
-            @if($pendingCount > 0)
+            {{-- Badges --}}
+            @if(auth()->user()->isBendahara() && $pendingCount > 0)
                 <span class="text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0"
-                      style="background: #F59E0B; color: #1C1917;">{{ $pendingCount }}</span>
+                      style="background: #F59E0B; color: #1C1917;" title="Item Menunggu Verifikasi">
+                    {{ $pendingCount }} Pending
+                </span>
+            @elseif(auth()->user()->isOperator() && $rejectedCount > 0)
+                <span class="text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0"
+                      style="background: #EF4444; color: #FFFFFF;" title="Item Perlu Perbaikan">
+                    {{ $rejectedCount }} Ditolak
+                </span>
             @endif
         </a>
-        @endif
 
         {{-- 4. Kelola Master POK (SUPERVISOR & ADMIN) --}}
         @if(in_array(auth()->user()->role, ['SUPERVISOR', 'ADMIN']))
