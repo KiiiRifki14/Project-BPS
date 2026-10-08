@@ -481,6 +481,24 @@
             </div>
             <div class="form-sub">Masuk dengan NIP / Username dan password Anda</div>
 
+            {{-- Session Warning Alert (e.g. Expired Session) --}}
+            @if (session('warning'))
+                <div style="background:#fffbeb; border: 1px solid #fde68a; padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; display:flex; align-items:center; gap:8px; color:#b45309;"
+                    role="alert">
+                    <span style="font-size:16px; flex-shrink:0;">⚠️</span>
+                    <span style="font-size:12px; font-weight:600;">{{ session('warning') }}</span>
+                </div>
+            @endif
+
+            {{-- Session Status Alert --}}
+            @if (session('status'))
+                <div style="background:#f0fdf4; border: 1px solid #86efac; padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; display:flex; align-items:center; gap:8px; color:#166534;"
+                    role="alert">
+                    <span style="font-size:16px; flex-shrink:0;">ℹ️</span>
+                    <span style="font-size:12px; font-weight:600;">{{ session('status') }}</span>
+                </div>
+            @endif
+
             {{-- Session Error Alert --}}
             @if ($errors->any())
                 <div style="background:#fef2f2; border: 1px solid #fca5a5; padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; display:flex; align-items:center; gap:8px; color:#b91c1c;"
@@ -563,7 +581,7 @@
 
                 {{-- Remember Me --}}
                 <div class="remember-row">
-                    <input type="checkbox" id="remember" name="remember">
+                    <input type="checkbox" id="remember" name="remember" checked>
                     <label for="remember">Ingat saya di perangkat ini</label>
                 </div>
 
