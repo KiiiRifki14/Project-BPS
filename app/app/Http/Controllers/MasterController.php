@@ -44,8 +44,36 @@ class MasterController extends Controller
     public function storeFiscalYear(Request $request)
     {
         $request->validate(['year' => 'required|integer|min:2024|max:2099|unique:fiscal_years,year']);
-        FiscalYear::create(['year' => $request->year, 'is_active' => $request->boolean('is_active', true)]);
+
+        $isActive = $request->boolean('is_active', false);
+        if ($isActive) {
+            FiscalYear::where('is_active', true)->update(['is_active' => false]);
+        }
+
+        FiscalYear::create([
+            'year'      => $request->year,
+            'is_active' => $isActive,
+        ]);
+
         return back()->with('success', "Tahun Anggaran {$request->year} berhasil ditambahkan.");
+    }
+
+    public function toggleFiscalYear(FiscalYear $fiscalYear)
+    {
+        if (!$fiscalYear->is_active) {
+            FiscalYear::where('is_active', true)->update(['is_active' => false]);
+            $fiscalYear->update(['is_active' => true]);
+            $message = "Tahun Anggaran {$fiscalYear->year} kini aktif sebagai Tahun Anggaran Berjalan.";
+        } else {
+            $activeCount = FiscalYear::where('is_active', true)->count();
+            if ($activeCount <= 1) {
+                return back()->with('error', 'Gagal: Minimal harus ada 1 Tahun Anggaran yang aktif.');
+            }
+            $fiscalYear->update(['is_active' => false]);
+            $message = "Tahun Anggaran {$fiscalYear->year} telah dinonaktifkan (Arsip Lampau).";
+        }
+
+        return back()->with('success', $message);
     }
 
     // ── PROGRAM ──────────────────────────────────────

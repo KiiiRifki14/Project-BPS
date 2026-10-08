@@ -690,6 +690,7 @@
                         <tr>
                             <th class="w-28 text-center">Tahun</th>
                             <th>Status DIPA</th>
+                            <th class="text-center w-40">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -697,9 +698,35 @@
                         <tr>
                             <td class="text-center font-black num-mono text-sm">{{ $fy->year }}</td>
                             <td>
-                                <span class="sakdi-badge {{ $fy->is_active ? 'sakdi-badge-success' : 'sakdi-badge-neutral' }}">
-                                    {{ $fy->is_active ? 'Aktif' : 'Non-Aktif' }}
-                                </span>
+                                @if($fy->is_active)
+                                    <span class="sakdi-badge sakdi-badge-success text-xs font-extrabold inline-flex items-center gap-1">
+                                        <span>⭐ TA Aktif (Berjalan)</span>
+                                    </span>
+                                @else
+                                    <span class="sakdi-badge sakdi-badge-neutral text-xs font-semibold inline-flex items-center gap-1">
+                                        <span>Arsip Lampau (Non-Aktif)</span>
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="text-center whitespace-nowrap">
+                                <form action="{{ route('master.fiscal-years.toggle', $fy) }}" method="POST" class="m-0">
+                                    @csrf
+                                    @method('PATCH')
+                                    @if($fy->is_active)
+                                        <button type="submit"
+                                                class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm text-xs font-bold"
+                                                style="color: var(--color-accent-700);"
+                                                title="Nonaktifkan tahun anggaran ini">
+                                            Nonaktifkan
+                                        </button>
+                                    @else
+                                        <button type="submit"
+                                                class="sakdi-btn sakdi-btn-primary sakdi-btn-sm text-xs font-extrabold shadow-sm"
+                                                title="Jadikan sebagai Tahun Anggaran Berjalan">
+                                            Jadikan Aktif
+                                        </button>
+                                    @endif
+                                </form>
                             </td>
                         </tr>
                         @endforeach
@@ -714,6 +741,12 @@
                     <div>
                         <label class="sakdi-label sakdi-label-required">Tahun Anggaran</label>
                         <input type="number" name="year" class="sakdi-input num-mono" placeholder="2027" min="2024" max="2099" required>
+                    </div>
+                    <div class="flex items-center gap-2 pt-1">
+                        <input type="checkbox" id="fy_is_active" name="is_active" value="1" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                        <label for="fy_is_active" class="text-xs font-semibold select-none cursor-pointer" style="color: var(--color-neutral-700);">
+                            Jadikan Tahun Anggaran Aktif
+                        </label>
                     </div>
                     <button type="submit" class="sakdi-btn sakdi-btn-primary w-full">Tambah Tahun Anggaran</button>
                 </form>
