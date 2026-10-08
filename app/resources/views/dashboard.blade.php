@@ -6,7 +6,7 @@
 
     {{-- ── SMART NEW YEAR REMINDER BANNER (SUPERVISOR & ADMIN) ── --}}
     @if(isset($newYearNotice) && $newYearNotice)
-    <div x-data="{ showCloneModal: false }" class="relative">
+    <div x-data="{ showCloneModal: false, dismissed: false }" x-show="!dismissed" class="relative">
         <div class="relative overflow-hidden rounded-2xl p-5 sm:p-6 md:p-7 text-white shadow-lg transition-all"
              style="{{ $newYearNotice['type'] === 'warning' ? 'background: linear-gradient(135deg, #78350F 0%, #B45309 100%); border: 2px solid #F59E0B;' : 'background: linear-gradient(135deg, #0F2B48 0%, #1E3A8A 100%); border: 2px solid rgba(59, 130, 246, 0.4);' }}">
             
@@ -29,29 +29,34 @@
                     </p>
                 </div>
 
-                @if(in_array(auth()->user()->role, ['SUPERVISOR', 'ADMIN']))
                 <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap w-full sm:w-auto">
-                    @if(!empty($newYearNotice['target_has_structure']))
-                        <a href="{{ route('master.index', ['tab' => 'fiscal']) }}"
-                           class="sakdi-btn font-black text-xs sm:text-sm px-5 py-3 shadow-md w-full sm:w-auto text-center justify-center rounded-xl"
-                           style="background: #ffffff; color: #0F172A; border-color: #ffffff;">
-                            <span>⭐ Kelola di Master Data</span>
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                        </a>
-                    @else
-                        <button type="button"
-                                @click="showCloneModal = true"
-                                class="sakdi-btn font-black text-xs sm:text-sm px-5 py-3 shadow-md w-full sm:w-auto text-center justify-center rounded-xl cursor-pointer"
-                                style="{{ $newYearNotice['type'] === 'warning' ? 'background: #F59E0B; color: #FFFFFF; border-color: #D97706;' : 'background: var(--color-accent); color: #FFFFFF; border-color: var(--color-accent);' }}">
-                            <span>📋 Salin Struktur POK ke {{ $newYearNotice['target_year'] }}</span>
-                        </button>
-                        <a href="{{ route('master.index', ['tab' => 'fiscal']) }}"
-                           class="sakdi-btn sakdi-btn-ghost text-xs sm:text-sm px-4 py-3 text-white border border-white/20 hover:bg-white/10 rounded-xl">
-                            <span>Buka Master Data</span>
-                        </a>
+                    @if(in_array(auth()->user()->role, ['SUPERVISOR', 'ADMIN']))
+                        @if(!empty($newYearNotice['target_has_structure']))
+                            <a href="{{ route('master.index', ['tab' => 'fiscal']) }}"
+                               class="sakdi-btn font-black text-xs sm:text-sm px-5 py-3 shadow-md w-full sm:w-auto text-center justify-center rounded-xl"
+                               style="background: #ffffff; color: #0F172A; border-color: #ffffff;">
+                                <span>⭐ Kelola di Master Data</span>
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                            </a>
+                        @else
+                            <button type="button"
+                                    @click="showCloneModal = true"
+                                    class="sakdi-btn font-black text-xs sm:text-sm px-5 py-3 shadow-md w-full sm:w-auto text-center justify-center rounded-xl cursor-pointer"
+                                    style="{{ $newYearNotice['type'] === 'warning' ? 'background: #F59E0B; color: #FFFFFF; border-color: #D97706;' : 'background: var(--color-accent); color: #FFFFFF; border-color: var(--color-accent);' }}">
+                                <span>📋 Salin Struktur POK ke {{ $newYearNotice['target_year'] }}</span>
+                            </button>
+                            <a href="{{ route('master.index', ['tab' => 'fiscal']) }}"
+                               class="sakdi-btn sakdi-btn-ghost text-xs sm:text-sm px-4 py-3 text-white border border-white/20 hover:bg-white/10 rounded-xl">
+                                <span>Buka Master Data</span>
+                            </a>
+                        @endif
                     @endif
+
+                    {{-- Dismiss button --}}
+                    <button type="button" @click="dismissed = true" class="text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors ml-1 cursor-pointer" title="Tutup sementara pemberitahuan">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
-                @endif
             </div>
         </div>
 

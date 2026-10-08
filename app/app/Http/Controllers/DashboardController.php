@@ -64,12 +64,13 @@ class DashboardController extends Controller
                     'badge'                => "PERINGATAN TAHUN {$currentCalYear}",
                 ];
             } else {
-                // Memasuki Triwulan IV (Bulan Oktober - Desember): Rekomendasi persiapan DIPA tahun depan
+                // Memasuki periode H-2 / H-1 pergantian tahun (November s.d Desember): Rekomendasi persiapan DIPA tahun depan
                 $nextYear = $fy->year + 1;
                 $nextFy = FiscalYear::where('year', $nextYear)->first();
                 $nextHasStructure = $nextFy ? $nextFy->programs()->exists() : false;
 
-                if ((int) date('n') >= 10 && !$nextHasStructure) {
+                // Muncul pada H-2 bulan (November) dan H-1 bulan (Desember) jika struktur tahun berikutnya belum disiapkan
+                if ((int) date('n') >= 11 && !$nextHasStructure) {
                     $newYearNotice = [
                         'type'                 => 'info',
                         'title'                => "Persiapan DIPA Tahun Anggaran {$nextYear}",
