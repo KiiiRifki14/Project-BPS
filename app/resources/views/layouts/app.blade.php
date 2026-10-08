@@ -154,6 +154,21 @@
             </div>
         @endif
 
+        {{-- Validation Errors Flash --}}
+        @if($errors->any())
+            <div class="sakdi-alert sakdi-alert-error mb-6" role="alert">
+                <svg class="sakdi-alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div class="text-sm font-semibold">
+                    @foreach($errors->all() as $err)
+                        <div>{{ $err }}</div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         @yield('content')
     </main>
 

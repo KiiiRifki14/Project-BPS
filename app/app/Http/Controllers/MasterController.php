@@ -44,8 +44,10 @@ class MasterController extends Controller
     {
         $request->validate([
             'fiscal_year_id' => 'required|exists:fiscal_years,id',
-            'code'           => 'required|string|max:20',
+            'code'           => 'required|string|max:20|unique:programs,code',
             'name'           => 'required|string|max:255',
+        ], [
+            'code.unique' => 'Gagal: Kode Program [:input] sudah terdaftar. Kode Program wajib unik.',
         ]);
         Program::create($request->only('fiscal_year_id', 'code', 'name'));
         return back()->with('success', "Program [{$request->code}] berhasil ditambahkan.");
@@ -53,7 +55,7 @@ class MasterController extends Controller
 
     public function updateProgram(Request $request, Program $program)
     {
-        $request->validate(['code' => 'required|string|max:20', 'name' => 'required|string|max:255']);
+        $request->validate(['code' => 'required|string|max:20|unique:programs,code,' . $program->id, 'name' => 'required|string|max:255']);
         $program->update($request->only('code', 'name'));
         return back()->with('success', "Program [{$program->code}] berhasil diperbarui.");
     }
@@ -69,8 +71,10 @@ class MasterController extends Controller
     {
         $request->validate([
             'program_id' => 'required|exists:programs,id',
-            'code'       => 'required|string|max:20',
+            'code'       => 'required|string|max:20|unique:outputs,code',
             'name'       => 'required|string|max:255',
+        ], [
+            'code.unique' => 'Gagal: Kode Output [:input] sudah terdaftar. Kode Output wajib unik.',
         ]);
         Output::create($request->only('program_id', 'code', 'name'));
         return back()->with('success', "Output [{$request->code}] berhasil ditambahkan.");
@@ -81,8 +85,10 @@ class MasterController extends Controller
     {
         $request->validate([
             'output_id' => 'required|exists:outputs,id',
-            'code'      => 'required|string|max:30',
+            'code'      => 'required|string|max:30|unique:sub_outputs,code',
             'name'      => 'required|string|max:255',
+        ], [
+            'code.unique' => 'Gagal: Kode Sub-Output [:input] sudah terdaftar. Kode Sub-Output wajib unik.',
         ]);
         SubOutput::create($request->only('output_id', 'code', 'name'));
         return back()->with('success', "Sub-Output [{$request->code}] berhasil ditambahkan.");
@@ -93,8 +99,10 @@ class MasterController extends Controller
     {
         $request->validate([
             'sub_output_id' => 'required|exists:sub_outputs,id',
-            'code'          => 'required|string|max:20',
+            'code'          => 'required|string|max:20|unique:components,code',
             'name'          => 'required|string|max:255',
+        ], [
+            'code.unique' => 'Gagal: Kode Komponen [:input] sudah terdaftar. Kode Komponen wajib unik.',
         ]);
         Component::create($request->only('sub_output_id', 'code', 'name'));
         return back()->with('success', "Komponen [{$request->code}] berhasil ditambahkan.");
@@ -105,8 +113,10 @@ class MasterController extends Controller
     {
         $request->validate([
             'component_id' => 'required|exists:components,id',
-            'code'         => 'required|string|max:20',
+            'code'         => 'required|string|max:20|unique:sub_components,code',
             'name'         => 'required|string|max:255',
+        ], [
+            'code.unique' => 'Gagal: Kode Sub-Komponen [:input] sudah terdaftar. Kode Sub-Komponen wajib unik.',
         ]);
         SubComponent::create($request->only('component_id', 'code', 'name'));
         return back()->with('success', "Sub-Komponen [{$request->code}] berhasil ditambahkan.");
@@ -117,8 +127,10 @@ class MasterController extends Controller
     {
         $request->validate([
             'sub_component_id' => 'required|exists:sub_components,id',
-            'code'             => 'required|string|max:10',
+            'code'             => 'required|string|max:10|unique:accounts,code',
             'name'             => 'required|string|max:255',
+        ], [
+            'code.unique' => 'Gagal: Kode Akun [:input] sudah terdaftar. Kode Akun wajib unik.',
         ]);
         Account::create($request->only('sub_component_id', 'code', 'name'));
         return back()->with('success', "Akun [{$request->code}] berhasil ditambahkan.");
@@ -165,9 +177,15 @@ class MasterController extends Controller
 
         $request->validate([
             'account_id' => 'required|exists:accounts,id',
-            'code'       => 'required|string|max:10',
+            'code'       => 'required|string|max:10|unique:items,code',
             'name'       => 'required|string|max:255',
             'pagu'       => 'required|numeric|min:0',
+        ], [
+            'code.unique'        => 'Gagal menambahkan: Kode Item [:input] sudah terdaftar. Kode item kegiatan wajib unik (tidak boleh ada kode duplikat).',
+            'code.required'      => 'Kode item wajib diisi.',
+            'account_id.required'=> 'Akun POK wajib dipilih.',
+            'name.required'      => 'Nama item kegiatan wajib diisi.',
+            'pagu.required'      => 'Pagu anggaran wajib diisi.',
         ]);
         Item::create($request->only('account_id', 'code', 'name', 'pagu'));
         return back()->with('success', "Item [{$request->code}] berhasil ditambahkan. Kini tersedia di sidebar navigasi.");
