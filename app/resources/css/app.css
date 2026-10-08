@@ -563,11 +563,33 @@
     background: var(--color-bg-surface);
     border-radius: var(--r-xl);
     border: 1px solid var(--color-neutral-300);
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 100%;
     box-shadow: var(--shadow-1);
+    position: relative;
   }
+
+  /* Custom Slim Scrollbar for Table Wrapper */
+  .sakdi-table-wrapper::-webkit-scrollbar {
+    height: 7px;
+  }
+  .sakdi-table-wrapper::-webkit-scrollbar-track {
+    background: #F8FAFC;
+    border-radius: 4px;
+  }
+  .sakdi-table-wrapper::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+  }
+  .sakdi-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+
   .sakdi-table {
     width: 100%;
+    min-width: 680px;
     border-collapse: separate;
     border-spacing: 0;
   }
@@ -579,12 +601,12 @@
     font-weight: 700;
     color: var(--color-neutral-700);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     border-bottom: 1px solid var(--color-neutral-300);
     white-space: nowrap;
   }
   .sakdi-table td {
-    padding: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
     font-size: var(--text-sm);
     color: var(--color-neutral-700);
     border-bottom: 1px solid var(--color-neutral-100);

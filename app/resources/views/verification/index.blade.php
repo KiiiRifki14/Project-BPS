@@ -107,13 +107,13 @@
             <table class="sakdi-table">
                 <thead>
                     <tr>
-                        <th class="w-32 text-center">Kode Item</th>
-                        <th>Nama Kegiatan / Item POK</th>
-                        <th>Sub-Output / Akun</th>
-                        <th class="text-right">Pagu</th>
-                        <th class="text-center">Dokumen</th>
-                        <th class="text-center">Status</th>
-                        <th class="text-center w-48">Aksi</th>
+                        <th class="w-28 text-center whitespace-nowrap">Kode Item</th>
+                        <th class="min-w-[220px]">Nama Kegiatan / Item POK</th>
+                        <th class="min-w-[150px]">Sub-Output / Akun</th>
+                        <th class="text-right whitespace-nowrap min-w-[120px]">Pagu</th>
+                        <th class="text-center whitespace-nowrap min-w-[90px]">Dokumen</th>
+                        <th class="text-center whitespace-nowrap min-w-[110px]">Status</th>
+                        <th class="text-center w-48 whitespace-nowrap min-w-[160px]">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>

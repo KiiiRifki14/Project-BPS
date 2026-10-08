@@ -126,10 +126,10 @@
 
 
     {{-- ── MAIN WORKSPACE GRID ── --}}
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
 
         {{-- LEFT COLUMN: DOCUMENT LIST & DROPZONE --}}
-        <div class="lg:col-span-8 space-y-6">
+        <div class="xl:col-span-8 space-y-6">
 
             {{-- Upload Dropzone Form --}}
             @if(auth()->user()->canUpload())
@@ -422,7 +422,7 @@
         </div>
 
         {{-- RIGHT COLUMN: BENDAHARA ACTION CONTROL PANEL --}}
-        <div class="space-y-6 lg:col-span-4 lg:sticky lg:top-24">
+        <div class="space-y-6 xl:col-span-4 xl:sticky xl:top-24">
 
             {{-- Container Panel Verifikasi Bendahara --}}
             @if(auth()->user()->role === 'BENDAHARA' || auth()->user()->role === 'ADMIN')

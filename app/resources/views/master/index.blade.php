@@ -59,8 +59,8 @@
             <span class="sakdi-badge sakdi-badge-primary font-mono text-xs">{{ $items->total() }} Total Item</span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div class="lg:col-span-2 sakdi-table-wrapper">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+            <div class="xl:col-span-2 sakdi-table-wrapper">
                 <div class="px-6 py-4 border-b" style="background: var(--color-neutral-50);">
                     <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Daftar Item Kegiatan</h2>
                 </div>
@@ -120,7 +120,7 @@
             </div>
 
             {{-- Item Form Column --}}
-            <div class="sakdi-card p-6 lg:sticky lg:top-24"
+            <div class="sakdi-card p-6 xl:sticky xl:top-24"
                  x-data="{ 
                      editMode: false, 
                      editItem: null,
@@ -304,8 +304,8 @@
             <span class="sakdi-badge sakdi-badge-primary font-mono text-xs">{{ $accounts->total() }} Total Akun</span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div class="lg:col-span-2 sakdi-table-wrapper">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+            <div class="xl:col-span-2 sakdi-table-wrapper">
                 <div class="px-6 py-4 border-b flex items-center justify-between" style="background: var(--color-neutral-50);">
                     <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Daftar Akun POK</h2>
                 </div>
@@ -388,8 +388,8 @@
             <span class="sakdi-badge sakdi-badge-primary font-mono text-xs">{{ count($subComponents) }} Total Sub-Komponen</span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div class="lg:col-span-2 sakdi-table-wrapper">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+            <div class="xl:col-span-2 sakdi-table-wrapper">
                 <div class="px-6 py-4 border-b" style="background: var(--color-neutral-50);">
                     <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Daftar Sub-Komponen</h2>
                 </div>
@@ -461,8 +461,8 @@
             <span class="sakdi-badge sakdi-badge-primary font-mono text-xs">{{ count($components) }} Total Komponen</span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div class="lg:col-span-2 sakdi-table-wrapper">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+            <div class="xl:col-span-2 sakdi-table-wrapper">
                 <div class="px-6 py-4 border-b" style="background: var(--color-neutral-50);">
                     <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Daftar Komponen</h2>
                 </div>
@@ -534,8 +534,8 @@
             <span class="sakdi-badge sakdi-badge-primary font-mono text-xs">{{ count($subOutputs) }} Total Sub-Output</span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div class="lg:col-span-2 sakdi-table-wrapper">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+            <div class="xl:col-span-2 sakdi-table-wrapper">
                 <div class="px-6 py-4 border-b" style="background: var(--color-neutral-50);">
                     <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Daftar Sub-Output</h2>
                 </div>
@@ -607,8 +607,8 @@
             <span class="sakdi-badge sakdi-badge-primary font-mono text-xs">{{ count($outputs) }} Total Output</span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div class="lg:col-span-2 sakdi-table-wrapper">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+            <div class="xl:col-span-2 sakdi-table-wrapper">
                 <div class="px-6 py-4 border-b" style="background: var(--color-neutral-50);">
                     <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Daftar Output</h2>
                 </div>
@@ -680,8 +680,8 @@
             <span class="sakdi-badge sakdi-badge-primary font-mono text-xs">{{ count($fiscalYears) }} Total Tahun</span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div class="lg:col-span-2 sakdi-table-wrapper">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+            <div class="xl:col-span-2 sakdi-table-wrapper">
                 <div class="px-6 py-4 border-b" style="background: var(--color-neutral-50);">
                     <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Daftar Tahun Anggaran DIPA</h2>
                 </div>

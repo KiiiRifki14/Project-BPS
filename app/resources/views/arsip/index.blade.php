@@ -231,13 +231,13 @@
             <table class="sakdi-table">
                 <thead>
                     <tr>
-                        <th class="w-32 text-center">Kode Item</th>
-                        <th>Nama Kegiatan / Item POK</th>
-                        <th>Akun / Sub-Output</th>
-                        <th class="text-right">Pagu Anggaran</th>
-                        <th class="text-center">Berkas SPJ</th>
-                        <th class="text-center">Status Verifikasi</th>
-                        <th class="text-center w-40">Aksi</th>
+                        <th class="w-28 text-center whitespace-nowrap">Kode Item</th>
+                        <th class="min-w-[220px]">Nama Kegiatan / Item POK</th>
+                        <th class="min-w-[150px]">Akun / Sub-Output</th>
+                        <th class="text-right whitespace-nowrap min-w-[120px]">Pagu Anggaran</th>
+                        <th class="text-center whitespace-nowrap min-w-[90px]">Berkas SPJ</th>
+                        <th class="text-center whitespace-nowrap min-w-[110px]">Status Verifikasi</th>
+                        <th class="text-center w-40 whitespace-nowrap min-w-[140px]">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>

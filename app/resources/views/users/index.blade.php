@@ -31,10 +31,10 @@
     </div>
 
     {{-- Grid Layout --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
 
         {{-- Left: Users Table --}}
-        <div class="lg:col-span-2 sakdi-table-wrapper">
+        <div class="xl:col-span-2 sakdi-table-wrapper">
             <div class="px-6 py-4 flex items-center justify-between"
                  style="background: var(--color-neutral-50); border-bottom: 1px solid var(--color-neutral-300);">
                 <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">Daftar Pengguna Aktif ({{ $users->total() }} Total User)</h2>
@@ -44,10 +44,10 @@
                 <table class="sakdi-table">
                     <thead>
                         <tr>
-                            <th>NIP / Username</th>
+                            <th class="w-32 whitespace-nowrap">NIP / Username</th>
                             <th>Nama Lengkap</th>
-                            <th>Role Access</th>
-                            <th class="text-center w-80">Aksi</th>
+                            <th class="w-28 text-center whitespace-nowrap">Role Access</th>
+                            <th class="text-center w-64 whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,7 +67,7 @@
                                     @endif
                                 </div>
                             </td>
-                            <td>
+                            <td class="text-center whitespace-nowrap">
                                 @php
                                     $roleBadge = match($user->role) {
                                         'ADMIN'      => 'sakdi-badge-error',
@@ -81,27 +81,25 @@
                                 </span>
                             </td>
                             <td class="text-center whitespace-nowrap">
-                                <div class="grid grid-cols-3 gap-2 w-[275px] mx-auto items-center">
-                                    <button type="button" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm w-full justify-center"
+                                <div class="flex items-center justify-center gap-1.5 flex-nowrap">
+                                    <button type="button" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm"
                                             @click="$dispatch('open-edit-user', {{ json_encode(['id' => $user->id, 'name' => $user->name, 'role' => $user->role]) }})">
                                         ✏️ Edit
                                     </button>
 
-                                    <button type="button" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm w-full justify-center"
+                                    <button type="button" class="sakdi-btn sakdi-btn-secondary sakdi-btn-sm"
                                             @click="$dispatch('open-reset-pw', {{ json_encode(['id' => $user->id, 'name' => $user->name]) }})">
                                         🔑 Reset
                                     </button>
 
                                     @if($user->id !== auth()->id())
-                                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="w-full"
+                                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline-block m-0"
                                           onsubmit="return confirm('Hapus pengguna {{ $user->name }}?')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="sakdi-btn sakdi-btn-danger sakdi-btn-sm w-full justify-center">
+                                        <button type="submit" class="sakdi-btn sakdi-btn-danger sakdi-btn-sm">
                                             🗑️ Hapus
                                         </button>
                                     </form>
-                                    @else
-                                    <div class="w-full"></div>
                                     @endif
                                 </div>
                             </td>

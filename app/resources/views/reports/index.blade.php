@@ -117,98 +117,129 @@
         </div>
     </div>
 
-    {{-- Detailed Sub-Output Breakdown List --}}
-    <div class="sakdi-card w-full overflow-hidden p-0">
+    {{-- Detailed Sub-Output Breakdown Table --}}
+    <div class="sakdi-table-wrapper w-full">
 
         <div class="px-4 sm:px-6 py-4 sm:py-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3"
              style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">
-            <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">
-                Rekapitulasi Berkas per Sub-Output (Periode {{ $month ? $months[(int)$month] : '1 Tahun Full' }} {{ $year }})
-            </h2>
-            <span class="sakdi-badge sakdi-badge-neutral font-mono self-start sm:self-auto">
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <h2 class="text-sm font-extrabold" style="color: var(--color-neutral-900);">
+                    Rekapitulasi Berkas per Sub-Output (Periode {{ $month ? $months[(int)$month] : '1 Tahun Full' }} {{ $year }})
+                </h2>
+            </div>
+            <span class="sakdi-badge sakdi-badge-primary font-mono text-xs self-start sm:self-auto">
                 Total {{ $subOutputs->total() }} Sub-Output
             </span>
         </div>
 
-        <div class="divide-y" style="border-color: var(--color-neutral-100);">
-            @foreach($subOutputs as $so)
-            @php
-                $allItems = collect();
-                foreach($so->components as $c) {
-                    foreach($c->subComponents as $sc) {
-                        foreach($sc->accounts as $a) {
-                            foreach($a->items as $i) {
-                                $allItems->push($i);
+        <div class="overflow-x-auto">
+            <table class="sakdi-table">
+                <thead>
+                    <tr>
+                        <th class="w-28 text-center whitespace-nowrap">Kode</th>
+                        <th class="min-w-[220px]">Nama Sub-Output</th>
+                        <th class="text-center whitespace-nowrap w-24">Item</th>
+                        <th class="text-right whitespace-nowrap min-w-[130px]">Pagu DIPA</th>
+                        <th class="text-right whitespace-nowrap min-w-[140px]">Disetujui (Cair)</th>
+                        <th class="text-center whitespace-nowrap min-w-[130px]">Status SPJ</th>
+                        <th class="text-center whitespace-nowrap w-28">Serapan (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($subOutputs as $so)
+                    @php
+                        $allItems = collect();
+                        foreach($so->components as $c) {
+                            foreach($c->subComponents as $sc) {
+                                foreach($sc->accounts as $a) {
+                                    foreach($a->items as $i) {
+                                        $allItems->push($i);
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-                $totalItemsCount = $allItems->count();
-                $totalPagu = $allItems->sum('pagu');
+                        $totalItemsCount = $allItems->count();
+                        $totalPagu = $allItems->sum('pagu');
 
-                if ($range) {
-                    $startTime = strtotime($range[0]);
-                    $endTime   = strtotime($range[1]);
+                        if ($range) {
+                            $startTime = strtotime($range[0]);
+                            $endTime   = strtotime($range[1]);
 
-                    $approvedItems = $allItems->filter(function ($it) use ($startTime, $endTime) {
-                        if ($it->verification_status !== 'APPROVED') return false;
-                        $t = strtotime($it->updated_at);
-                        return $t >= $startTime && $t <= $endTime;
-                    });
+                            $approvedItems = $allItems->filter(function ($it) use ($startTime, $endTime) {
+                                if ($it->verification_status !== 'APPROVED') return false;
+                                $t = strtotime($it->updated_at);
+                                return $t >= $startTime && $t <= $endTime;
+                            });
 
-                    $rejectedItems = $allItems->filter(function ($it) use ($startTime, $endTime) {
-                        if ($it->verification_status !== 'REJECTED') return false;
-                        $t = strtotime($it->updated_at);
-                        return $t >= $startTime && $t <= $endTime;
-                    });
-                } else {
-                    $approvedItems = $allItems->where('verification_status', 'APPROVED');
-                    $rejectedItems = $allItems->where('verification_status', 'REJECTED');
-                }
+                            $rejectedItems = $allItems->filter(function ($it) use ($startTime, $endTime) {
+                                if ($it->verification_status !== 'REJECTED') return false;
+                                $t = strtotime($it->updated_at);
+                                return $t >= $startTime && $t <= $endTime;
+                            });
+                        } else {
+                            $approvedItems = $allItems->where('verification_status', 'APPROVED');
+                            $rejectedItems = $allItems->where('verification_status', 'REJECTED');
+                        }
 
-                $approved = $approvedItems->count();
-                $approvedPagu = $approvedItems->sum('pagu');
-                $rejected = $rejectedItems->count();
-                $pending = max(0, $totalItemsCount - $approved - $rejected);
-                $percent = $totalPagu > 0 ? round(($approvedPagu / $totalPagu) * 100, 1) : 0;
-            @endphp
-            <div class="p-6 hover:bg-slate-50 transition-colors">
-                <div class="flex items-center justify-between flex-wrap gap-4">
-                    <div>
-                        <div class="flex items-center gap-3">
-                            <span class="num-mono text-xs font-bold px-3 py-1 rounded-lg"
+                        $approved = $approvedItems->count();
+                        $approvedPagu = $approvedItems->sum('pagu');
+                        $rejected = $rejectedItems->count();
+                        $pending = max(0, $totalItemsCount - $approved - $rejected);
+                        $percent = $totalPagu > 0 ? round(($approvedPagu / $totalPagu) * 100, 1) : 0;
+                    @endphp
+                    <tr>
+                        <td class="text-center whitespace-nowrap">
+                            <span class="num-mono text-xs font-bold px-3 py-1.5 rounded-lg"
                                   style="color: var(--color-primary-900); background: var(--color-primary-50); border: 1px solid var(--color-primary-100);">
                                 {{ $so->code }}
                             </span>
-                            <span class="text-base font-extrabold" style="color: var(--color-neutral-900);">{{ $so->name }}</span>
-                        </div>
-                        <div class="text-xs mt-2" style="color: var(--color-neutral-500);">
-                            Total {{ $totalItemsCount }} item kegiatan POK • Total Pagu DIPA: <strong class="num-mono" style="color: var(--color-positive-700);">Rp {{ number_format($totalPagu, 0, ',', '.') }}</strong>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="sakdi-badge sakdi-badge-success">
-                            <span>✓ {{ $approved }} Approved (Rp {{ number_format($approvedPagu, 0, ',', '.') }})</span>
-                        </span>
-
-                        <span class="sakdi-badge sakdi-badge-warning">
-                            <span>⏳ {{ $pending }} Pending</span>
-                        </span>
-
-                        @if($rejected > 0)
-                            <span class="sakdi-badge sakdi-badge-error">
-                                <span>✕ {{ $rejected }} Rejected</span>
-                            </span>
-                        @endif
-
-                        <span class="sakdi-badge sakdi-badge-neutral font-mono font-bold">
-                            <span>📊 Serapan {{ $percent }}%</span>
-                        </span>
-                    </div>
-                </div>
-            </div>
-            @endforeach
+                        </td>
+                        <td>
+                            <div class="font-extrabold text-sm leading-snug" style="color: var(--color-neutral-900);">
+                                {{ $so->name }}
+                            </div>
+                        </td>
+                        <td class="text-center whitespace-nowrap num-mono font-bold text-xs">
+                            {{ $totalItemsCount }}
+                        </td>
+                        <td class="text-right whitespace-nowrap num-mono font-bold text-xs" style="color: var(--color-neutral-900);">
+                            Rp {{ number_format($totalPagu, 0, ',', '.') }}
+                        </td>
+                        <td class="text-right whitespace-nowrap num-mono font-bold text-xs" style="color: var(--color-positive-700);">
+                            Rp {{ number_format($approvedPagu, 0, ',', '.') }}
+                        </td>
+                        <td class="text-center whitespace-nowrap">
+                            <div class="inline-flex items-center gap-1.5 flex-nowrap">
+                                <span class="sakdi-badge sakdi-badge-success text-[11px]" title="Approved">
+                                    ✓ {{ $approved }}
+                                </span>
+                                <span class="sakdi-badge sakdi-badge-warning text-[11px]" title="Pending">
+                                    ⏳ {{ $pending }}
+                                </span>
+                                @if($rejected > 0)
+                                <span class="sakdi-badge sakdi-badge-error text-[11px]" title="Rejected">
+                                    ✕ {{ $rejected }}
+                                </span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="text-center whitespace-nowrap">
+                            <div class="inline-flex items-center gap-1">
+                                <span class="font-mono font-black text-xs {{ $percent >= 80 ? 'text-emerald-700' : ($percent >= 50 ? 'text-blue-700' : 'text-slate-700') }}">
+                                    {{ $percent }}%
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" class="text-center py-12 text-slate-500 text-sm">
+                            Tidak ada data sub-output untuk periode yang dipilih.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
         <div class="px-6 py-4 border-t" style="background: var(--color-neutral-50); border-color: var(--color-neutral-300);">

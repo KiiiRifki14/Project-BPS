@@ -272,18 +272,18 @@
             <table class="sakdi-table">
                 <thead>
                     <tr>
-                        <th class="w-32 text-center">Kode Item</th>
-                        <th>Nama Kegiatan / Item POK</th>
-                        <th>Sub-Output / Akun</th>
-                        <th class="text-right">
+                        <th class="w-28 text-center whitespace-nowrap">Kode Item</th>
+                        <th class="min-w-[220px]">Nama Kegiatan / Item POK</th>
+                        <th class="min-w-[150px]">Sub-Output / Akun</th>
+                        <th class="text-right whitespace-nowrap min-w-[120px]">
                             <div class="sakdi-tooltip-wrapper inline-block">
                                 Pagu Anggaran
                                 <span class="sakdi-tooltip-content">Nilai anggaran tercantum dalam DIPA/POK. Klik item untuk detail.</span>
                             </div>
                         </th>
-                        <th class="text-center">Dokumen</th>
-                        <th class="text-center">Status</th>
-                        <th class="text-center w-36">Aksi</th>
+                        <th class="text-center whitespace-nowrap min-w-[90px]">Dokumen</th>
+                        <th class="text-center whitespace-nowrap min-w-[110px]">Status</th>
+                        <th class="text-center w-36 whitespace-nowrap min-w-[120px]">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
