@@ -271,6 +271,163 @@ class DatabaseSeeder extends Seeder
         Item::updateOrCreate(['account_id' => $acc524114_fan->id, 'code' => '001351'],
             ['name' => 'Paket Meeting Fullboard pelatihan petugas pendataan lapangan SE2026', 'pagu' => 185760000]);
 
-        $this->command->info('✅ Database seeded: ' . User::count() . ' users, ' . Item::count() . ' items dalam hirarki POK GG.2902.');
+        // ─────────────────────────────────────────────
+        // 7. DATA SIMULASI REALISASI LINTAS BULAN (2026)
+        // ─────────────────────────────────────────────
+        $operator  = User::where('nip_username', 'operator')->first();
+        $bendahara = User::where('nip_username', 'bendahara')->first();
+
+        $simulations = [
+            // BULAN JANUARI
+            [
+                'code'       => '000733',
+                'status'     => 'APPROVED',
+                'created_at' => '2026-01-10 09:00:00',
+                'updated_at' => '2026-01-20 14:30:00',
+                'doc'        => 'BAPP_Honor_Jan2026.pdf',
+                'doc_label'  => 'BAPP Honor',
+                'log_desc'   => 'Pencairan disetujui oleh Bendahara Pengeluaran (Pak Ahmad). Dokumen terverifikasi: "BAPP_Honor_Jan2026.pdf".'
+            ],
+            // BULAN MARET
+            [
+                'code'       => '001363',
+                'status'     => 'APPROVED',
+                'created_at' => '2026-03-05 10:00:00',
+                'updated_at' => '2026-03-12 11:15:00',
+                'doc'        => 'Kuitansi_Bahan_Maret2026.pdf',
+                'doc_label'  => 'Kuitansi Bahan',
+                'log_desc'   => 'Pencairan disetujui oleh Bendahara Pengeluaran (Pak Ahmad). Dokumen terverifikasi: "Kuitansi_Bahan_Maret2026.pdf".'
+            ],
+            // BULAN MEI
+            [
+                'code'       => '001126',
+                'status'     => 'APPROVED',
+                'created_at' => '2026-05-10 08:30:00',
+                'updated_at' => '2026-05-22 13:00:00',
+                'doc'        => 'Faktur_Bahan_Publisitas_Mei2026.pdf',
+                'doc_label'  => 'Faktur Publisitas',
+                'log_desc'   => 'Pencairan disetujui oleh Bendahara Pengeluaran (Pak Ahmad). Dokumen terverifikasi: "Faktur_Bahan_Publisitas_Mei2026.pdf".'
+            ],
+            [
+                'code'       => '000699',
+                'status'     => 'REJECTED',
+                'note'       => 'Kuitansi belum dibubuhi meterai dan tanda tangan penyedia jasa desain.',
+                'created_at' => '2026-05-15 09:00:00',
+                'updated_at' => '2026-05-28 16:45:00',
+                'doc'        => 'Draft_Desain_Mei2026.pdf',
+                'doc_label'  => 'Draft Kontrak Desain',
+                'log_desc'   => 'Pencairan ditolak oleh Bendahara Pengeluaran (Pak Ahmad). Alasan: "Kuitansi belum dibubuhi meterai dan tanda tangan penyedia jasa desain."'
+            ],
+            // BULAN JUNI (Target pengujian user!)
+            [
+                'code'       => '001211',
+                'status'     => 'APPROVED',
+                'created_at' => '2026-06-05 10:00:00',
+                'updated_at' => '2026-06-15 14:00:00',
+                'doc'        => 'SPJ_Honor_Petugas_Juni2026.pdf',
+                'doc_label'  => 'SPJ Honor Petugas Lapangan',
+                'log_desc'   => 'Pencairan disetujui oleh Bendahara Pengeluaran (Pak Ahmad). Dokumen terverifikasi: "SPJ_Honor_Petugas_Juni2026.pdf".'
+            ],
+            [
+                'code'       => '000701',
+                'status'     => 'APPROVED',
+                'created_at' => '2026-06-08 09:00:00',
+                'updated_at' => '2026-06-18 11:30:00',
+                'doc'        => 'Kuitansi_Kerangka_Geospasial_Juni2026.pdf',
+                'doc_label'  => 'Kuitansi Bahan Habis Pakai',
+                'log_desc'   => 'Pencairan disetujui oleh Bendahara Pengeluaran (Pak Ahmad). Dokumen terverifikasi: "Kuitansi_Kerangka_Geospasial_Juni2026.pdf".'
+            ],
+            [
+                'code'       => '001207',
+                'status'     => 'APPROVED',
+                'created_at' => '2026-06-10 11:00:00',
+                'updated_at' => '2026-06-24 15:30:00',
+                'doc'        => 'Daftar_Honor_FAN_Juni2026.pdf',
+                'doc_label'  => 'Daftar Honor Petugas FAN',
+                'log_desc'   => 'Pencairan disetujui oleh Bendahara Pengeluaran (Pak Ahmad). Dokumen terverifikasi: "Daftar_Honor_FAN_Juni2026.pdf".'
+            ],
+            [
+                'code'       => '000698',
+                'status'     => 'REJECTED',
+                'note'       => 'Surat Tugas dan form verifikasi lapangan belum dilengkapi tanda tangan supervisor.',
+                'created_at' => '2026-06-12 13:00:00',
+                'updated_at' => '2026-06-25 16:00:00',
+                'doc'        => 'Laporan_TaskForce_Juni2026.pdf',
+                'doc_label'  => 'Laporan Task Force',
+                'log_desc'   => 'Pencairan ditolak oleh Bendahara Pengeluaran (Pak Ahmad). Alasan: "Surat Tugas dan form verifikasi lapangan belum dilengkapi tanda tangan supervisor."'
+            ],
+            // BULAN AGUSTUS
+            [
+                'code'       => '001340',
+                'status'     => 'APPROVED',
+                'created_at' => '2026-08-05 08:30:00',
+                'updated_at' => '2026-08-18 10:45:00',
+                'doc'        => 'BAPP_Peta_Wilkerstat_Ags2026.pdf',
+                'doc_label'  => 'BAPP Pengolahan Peta',
+                'log_desc'   => 'Pencairan disetujui oleh Bendahara Pengeluaran (Pak Ahmad). Dokumen terverifikasi: "BAPP_Peta_Wilkerstat_Ags2026.pdf".'
+            ],
+            // BULAN OKTOBER
+            [
+                'code'       => '001346',
+                'status'     => 'APPROVED',
+                'created_at' => '2026-10-01 09:00:00',
+                'updated_at' => '2026-10-06 14:20:00',
+                'doc'        => 'SPJ_Enumerator_Okt2026.pdf',
+                'doc_label'  => 'SPJ Enumerator Gelombang 1',
+                'log_desc'   => 'Pencairan disetujui oleh Bendahara Pengeluaran (Pak Ahmad). Dokumen terverifikasi: "SPJ_Enumerator_Okt2026.pdf".'
+            ],
+        ];
+
+        foreach ($simulations as $sim) {
+            $item = Item::where('code', $sim['code'])->first();
+            if (!$item) continue;
+
+            // Update status dan timestamp langsung via DB agar tidak ter-overwrite
+            \DB::table('items')->where('id', $item->id)->update([
+                'verification_status' => $sim['status'],
+                'rejection_note'      => $sim['note'] ?? null,
+                'created_at'          => $sim['created_at'],
+                'updated_at'          => $sim['updated_at'],
+            ]);
+
+            // Buat berkas dummy jika belum ada
+            $storedName = \Illuminate\Support\Str::uuid() . '.pdf';
+            $filePath   = 'documents/' . $storedName;
+
+            \Illuminate\Support\Facades\Storage::disk('private')->put(
+                $filePath,
+                "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj 3 0 obj<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Resources<<>>>>endobj\nxref\n0 4\n0000000000 65535 f\n0000000009 00000 n\n0000000052 00000 n\n0000000102 00000 n\ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n185\n%%EOF"
+            );
+
+            // Bersihkan dokumen lama untuk item ini agar idempotent
+            \DB::table('documents')->where('item_id', $item->id)->delete();
+            \DB::table('documents')->insert([
+                'item_id'             => $item->id,
+                'file_name'           => $sim['doc'],
+                'stored_file_name'    => $storedName,
+                'file_path'           => $filePath,
+                'file_size'           => 1024,
+                'file_type'           => 'pdf',
+                'uploaded_by_user_id' => $operator->id,
+                'label'               => $sim['doc_label'],
+                'is_checked'          => $sim['status'] === 'APPROVED',
+                'checked_by_user_id'  => $sim['status'] === 'APPROVED' ? $bendahara->id : null,
+                'checked_at'          => $sim['status'] === 'APPROVED' ? $sim['updated_at'] : null,
+                'created_at'          => $sim['created_at'],
+                'updated_at'          => $sim['updated_at'],
+            ]);
+
+            // Audit log
+            \DB::table('activity_logs')->insert([
+                'item_id'     => $item->id,
+                'user_id'     => $bendahara->id,
+                'action'      => $sim['status'] === 'APPROVED' ? 'VERIFY_APPROVED' : 'VERIFY_REJECTED',
+                'description' => $sim['log_desc'],
+                'created_at'  => $sim['updated_at'],
+                'updated_at'  => $sim['updated_at'],
+            ]);
+        }
+
+        $this->command->info('✅ Database seeded: ' . User::count() . ' users, ' . Item::count() . ' items dalam hirarki POK GG.2902 (lengkap dengan data simulasi lintas bulan).');
     }
 }

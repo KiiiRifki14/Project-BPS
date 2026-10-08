@@ -143,10 +143,34 @@
                         }
                     }
                 }
-                $approved = $allItems->where('verification_status', 'APPROVED')->count();
-                $pending = $allItems->where('verification_status', 'PENDING')->count();
-                $rejected = $allItems->where('verification_status', 'REJECTED')->count();
+                $totalItemsCount = $allItems->count();
                 $totalPagu = $allItems->sum('pagu');
+
+                if ($range) {
+                    $startTime = strtotime($range[0]);
+                    $endTime   = strtotime($range[1]);
+
+                    $approvedItems = $allItems->filter(function ($it) use ($startTime, $endTime) {
+                        if ($it->verification_status !== 'APPROVED') return false;
+                        $t = strtotime($it->updated_at);
+                        return $t >= $startTime && $t <= $endTime;
+                    });
+
+                    $rejectedItems = $allItems->filter(function ($it) use ($startTime, $endTime) {
+                        if ($it->verification_status !== 'REJECTED') return false;
+                        $t = strtotime($it->updated_at);
+                        return $t >= $startTime && $t <= $endTime;
+                    });
+                } else {
+                    $approvedItems = $allItems->where('verification_status', 'APPROVED');
+                    $rejectedItems = $allItems->where('verification_status', 'REJECTED');
+                }
+
+                $approved = $approvedItems->count();
+                $approvedPagu = $approvedItems->sum('pagu');
+                $rejected = $rejectedItems->count();
+                $pending = max(0, $totalItemsCount - $approved - $rejected);
+                $percent = $totalPagu > 0 ? round(($approvedPagu / $totalPagu) * 100, 1) : 0;
             @endphp
             <div class="p-6 hover:bg-slate-50 transition-colors">
                 <div class="flex items-center justify-between flex-wrap gap-4">
@@ -159,13 +183,13 @@
                             <span class="text-base font-extrabold" style="color: var(--color-neutral-900);">{{ $so->name }}</span>
                         </div>
                         <div class="text-xs mt-2" style="color: var(--color-neutral-500);">
-                            Total {{ $allItems->count() }} item kegiatan • Total Pagu: <strong class="num-mono" style="color: var(--color-positive-700);">Rp {{ number_format($totalPagu, 0, ',', '.') }}</strong>
+                            Total {{ $totalItemsCount }} item kegiatan POK • Total Pagu DIPA: <strong class="num-mono" style="color: var(--color-positive-700);">Rp {{ number_format($totalPagu, 0, ',', '.') }}</strong>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
                         <span class="sakdi-badge sakdi-badge-success">
-                            <span>✓ {{ $approved }} Approved</span>
+                            <span>✓ {{ $approved }} Approved (Rp {{ number_format($approvedPagu, 0, ',', '.') }})</span>
                         </span>
 
                         <span class="sakdi-badge sakdi-badge-warning">
@@ -177,6 +201,10 @@
                                 <span>✕ {{ $rejected }} Rejected</span>
                             </span>
                         @endif
+
+                        <span class="sakdi-badge sakdi-badge-neutral font-mono font-bold">
+                            <span>📊 Serapan {{ $percent }}%</span>
+                        </span>
                     </div>
                 </div>
             </div>

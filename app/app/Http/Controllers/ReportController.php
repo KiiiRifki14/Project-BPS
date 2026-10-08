@@ -17,24 +17,29 @@ class ReportController extends Controller
 
         $fiscalYears = FiscalYear::orderBy('year', 'desc')->get();
 
-        // Helper to apply date filters
-        $applyFilters = function ($query) use ($year, $month, $week) {
-            $query->whereHas('account.subComponent.component.subOutput.output.program.fiscalYear', function ($q) use ($year) {
-                $q->where('year', $year);
-            });
+        // 1. Base query untuk seluruh item dalam Tahun Anggaran (Plafon POK tidak hilang)
+        $fiscalYearItemsQuery = Item::whereHas('account.subComponent.component.subOutput.output.program.fiscalYear', function ($q) use ($year) {
+            $q->where('year', $year);
+        });
 
-            $this->applyDateRangeFilter($query, $year, $month, $week);
+        $totalItems = (clone $fiscalYearItemsQuery)->count();
+        $totalPagu  = (clone $fiscalYearItemsQuery)->sum('pagu');
 
-            return $query;
-        };
+        // 2. Filter rentang tanggal jika bulan dipilih
+        $range = $this->getDateRange($year, $month, $week);
 
-        $itemsQuery    = $applyFilters(Item::query());
-        $totalItems    = (clone $itemsQuery)->count();
-        $totalPagu     = (clone $itemsQuery)->sum('pagu');
-        $approvedItems = (clone $itemsQuery)->where('verification_status', 'APPROVED')->count();
-        $approvedPagu  = (clone $itemsQuery)->where('verification_status', 'APPROVED')->sum('pagu');
-        $pendingItems  = (clone $itemsQuery)->where('verification_status', 'PENDING')->count();
-        $rejectedItems = (clone $itemsQuery)->where('verification_status', 'REJECTED')->count();
+        if ($range) {
+            $approvedQuery = (clone $fiscalYearItemsQuery)->where('verification_status', 'APPROVED')->whereBetween('updated_at', $range);
+            $rejectedQuery = (clone $fiscalYearItemsQuery)->where('verification_status', 'REJECTED')->whereBetween('updated_at', $range);
+        } else {
+            $approvedQuery = (clone $fiscalYearItemsQuery)->where('verification_status', 'APPROVED');
+            $rejectedQuery = (clone $fiscalYearItemsQuery)->where('verification_status', 'REJECTED');
+        }
+
+        $approvedItems = (clone $approvedQuery)->count();
+        $approvedPagu  = (clone $approvedQuery)->sum('pagu');
+        $rejectedItems = (clone $rejectedQuery)->count();
+        $pendingItems  = max(0, $totalItems - $approvedItems - $rejectedItems);
 
         $summary = [
             'total_items'    => $totalItems,
@@ -45,13 +50,12 @@ class ReportController extends Controller
             'rejected_items' => $rejectedItems,
         ];
 
+        // 3. Eager load seluruh hierarki sub-output untuk tahun anggaran ini
         $subOutputs = SubOutput::whereHas('output.program.fiscalYear', function ($q) use ($year) {
             $q->where('year', $year);
-        })->with(['components.subComponents.accounts.items' => function ($q) use ($year, $month, $week) {
-            $this->applyDateRangeFilter($q, $year, $month, $week);
-        }])->paginate(15);
+        })->with(['components.subComponents.accounts.items'])->paginate(15);
 
-        return view('reports.index', compact('subOutputs', 'summary', 'fiscalYears', 'year', 'month', 'week'));
+        return view('reports.index', compact('subOutputs', 'summary', 'fiscalYears', 'year', 'month', 'week', 'range'));
     }
 
     /**
@@ -76,11 +80,11 @@ class ReportController extends Controller
             }
         }
 
+        $range = $this->getDateRange($year, $month, $week);
+
         $subOutputs = SubOutput::whereHas('output.program.fiscalYear', function ($q) use ($year) {
             $q->where('year', $year);
-        })->with(['output.program', 'components.subComponents.accounts.items' => function ($q) use ($year, $month, $week) {
-            $this->applyDateRangeFilter($q, $year, $month, $week);
-        }])->get();
+        })->with(['output.program', 'components.subComponents.accounts.items'])->get();
 
         $filename = "Rekap_Keuangan_BPS_Subang_" . date('Ymd_His') . ".csv";
 
@@ -92,7 +96,7 @@ class ReportController extends Controller
             "Expires" => "0"
         ];
 
-        $callback = function () use ($subOutputs, $periodeText) {
+        $callback = function () use ($subOutputs, $periodeText, $range) {
             $file = fopen('php://output', 'w');
             // BOM UTF-8 untuk Excel
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
@@ -101,7 +105,6 @@ class ReportController extends Controller
 
             // Helper: tulis baris dengan delimiter ;
             $writeRow = function ($row) use ($file) {
-                // Bungkus setiap sel dengan quote agar aman dari koma/titik-koma
                 $escaped = array_map(function ($cell) {
                     $cell = (string) $cell;
                     return '"' . str_replace('"', '""', $cell) . '"';
@@ -148,12 +151,32 @@ class ReportController extends Controller
 
                 $totalItemsCount = $items->count();
                 $totalPagu = $items->sum('pagu');
-                $approvedItems = $items->where('verification_status', 'APPROVED');
+
+                if ($range) {
+                    $startTime = strtotime($range[0]);
+                    $endTime   = strtotime($range[1]);
+
+                    $approvedItems = $items->filter(function ($it) use ($startTime, $endTime) {
+                        if ($it->verification_status !== 'APPROVED') return false;
+                        $t = strtotime($it->updated_at);
+                        return $t >= $startTime && $t <= $endTime;
+                    });
+
+                    $rejectedItems = $items->filter(function ($it) use ($startTime, $endTime) {
+                        if ($it->verification_status !== 'REJECTED') return false;
+                        $t = strtotime($it->updated_at);
+                        return $t >= $startTime && $t <= $endTime;
+                    });
+                } else {
+                    $approvedItems = $items->where('verification_status', 'APPROVED');
+                    $rejectedItems = $items->where('verification_status', 'REJECTED');
+                }
+
                 $approvedCount = $approvedItems->count();
-                $approvedPagu = $approvedItems->sum('pagu');
-                $pendingCount = $items->where('verification_status', 'PENDING')->count();
-                $rejectedCount = $items->where('verification_status', 'REJECTED')->count();
-                $percent = $totalPagu > 0 ? round(($approvedPagu / $totalPagu) * 100, 2) : 0;
+                $approvedPagu  = $approvedItems->sum('pagu');
+                $rejectedCount = $rejectedItems->count();
+                $pendingCount  = max(0, $totalItemsCount - $approvedCount - $rejectedCount);
+                $percent       = $totalPagu > 0 ? round(($approvedPagu / $totalPagu) * 100, 2) : 0;
 
                 $grandTotalPagu += $totalPagu;
                 $grandApprovedPagu += $approvedPagu;
@@ -165,12 +188,12 @@ class ReportController extends Controller
                     $so->name,
                     ($so->output->program->code ?? '') . ' / ' . ($so->output->code ?? ''),
                     $totalItemsCount,
-                    number_format($totalPagu, 0, ',', '.'),          // ⭐ tanpa desimal
+                    number_format($totalPagu, 0, ',', '.'),
                     $approvedCount,
                     number_format($approvedPagu, 0, ',', '.'),
                     $pendingCount,
                     $rejectedCount,
-                    number_format($percent, 2, ',', '.') . '%'       // ⭐ pakai koma untuk desimal
+                    number_format($percent, 2, ',', '.') . '%'
                 ]);
             }
 
@@ -197,13 +220,13 @@ class ReportController extends Controller
     }
 
     /**
-     * Cross-database date range filter (PostgreSQL, MySQL, SQLite compatible).
+     * Get start and end date for filtering [startDate, endDate], or null if no month selected.
      */
-    private function applyDateRangeFilter($query, $year, $month, $week)
+    private function getDateRange($year, $month, $week): ?array
     {
         $year = (int) $year;
         if (!$month) {
-            return;
+            return null;
         }
 
         $month = (int) $month;
@@ -219,6 +242,6 @@ class ReportController extends Controller
         $startDate = sprintf('%04d-%02d-%02d 00:00:00', $year, $month, $startDay);
         $endDate   = sprintf('%04d-%02d-%02d 23:59:59', $year, $month, $endDay);
 
-        $query->whereBetween('updated_at', [$startDate, $endDate]);
+        return [$startDate, $endDate];
     }
 }

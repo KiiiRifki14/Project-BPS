@@ -347,6 +347,27 @@ class BpsSystemTest extends TestCase
         $this->assertTrue(str_contains($response->headers->get('content-type'), 'text/csv'));
     }
 
+    public function test_report_filter_preserves_total_pok_and_filters_monthly_realization(): void
+    {
+        $admin = User::where('role', 'ADMIN')->first();
+
+        // 1. Filter Bulan Juni 2026: Plafon POK tetap utuh (29 item), realisasi Juni terfilter
+        $responseJune = $this->actingAs($admin)->get(route('reports.index', ['year' => 2026, 'month' => 6]));
+        $responseJune->assertOk();
+        $summaryJune = $responseJune->viewData('summary');
+        $this->assertEquals(29, $summaryJune['total_items']);
+        $this->assertGreaterThan(0, $summaryJune['total_pagu']);
+        $this->assertGreaterThanOrEqual(1, $summaryJune['approved_items']);
+        $this->assertGreaterThan(0, $summaryJune['approved_pagu']);
+
+        // 2. Filter Tahunan (Semua Bulan): Plafon POK 29 item dan total approved kumulatif
+        $responseAll = $this->actingAs($admin)->get(route('reports.index', ['year' => 2026]));
+        $responseAll->assertOk();
+        $summaryAll = $responseAll->viewData('summary');
+        $this->assertEquals(29, $summaryAll['total_items']);
+        $this->assertGreaterThanOrEqual(5, $summaryAll['approved_items']);
+    }
+
     public function test_activity_log_recorded_on_actions(): void
     {
         Storage::fake('private');
