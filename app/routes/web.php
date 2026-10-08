@@ -62,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/master/fiscal-years', [MasterController::class, 'storeFiscalYear'])->name('master.fiscal-years.store');
         Route::patch('/master/fiscal-years/{fiscalYear}/toggle', [MasterController::class, 'toggleFiscalYear'])->name('master.fiscal-years.toggle');
+        Route::post('/master/fiscal-years/clone', [MasterController::class, 'cloneFiscalYear'])->name('master.fiscal-years.clone');
         Route::post('/master/programs', [MasterController::class, 'storeProgram'])->name('master.programs.store');
         Route::patch('/master/programs/{program}', [MasterController::class, 'updateProgram'])->name('master.programs.update');
         Route::delete('/master/programs/{program}', [MasterController::class, 'destroyProgram'])->name('master.programs.destroy');

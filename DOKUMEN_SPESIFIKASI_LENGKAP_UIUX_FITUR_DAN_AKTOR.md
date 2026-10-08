@@ -241,6 +241,9 @@ REJECTED ──(operator unggah revisi; checklist di-reset, Guard 5)──▶ PE
   5. **`📦 Sub-Output` (Level 4):** kode (BMA.006, BMA.004, FAN.ZZ1).
   6. **`📁 Output` (Level 3):** kelompok output Kemenkeu (BMA, FAN).
   7. **`📅 Tahun Anggaran` (Level 1):** pengaturan tahun DIPA aktif (2026, 2027) dan toggle status aktif (dengan konfirmasi karena memengaruhi seluruh sistem).
+     * **Fitur Utama: Salin Struktur POK ke Tahun Baru (Rollover POK 1-Klik):** Memungkinkan Supervisor/Admin menduplikasi secara instan seluruh struktur 8-level (Program → Output → Sub-Output → Komponen → Sub-Komponen → Akun → Item) dari tahun berjalan ke tahun anggaran baru (misal 2026 ke 2027). Dilengkapi opsi menyalin nominal pagu acuan dan otomatisasi dokumen SPJ bersih (*fresh start* tanpa berkas lampau).
+     * Form tambah tahun anggaran manual secara independen.
+* **Smart Banner Pengingat Tahun Baru (Dashboard):** Banner otomatis yang muncul di Dashboard bagi Supervisor dan Admin ketika kalender memasuki tahun baru (namun DIPA aktif masih tahun lampau) atau ketika memasuki Q4 persiapan DIPA baru, dilengkapi tombol aksi langsung membuka modal rollover POK 1-klik.
 * **Pola semua tab:** tabel + form panel kanan, validasi inline, anti-duplikasi kode (*Guard 7*), dialog konfirmasi hapus. **Hapus dinonaktifkan** (dengan tooltip) jika entri masih punya turunan/berkas.
 
 ### Tampilan 6.3: Laporan & Rekapitulasi (`/reports`) — *MENU UTAMA SUPERVISOR*

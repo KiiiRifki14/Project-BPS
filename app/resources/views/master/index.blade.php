@@ -2,7 +2,7 @@
 @section('title', 'Manajemen Master Data POK')
 
 @section('content')
-<div class="space-y-8" x-data="{ tab: 'items' }">
+<div class="space-y-8" x-data="{ tab: '{{ request('tab', 'items') }}' }">
 
     {{-- Page Header --}}
     <div class="sakdi-card w-full p-8 flex items-center justify-between flex-wrap gap-6"
@@ -734,22 +734,79 @@
                 </table>
             </div>
 
-            <div class="sakdi-card p-6">
-                <h3 class="text-sm font-extrabold mb-4" style="color: var(--color-neutral-900);">Tambah Tahun Anggaran</h3>
-                <form action="{{ route('master.fiscal-years.store') }}" method="POST" class="space-y-4">
-                    @csrf
-                    <div>
-                        <label class="sakdi-label sakdi-label-required">Tahun Anggaran</label>
-                        <input type="number" name="year" class="sakdi-input num-mono" placeholder="2027" min="2024" max="2099" required>
+            <div class="space-y-6">
+                {{-- CARD SALIN STRUKTUR POK (ROLLOVER) --}}
+                <div class="sakdi-card p-6 border-2" style="border-color: #93C5FD; background: linear-gradient(to bottom, #FFFFFF, #F8FAFC);">
+                    <div class="flex items-center gap-2.5 mb-3">
+                        <span class="text-2xl">📋</span>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900">Salin Struktur POK ke Tahun Baru</h3>
+                            <p class="text-[11px] font-medium text-slate-500">Duplikasi otomatis 8-level POK ke TA baru</p>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2 pt-1">
-                        <input type="checkbox" id="fy_is_active" name="is_active" value="1" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                        <label for="fy_is_active" class="text-xs font-semibold select-none cursor-pointer" style="color: var(--color-neutral-700);">
-                            Jadikan Tahun Anggaran Aktif
-                        </label>
-                    </div>
-                    <button type="submit" class="sakdi-btn sakdi-btn-primary w-full">Tambah Tahun Anggaran</button>
-                </form>
+
+                    <form action="{{ route('master.fiscal-years.clone') }}" method="POST" class="space-y-3.5"
+                          onsubmit="return confirm('Apakah Anda yakin ingin menyalin seluruh struktur POK? Hierarki Program hingga Item Kegiatan akan diduplikasi secara utuh dengan dokumen SPJ yang bersih.')">
+                        @csrf
+                        <div>
+                            <label class="sakdi-label sakdi-label-required text-xs">Pilih Tahun Sumber</label>
+                            <select name="source_fiscal_year_id" class="sakdi-select num-mono text-xs" required>
+                                @foreach($fiscalYears as $srcFy)
+                                    <option value="{{ $srcFy->id }}" {{ $srcFy->is_active ? 'selected' : '' }}>
+                                        TA {{ $srcFy->year }} {{ $srcFy->is_active ? '⭐ (Aktif Berjalan)' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="sakdi-label sakdi-label-required text-xs">Tahun Anggaran Tujuan</label>
+                            <input type="number" name="target_year" value="{{ (int)date('Y') + 1 }}" min="2024" max="2099" class="sakdi-input num-mono text-xs font-black" placeholder="2027" required>
+                        </div>
+
+                        <div class="space-y-2 pt-1 border-t border-slate-200">
+                            <label class="flex items-start gap-2 cursor-pointer select-none">
+                                <input type="checkbox" name="copy_pagu" value="1" checked class="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-xs font-semibold text-slate-700">
+                                    Salin nominal pagu anggaran (sebagai baseline awal)
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-2 cursor-pointer select-none">
+                                <input type="checkbox" name="set_active" value="1" class="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-xs font-semibold text-slate-700">
+                                    Langsung aktifkan Tahun Anggaran baru
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-2.5 text-[11px] text-blue-900 leading-snug font-medium">
+                            💡 <strong>Catatan:</strong> Seluruh Program s.d Item akan disalin utuh. Seluruh dokumen fisik SPJ &amp; riwayat verifikasi tetap kosong untuk tahun baru.
+                        </div>
+
+                        <button type="submit" class="sakdi-btn sakdi-btn-primary w-full text-xs font-extrabold py-2.5 shadow-sm">
+                            🚀 Salin Struktur POK Sekarang
+                        </button>
+                    </form>
+                </div>
+
+                {{-- CARD TAMBAH TAHUN ANGGARAN MANUAL --}}
+                <div class="sakdi-card p-6">
+                    <h3 class="text-sm font-extrabold mb-4" style="color: var(--color-neutral-900);">Tambah Tahun Anggaran Manual</h3>
+                    <form action="{{ route('master.fiscal-years.store') }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label class="sakdi-label sakdi-label-required">Tahun Anggaran</label>
+                            <input type="number" name="year" class="sakdi-input num-mono" placeholder="2027" min="2024" max="2099" required>
+                        </div>
+                        <div class="flex items-center gap-2 pt-1">
+                            <input type="checkbox" id="fy_is_active" name="is_active" value="1" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <label for="fy_is_active" class="text-xs font-semibold select-none cursor-pointer" style="color: var(--color-neutral-700);">
+                                Jadikan Tahun Anggaran Aktif
+                            </label>
+                        </div>
+                        <button type="submit" class="sakdi-btn sakdi-btn-secondary w-full">Tambah Tahun Anggaran</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

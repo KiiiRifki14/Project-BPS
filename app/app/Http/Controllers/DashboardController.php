@@ -43,6 +43,47 @@ class DashboardController extends Controller
 
         $bma006 = \App\Models\SubOutput::where('code', 'BMA.006')->first();
 
-        return view('dashboard', compact('stats', 'recentItems', 'fy', 'bma006'));
+        // ── SMART REMINDER BANNER UNTUK PERGANTIAN TAHUN ANGGARAN ──
+        $newYearNotice = null;
+        $currentCalYear = (int) date('Y');
+
+        if ($fy) {
+            if ($currentCalYear > $fy->year) {
+                // Kalender sudah tahun baru (misal 2027), tapi DIPA aktif masih tahun lama (2026)!
+                $targetFy = FiscalYear::where('year', $currentCalYear)->first();
+                $targetHasStructure = $targetFy ? $targetFy->programs()->exists() : false;
+
+                $newYearNotice = [
+                    'type'                 => 'warning',
+                    'title'                => "Tahun Kalender {$currentCalYear} Telah Dimulai!",
+                    'message'              => "Saat ini kalender telah memasuki tahun {$currentCalYear}, namun DIPA aktif di sistem masih Tahun Anggaran {$fy->year}." . ($targetHasStructure ? " Struktur POK {$currentCalYear} sudah tersedia, silakan aktifkan tahun anggaran ini di menu Master Data." : " Belum ada struktur POK untuk {$currentCalYear}. Anda dapat menyalin seluruh kegiatan POK dari TA {$fy->year} dengan 1-klik agar pengarsipan tidak tertunda."),
+                    'target_year'          => $currentCalYear,
+                    'source_year'          => $fy->year,
+                    'source_fy_id'         => $fy->id,
+                    'target_has_structure' => $targetHasStructure,
+                    'badge'                => "PERINGATAN TAHUN {$currentCalYear}",
+                ];
+            } else {
+                // Memasuki Triwulan IV (Bulan Oktober - Desember): Rekomendasi persiapan DIPA tahun depan
+                $nextYear = $fy->year + 1;
+                $nextFy = FiscalYear::where('year', $nextYear)->first();
+                $nextHasStructure = $nextFy ? $nextFy->programs()->exists() : false;
+
+                if ((int) date('n') >= 10 && !$nextHasStructure) {
+                    $newYearNotice = [
+                        'type'                 => 'info',
+                        'title'                => "Persiapan DIPA Tahun Anggaran {$nextYear}",
+                        'message'              => "Menjelang akhir tahun anggaran {$fy->year}, Anda dapat mempersiapkan struktur POK Tahun Anggaran {$nextYear} sekarang ({$stats['total_items']} item kegiatan). Struktur dapat disalin secara otomatis dengan dokumen SPJ yang bersih (siap pakai di awal tahun).",
+                        'target_year'          => $nextYear,
+                        'source_year'          => $fy->year,
+                        'source_fy_id'         => $fy->id,
+                        'target_has_structure' => false,
+                        'badge'                => "PERSIAPAN DIPA {$nextYear}",
+                    ];
+                }
+            }
+        }
+
+        return view('dashboard', compact('stats', 'recentItems', 'fy', 'bma006', 'newYearNotice'));
     }
 }

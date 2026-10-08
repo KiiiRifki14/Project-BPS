@@ -4,6 +4,137 @@
 @section('content')
 <div class="space-y-6 sm:space-y-8">
 
+    {{-- ── SMART NEW YEAR REMINDER BANNER (SUPERVISOR & ADMIN) ── --}}
+    @if(isset($newYearNotice) && $newYearNotice)
+    <div x-data="{ showCloneModal: false }" class="relative">
+        <div class="relative overflow-hidden rounded-2xl p-5 sm:p-6 md:p-7 text-white shadow-lg transition-all"
+             style="{{ $newYearNotice['type'] === 'warning' ? 'background: linear-gradient(135deg, #78350F 0%, #B45309 100%); border: 2px solid #F59E0B;' : 'background: linear-gradient(135deg, #0F2B48 0%, #1E3A8A 100%); border: 2px solid rgba(59, 130, 246, 0.4);' }}">
+            
+            {{-- Radial accent light --}}
+            <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full pointer-events-none opacity-20"
+                 style="background: radial-gradient(circle, #ffffff 0%, transparent 70%);"></div>
+
+            <div class="relative z-10 flex items-start justify-between flex-wrap gap-4 sm:gap-6">
+                <div class="flex-1 min-w-[280px]">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg mb-2 text-xs font-black uppercase tracking-wider"
+                         style="{{ $newYearNotice['type'] === 'warning' ? 'background: rgba(254, 243, 199, 0.2); color: #FEF3C7; border: 1px solid rgba(254, 243, 199, 0.3);' : 'background: rgba(219, 234, 254, 0.15); color: #93C5FD; border: 1px solid rgba(147, 197, 253, 0.25);' }}">
+                        <span>{{ $newYearNotice['type'] === 'warning' ? '⚠️' : '📅' }} {{ $newYearNotice['badge'] }}</span>
+                    </div>
+
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-black text-white tracking-tight leading-snug">
+                        {{ $newYearNotice['title'] }}
+                    </h2>
+                    <p class="text-xs sm:text-sm font-medium mt-1.5 leading-relaxed text-slate-200">
+                        {{ $newYearNotice['message'] }}
+                    </p>
+                </div>
+
+                @if(in_array(auth()->user()->role, ['SUPERVISOR', 'ADMIN']))
+                <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap w-full sm:w-auto">
+                    @if(!empty($newYearNotice['target_has_structure']))
+                        <a href="{{ route('master.index', ['tab' => 'fiscal']) }}"
+                           class="sakdi-btn font-black text-xs sm:text-sm px-5 py-3 shadow-md w-full sm:w-auto text-center justify-center rounded-xl"
+                           style="background: #ffffff; color: #0F172A; border-color: #ffffff;">
+                            <span>⭐ Kelola di Master Data</span>
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </a>
+                    @else
+                        <button type="button"
+                                @click="showCloneModal = true"
+                                class="sakdi-btn font-black text-xs sm:text-sm px-5 py-3 shadow-md w-full sm:w-auto text-center justify-center rounded-xl cursor-pointer"
+                                style="{{ $newYearNotice['type'] === 'warning' ? 'background: #F59E0B; color: #FFFFFF; border-color: #D97706;' : 'background: var(--color-accent); color: #FFFFFF; border-color: var(--color-accent);' }}">
+                            <span>📋 Salin Struktur POK ke {{ $newYearNotice['target_year'] }}</span>
+                        </button>
+                        <a href="{{ route('master.index', ['tab' => 'fiscal']) }}"
+                           class="sakdi-btn sakdi-btn-ghost text-xs sm:text-sm px-4 py-3 text-white border border-white/20 hover:bg-white/10 rounded-xl">
+                            <span>Buka Master Data</span>
+                        </a>
+                    @endif
+                </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- QUICK MODAL: SALIN STRUKTUR POK --}}
+        @if(in_array(auth()->user()->role, ['SUPERVISOR', 'ADMIN']))
+        <div x-show="showCloneModal"
+             x-cloak
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+             @keydown.escape.window="showCloneModal = false">
+            <div class="sakdi-card max-w-lg w-full p-6 sm:p-7 shadow-2xl relative bg-white"
+                 @click.away="showCloneModal = false"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 transform scale-95"
+                 x-transition:enter-end="opacity-100 transform scale-100">
+                
+                <div class="flex items-start justify-between gap-4 mb-4 pb-3 border-b border-slate-100">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-extrabold bg-blue-50 text-blue-700 mb-1">
+                            <span>🚀 1-KLIK ROLLOVER POK</span>
+                        </div>
+                        <h3 class="text-base sm:text-lg font-black text-slate-900">
+                            Salin Struktur POK ke TA {{ $newYearNotice['target_year'] }}
+                        </h3>
+                    </div>
+                    <button type="button" @click="showCloneModal = false" class="text-slate-400 hover:text-slate-600 p-1">
+                        ✕
+                    </button>
+                </div>
+
+                <form action="{{ route('master.fiscal-years.clone') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <input type="hidden" name="source_fiscal_year_id" value="{{ $newYearNotice['source_fy_id'] }}">
+
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-1.5">
+                        <div class="flex justify-between font-bold text-slate-700">
+                            <span>Tahun Sumber:</span>
+                            <span class="num-mono font-black text-blue-700">TA {{ $newYearNotice['source_year'] }} ({{ $stats['total_items'] }} Item)</span>
+                        </div>
+                        <div class="flex justify-between font-bold text-slate-700">
+                            <span>Tahun Tujuan:</span>
+                            <span class="num-mono font-black text-emerald-700">TA {{ $newYearNotice['target_year'] }}</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="sakdi-label sakdi-label-required">Tahun Anggaran Tujuan</label>
+                        <input type="number" name="target_year" value="{{ $newYearNotice['target_year'] }}" min="2024" max="2099" class="sakdi-input num-mono font-bold" required>
+                    </div>
+
+                    <div class="space-y-2 pt-1">
+                        <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                            <input type="checkbox" name="copy_pagu" value="1" checked class="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <span class="text-xs font-semibold text-slate-700">
+                                Salin nominal pagu anggaran (sebagai baseline awal acuan)
+                            </span>
+                        </label>
+                        <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                            <input type="checkbox" name="set_active" value="1" {{ $newYearNotice['type'] === 'warning' ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <span class="text-xs font-semibold text-slate-700">
+                                Langsung jadikan TA {{ $newYearNotice['target_year'] }} sebagai Tahun Anggaran Aktif
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-800 leading-relaxed font-medium">
+                        💡 <strong>Keamanan Data:</strong> Struktur seluruh 8-level POK (Program s.d Item) akan diduplikasi secara utuh. Dokumen fisik SPJ dan status verifikasi akan <em>bersih (fresh start)</em> untuk tahun anggaran baru.
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+                        <button type="button" @click="showCloneModal = false" class="sakdi-btn sakdi-btn-secondary text-xs px-4 py-2.5">
+                            Batal
+                        </button>
+                        <button type="submit" class="sakdi-btn sakdi-btn-primary font-black text-xs px-5 py-2.5 shadow-md">
+                            🚀 Mulai Salin Struktur POK
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endif
+    </div>
+    @endif
+
     {{-- ── HERO MVP BANNER (BMA.006 SENSUS EKONOMI 2026) ── --}}
     @if(isset($bma006) && $bma006)
     <div class="relative overflow-hidden rounded-2xl p-5 sm:p-7 md:p-8 text-white shadow-lg"

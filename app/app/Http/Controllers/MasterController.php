@@ -76,15 +76,139 @@ class MasterController extends Controller
         return back()->with('success', $message);
     }
 
+    public function cloneFiscalYear(Request $request)
+    {
+        $request->validate([
+            'source_fiscal_year_id' => 'required|exists:fiscal_years,id',
+            'target_year'           => 'required|integer|min:2024|max:2099',
+            'copy_pagu'             => 'nullable|boolean',
+            'set_active'            => 'nullable|boolean',
+        ]);
+
+        $sourceFy = FiscalYear::with([
+            'programs.outputs.subOutputs.components.subComponents.accounts.items'
+        ])->findOrFail($request->source_fiscal_year_id);
+
+        $targetYear = (int) $request->target_year;
+
+        if ($sourceFy->year === $targetYear) {
+            return back()->with('error', "Gagal: Tahun sumber dan tahun tujuan tidak boleh sama ({$targetYear}).");
+        }
+
+        $targetFy = FiscalYear::firstOrCreate(
+            ['year' => $targetYear],
+            ['is_active' => false]
+        );
+
+        if ($targetFy->programs()->exists()) {
+            return back()->with('error', "Gagal: Tahun Anggaran {$targetYear} sudah memiliki {$targetFy->programs()->count()} Program terdaftar. Untuk mencegah duplikasi data ganda, salin hanya dapat dilakukan ke tahun yang belum memiliki struktur POK.");
+        }
+
+        $copyPagu = $request->boolean('copy_pagu', true);
+        $setActive = $request->boolean('set_active', false);
+
+        $stats = [
+            'programs'       => 0,
+            'outputs'        => 0,
+            'sub_outputs'    => 0,
+            'components'     => 0,
+            'sub_components' => 0,
+            'accounts'       => 0,
+            'items'          => 0,
+        ];
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($sourceFy, $targetFy, $copyPagu, $setActive, &$stats) {
+            if ($setActive) {
+                FiscalYear::where('id', '!=', $targetFy->id)->update(['is_active' => false]);
+                $targetFy->update(['is_active' => true]);
+            }
+
+            foreach ($sourceFy->programs as $srcProg) {
+                $newProg = Program::create([
+                    'fiscal_year_id' => $targetFy->id,
+                    'code'           => $srcProg->code,
+                    'name'           => $srcProg->name,
+                ]);
+                $stats['programs']++;
+
+                foreach ($srcProg->outputs as $srcOut) {
+                    $newOut = Output::create([
+                        'program_id' => $newProg->id,
+                        'code'       => $srcOut->code,
+                        'name'       => $srcOut->name,
+                    ]);
+                    $stats['outputs']++;
+
+                    foreach ($srcOut->subOutputs as $srcSubOut) {
+                        $newSubOut = SubOutput::create([
+                            'output_id' => $newOut->id,
+                            'code'      => $srcSubOut->code,
+                            'name'      => $srcSubOut->name,
+                        ]);
+                        $stats['sub_outputs']++;
+
+                        foreach ($srcSubOut->components as $srcComp) {
+                            $newComp = Component::create([
+                                'sub_output_id' => $newSubOut->id,
+                                'code'          => $srcComp->code,
+                                'name'          => $srcComp->name,
+                            ]);
+                            $stats['components']++;
+
+                            foreach ($srcComp->subComponents as $srcSubComp) {
+                                $newSubComp = SubComponent::create([
+                                    'component_id' => $newComp->id,
+                                    'code'         => $srcSubComp->code,
+                                    'name'         => $srcSubComp->name,
+                                ]);
+                                $stats['sub_components']++;
+
+                                foreach ($srcSubComp->accounts as $srcAcc) {
+                                    $newAcc = Account::create([
+                                        'sub_component_id' => $newSubComp->id,
+                                        'code'             => $srcAcc->code,
+                                        'name'             => $srcAcc->name,
+                                    ]);
+                                    $stats['accounts']++;
+
+                                    foreach ($srcAcc->items as $srcItem) {
+                                        Item::create([
+                                            'account_id'          => $newAcc->id,
+                                            'code'                => $srcItem->code,
+                                            'name'                => $srcItem->name,
+                                            'pagu'                => $copyPagu ? $srcItem->pagu : 0,
+                                            'verification_status' => 'PENDING',
+                                            'rejection_note'      => null,
+                                        ]);
+                                        $stats['items']++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        $activeStatusMsg = $setActive ? "dan telah diset sebagai Tahun Anggaran Aktif." : "Status TA saat ini: Non-aktif (dapat diaktifkan kapan saja).";
+
+        return back()->with('success', "Berhasil menyalin struktur POK dari TA {$sourceFy->year} ke TA {$targetYear}! Total disalin: {$stats['programs']} Program, {$stats['outputs']} Output, {$stats['sub_outputs']} Sub-Output, {$stats['components']} Komponen, {$stats['sub_components']} Sub-Komponen, {$stats['accounts']} Akun, {$stats['items']} Item Kegiatan ({$activeStatusMsg}). Dokumen SPJ dimulai dari kondisi bersih (kosong).");
+    }
+
     // ── PROGRAM ──────────────────────────────────────
     public function storeProgram(Request $request)
     {
         $request->validate([
             'fiscal_year_id' => 'required|exists:fiscal_years,id',
-            'code'           => 'required|string|max:20|unique:programs,code',
+            'code'           => [
+                'required',
+                'string',
+                'max:20',
+                \Illuminate\Validation\Rule::unique('programs', 'code')->where('fiscal_year_id', $request->fiscal_year_id),
+            ],
             'name'           => 'required|string|max:255',
         ], [
-            'code.unique' => 'Gagal: Kode Program [:input] sudah terdaftar. Kode Program wajib unik.',
+            'code.unique' => 'Gagal: Kode Program [:input] sudah terdaftar pada tahun anggaran ini. Kode Program wajib unik per tahun.',
         ]);
         Program::create($request->only('fiscal_year_id', 'code', 'name'));
         return back()->with('success', "Program [{$request->code}] berhasil ditambahkan.");
