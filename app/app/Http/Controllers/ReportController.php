@@ -23,15 +23,7 @@ class ReportController extends Controller
                 $q->where('year', $year);
             });
 
-            if ($month) {
-                $query->whereMonth('updated_at', $month);
-
-                if ($week) {
-                    $startDay = (($week - 1) * 7) + 1;
-                    $endDay   = min($week * 7, 31);
-                    $query->whereBetween(\DB::raw('CAST(strftime("%d", updated_at) AS INTEGER)'), [$startDay, $endDay]);
-                }
-            }
+            $this->applyDateRangeFilter($query, $year, $month, $week);
 
             return $query;
         };
@@ -55,15 +47,8 @@ class ReportController extends Controller
 
         $subOutputs = SubOutput::whereHas('output.program.fiscalYear', function ($q) use ($year) {
             $q->where('year', $year);
-        })->with(['components.subComponents.accounts.items' => function ($q) use ($month, $week) {
-            if ($month) {
-                $q->whereMonth('updated_at', $month);
-                if ($week) {
-                    $startDay = (($week - 1) * 7) + 1;
-                    $endDay   = min($week * 7, 31);
-                    $q->whereBetween(\DB::raw('CAST(strftime("%d", updated_at) AS INTEGER)'), [$startDay, $endDay]);
-                }
-            }
+        })->with(['components.subComponents.accounts.items' => function ($q) use ($year, $month, $week) {
+            $this->applyDateRangeFilter($q, $year, $month, $week);
         }])->paginate(15);
 
         return view('reports.index', compact('subOutputs', 'summary', 'fiscalYears', 'year', 'month', 'week'));
@@ -72,7 +57,7 @@ class ReportController extends Controller
     /**
      * Export rekapitulasi data to CSV (Excel compatible).
      */
-        public function exportCsv(Request $request)
+    public function exportCsv(Request $request)
     {
         $year  = $request->input('year', date('Y'));
         $month = $request->input('month');
@@ -93,15 +78,8 @@ class ReportController extends Controller
 
         $subOutputs = SubOutput::whereHas('output.program.fiscalYear', function ($q) use ($year) {
             $q->where('year', $year);
-        })->with(['output.program', 'components.subComponents.accounts.items' => function ($q) use ($month, $week) {
-            if ($month) {
-                $q->whereMonth('updated_at', $month);
-                if ($week) {
-                    $startDay = (($week - 1) * 7) + 1;
-                    $endDay   = min($week * 7, 31);
-                    $q->whereBetween(\DB::raw('CAST(strftime("%d", updated_at) AS INTEGER)'), [$startDay, $endDay]);
-                }
-            }
+        })->with(['output.program', 'components.subComponents.accounts.items' => function ($q) use ($year, $month, $week) {
+            $this->applyDateRangeFilter($q, $year, $month, $week);
         }])->get();
 
         $filename = "Rekap_Keuangan_BPS_Subang_" . date('Ymd_His') . ".csv";
@@ -216,5 +194,31 @@ class ReportController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Cross-database date range filter (PostgreSQL, MySQL, SQLite compatible).
+     */
+    private function applyDateRangeFilter($query, $year, $month, $week)
+    {
+        $year = (int) $year;
+        if (!$month) {
+            return;
+        }
+
+        $month = (int) $month;
+        $startDay = 1;
+        $endDay = \Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth()->day;
+
+        if ($week) {
+            $week = (int) $week;
+            $startDay = (($week - 1) * 7) + 1;
+            $endDay = min($week * 7, $endDay);
+        }
+
+        $startDate = sprintf('%04d-%02d-%02d 00:00:00', $year, $month, $startDay);
+        $endDate   = sprintf('%04d-%02d-%02d 23:59:59', $year, $month, $endDay);
+
+        $query->whereBetween('updated_at', [$startDate, $endDate]);
     }
 }
